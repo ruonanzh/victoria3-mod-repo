@@ -73,19 +73,29 @@ top-level object redefines a vanilla name **without** a keyword is a soft rule t
 **Folder gating and special rules (Victoria 3).** The `INJECT:`/`REPLACE:` keywords work only in a
 documented folder list (~130 folders: most `common/*`, some `gfx/*`, `map_data/state_regions`,
 `music`, `notifications`, `modifier_icons`, `gui_animations`, `sound/persistent_objects`). Everything
-else falls back to file overwrite or implicit replace. Folder-specific exceptions:
+else falls back to file overwrite or implicit replace.
 
-- **GUI `type`/`template`** and **`events`**: the **first** loaded definition wins; a later mod cannot
-  overwrite them.
+The wiki's `Mod compatibility` page then has an `Exceptions` section. These six are quoted from it:
+
+- **GUI `type`/`template`**: the **first** loaded definition wins; a later mod cannot overwrite one.
+  The `types` container is not unique and has no overriding logic at all.
+- **`events`**: the same first-loaded-wins rule. Sub-folders of `events/` load after the main folder.
 - **`defines`**: per-entry merge — `NSomeCategory = { A_SINGLE_DEFINE = X }` replaces that one define,
   not the whole category.
-- **`scripted_effects` / `scripted_triggers` / `scripted_rules`**: **REPLACE only**; an `INJECT:`
-  silently acts as `REPLACE:`. (`script_values` is in the gated list but carries no such note.)
-- **`genes`**: a container folder. Only a whole-container replace works; there is no per-gene
-  injection, because the keyword cannot go below the top level.
 - **`on_actions`**: a mod may append `on_actions`, `events`, and `random_events` to an existing hook,
   but it **cannot** replace that hook's `trigger` or `effect` block without overwriting the whole file.
-- **`dna_data`**: duplicates are produced, never overwritten.
+- **`localization`**: single keys are overridden only in `localization/<lang>/replace/`. A later
+  loaded key does **not** overwrite an earlier one outside that folder.
+- **`dna_data`**: definitions do not overwrite each other, they produce duplicates. Only a file
+  overwrite replaces a character's DNA.
+
+Two more notes that the wiki states elsewhere on the same page (not in its `Exceptions` list):
+
+- **`scripted_effects` / `scripted_triggers` / `scripted_rules`**: the folder list marks them
+  `REPLACE only`; an `INJECT:` silently acts as `REPLACE:`. (`script_values` is gated but carries no
+  such mark.)
+- **`genes`**: a container folder (`color_genes = { hair_color = { … } }`). Because the keyword works
+  at the file top level only, a mod can replace the whole container, not one gene inside it.
 
 **Whole-path replacement.** To drop a vanilla folder entirely, list it in
 `game_custom_data.replace_paths` inside `metadata.json` (an array of paths, for example
