@@ -112,7 +112,9 @@ no `<top_folder>` level.
   file**. This failure is fatal, not cosmetic, so the linter treats a missing BOM as an ERROR.
 - **Filename (mandatory):** the filename must end with `_l_<language>`, for example
   `building_food_industry_l_simp_chinese.yml`. The leading part is free-form. The linter enforces the
-  suffix and anchors `<language>` to the directory.
+  suffix and anchors `<language>` to the directory. The shipped languages are `braz_por`, `english`,
+  `french`, `german`, `japanese`, `korean`, `polish`, `russian`, `simp_chinese`, `spanish`, and
+  `turkish` (`localization/languages.yml` in the game directory).
 - **Header:** the first content line is `l_<lang>:`, and it must match the language **directory**
   (`.../localization/simp_chinese/...` gives `l_simp_chinese:`).
 - **Entry format:** an indented `  key: "value"`, or `  key:0 "value"` with an explicit version
@@ -140,8 +142,10 @@ no `<top_folder>` level.
 - **A GUI string can span several physical lines.** A datamodel expression such as
   `visible = "[Or( ... )]"` legitimately wraps across lines, and the closing `"` can be several
   lines below the opening one. That is correct, as long as the string eventually closes.
-- A file **outside** the mod root (under `.metadata/` or `tools/`, or a `README.txt`) is not game
-  script, and the linter does not check its braces.
+- A file that is **not game script** is skipped by the linter: a `README.txt`, anything under
+  `.metadata/`, `tools/`, `licenses/`, or `documentation/`, and a `localization/languages.yml` (the
+  language list is a game definition, not a localization file). Those live inside the mod root; the
+  linter skips them by path, not by location.
 
 ## 5. `metadata.json`
 

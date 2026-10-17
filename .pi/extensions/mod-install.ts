@@ -268,13 +268,13 @@ export default function (pi: ExtensionAPI) {
       }
       const targetWasMissing = !statSync(modRoot, { throwIfNoEntry: false });
 
-      const identity = readModIdentity(modDir);
+      const identity = readModIdentity(modDir, basename(modDir));
       if (!identity) {
         return {
           content: [
             {
               type: "text",
-              text: `FAIL: ${modDir} has no usable .metadata/metadata.json (id is required).\nNEXT: run validate_mod on this mod directory and fix the reported problems before installing.`,
+              text: `FAIL: ${modDir} has no usable .metadata/metadata.json (the file is missing, is not valid JSON, or is not a JSON object).\nNEXT: create the file, or fix its JSON, then install again.`,
             },
           ],
           details: { ok: false, reason: "MISSING_METADATA" },
@@ -322,8 +322,13 @@ export default function (pi: ExtensionAPI) {
       // directories is therefore impossible.
       // The common path therefore has no O(n) scan, and a mod whose identity differs from its
       // directory name still receives that report.
+      // The id is a warning, not a blocker: Steam fills it on upload and 4 of the 10 downloaded
+      // Workshop mods ship it empty. validate_mod reports the same condition as a WARN, so the two
+      // tools cannot disagree about whether a mod is installable.
       const duplicateDir =
-        identity.name !== modName ? workspaceSameIdentityAs(yourModsRoot, modName, identity.name) : null;
+        identity.id !== "" && identity.id !== modName
+          ? workspaceSameIdentityAs(yourModsRoot, modName, identity.id)
+          : null;
 
       const staging = `${installDir}.staging-${process.pid}`;
       const previous = `${installDir}.previous-${process.pid}`;
@@ -351,7 +356,7 @@ export default function (pi: ExtensionAPI) {
         if (hadPrevious) rmSync(previous, { recursive: true, force: true });
       // Write the record only after a successful install. The record does not take part in the
       // "is it installed" decision.
-      writeInstallRecord(modDir, identity.name, basename(installDir));
+      writeInstallRecord(modDir, identity.id || modName, basename(installDir));
       // Delete the old marker from the installed copy, for compatibility with earlier versions.
       rmSync(join(installDir, ".pi-mod.json"), { force: true });
       } catch (error) {
@@ -367,8 +372,13 @@ export default function (pi: ExtensionAPI) {
         };
       }
 
-      const mismatched = identity.name !== modName;
+      const mismatched = identity.id !== "" && identity.id !== modName;
       const notes: string[] = [];
+      if (identity.idMissing) {
+        notes.push(
+          `\nWARN: metadata.id is empty. The launcher identifies a local mod by its folder name, so the install works, but Steam needs a unique id when the mod is uploaded. validate_mod reports the same condition as a warning.`,
+        );
+      }
       if (targetWasMissing) {
         notes.push(
           `\nNOTE: the mod install directory ${modRoot} did not exist and was created. That is normal on a first install, because the Paradox launcher had not created it yet. If the player expected mods somewhere else, for example after moving their Documents directory, tell them where this mod actually landed: ${installDir}.`,
@@ -376,12 +386,12 @@ export default function (pi: ExtensionAPI) {
       }
       if (mismatched) {
         notes.push(
-          `\nNOTE: the installed directory is named ${modName}, which is the your_mods directory name, while the mod declares id ${identity.name}. That difference is fine, because the launcher matches mods by the declared id and not by the directory name.`,
+          `\nNOTE: the installed directory is named ${modName}, which is the your_mods directory name, while the mod declares id ${identity.id}. That difference is fine, because the launcher matches mods by the declared id and not by the directory name.`,
         );
       }
       if (duplicateDir) {
         notes.push(
-          `\nNOTE: the same mod (id ${identity.name}) is also installed as ${duplicateDir}. This tool did not touch that copy. Tell the player which one to enable, and delete the other manually if it is stale.`,
+          `\nNOTE: the same mod (id ${identity.id}) is also installed as ${duplicateDir}. This tool did not touch that copy. Tell the player which one to enable, and delete the other manually if it is stale.`,
         );
       }
       // The wiki states that Victoria 3 cannot load a mod whose file path contains non-ASCII

@@ -29,7 +29,7 @@ const UTF8_BOM = Buffer.from([0xef, 0xbb, 0xbf]);
 const PDX_SUFFIXES = new Set([".txt", ".gui", ".gfx", ".asset"]);
 // Victoria 3 mods are flat: the mod root mirrors the game's game/ directory, so every script file is
 // game script. These two prefixes are the non-game directories to skip.
-const NON_SCRIPT_DIR_PREFIXES = ["/.metadata/", "/tools/"];
+const NON_SCRIPT_DIR_PREFIXES = ["/.metadata/", "/tools/", "/licenses/", "/documentation/"];
 const STANDARD_METADATA_FIELDS = [
   "name",
   "id",
@@ -99,6 +99,10 @@ function walkFiles(root: string): Array<{ abs: string; rel: string }> {
 
 function isLocalizationYml(rel: string): boolean {
   const r = rel.toLowerCase();
+  const name = r.split("/").pop() ?? "";
+  // `localization/languages.yml` is a game definition (the language list), not a localization file,
+  // so the BOM/filename rules do not apply to it. Vanilla ships it, and a real mod overrides it.
+  if (name === "languages.yml") return false;
   // Victoria 3 mods are flat, so a localization file sits at `localization/<lang>/...` with no
   // leading directory. The nested form (`<any>/localization/...`) is also accepted.
   return r.endsWith(".yml") && (r.startsWith("localization/") || r.includes("/localization/"));
@@ -216,7 +220,7 @@ function checkLocalization(modRoot: string): Finding[] {
       continue;
     }
     if (raw.length === 0) {
-      findings.push({ severity: "error", rel, message: "empty localization file" });
+      findings.push({ severity: "warn", rel, message: "empty localization file (harmless, but it localizes nothing)" });
       continue;
     }
     if (!raw.subarray(0, 3).equals(UTF8_BOM)) {
@@ -317,7 +321,7 @@ function checkLocalization(modRoot: string): Finding[] {
         findings.push({
           severity: "error",
           rel,
-          message: `line ${lineNo}: malformed localization line (expected '  key: \"value\"', '  key:0 \"value\"', or '  key: 0 \"value\"')`,
+          message: `line ${lineNo}: malformed localization line (expected '  key: \"value\"' or '  key:0 \"value\"')`,
         });
         continue;
       }
@@ -435,6 +439,15 @@ function checkMetadata(modRoot: string): Finding[] {
             : `missing expected field '${field}' (Victoria 3 wiki metadata.json standard structure)`,
       });
   }
+  // game_id is a safety catch: the launcher reads it to refuse a mod built for another game. A
+  // present-but-wrong value defeats the purpose, so check the value and not only the presence.
+  if ("game_id" in obj && obj.game_id !== "victoria3") {
+    findings.push({
+      severity: "warn",
+      rel,
+      message: `game_id is '${String(obj.game_id)}'; it should be 'victoria3' (the launcher uses it to refuse a mod built for another game)`,
+    });
+  }
   // multiplayer_synchronized is the one game_custom_data key that matters in play: a mod that
   // changes shared state without it desyncs a multiplayer game.
   const customData = obj.game_custom_data;
@@ -481,7 +494,13 @@ function checkMetadata(modRoot: string): Finding[] {
       rel,
       message: "missing 'thumbnail' entry (the value is for example \"thumbnail.png\")",
     });
-  } else if (typeof thumbnail === "string") {
+  } else if (typeof thumbnail !== "string") {
+    findings.push({
+      severity: "warn",
+      rel,
+      message: "thumbnail must be a string path (for example \"thumbnail.png\")",
+    });
+  } else if (thumbnail !== "") {
     const candidates = [
       join(modRoot, thumbnail),
       join(modRoot, ".metadata", thumbnail),
@@ -552,6 +571,13 @@ function stripLineComments(text: string): string {
 interface BalanceResult {
   ok: boolean;
   message?: string;
+  /**
+   * A file that ends with unclosed `{` is a WARN, not an ERROR. Vanilla itself ships such files in
+   * `common/dna_data/` (7 of them, for example 00_mahatma_gandhi.txt has 118 `{` and 117 `}`), and
+   * the engine tolerates an unclosed block at end of file. An extra `}` stays a hard error, because
+   * that one breaks the parse of what follows.
+   */
+  severity?: "error" | "warn";
 }
 
 function checkBraceQuoteBalance(cleaned: string): BalanceResult {
@@ -590,7 +616,8 @@ function checkBraceQuoteBalance(cleaned: string): BalanceResult {
   if (depth > 0)
     return {
       ok: false,
-      message: `unbalanced braces: ${depth} '{' never closed`,
+      severity: "warn",
+      message: `unbalanced braces: ${depth} '{' never closed (vanilla has files like this in common/dna_data/, so this is a warning)`,
     };
   if (depth < 0) return { ok: false, message: "unbalanced braces: extra '}'" };
   return { ok: true };
@@ -646,7 +673,10 @@ function checkOverrideKeywords(cleaned: string): Finding[] {
         // entry level depends on the folder. Most common/ folders put entries at the file top level,
         // and a container folder nests them one level in, for example genes/ nests inside
         // `accessory_genes = { <entry> = { } }`. Vanilla writes it that way itself: all 6
-        // `INJECT_OR_CREATE:` sites in common/genes/ sit inside the container object, one level in.
+        // A container folder (for example common/genes/, where the entries sit inside
+        // accessory_genes) puts the entry one level in. Victoria 3 vanilla does not itself use
+        // INJECT_OR_CREATE in common/genes/, so treat "one level in" as allowed, not as proven by
+        // vanilla.
         findings.push({
           severity: "warn",
           rel: "",
@@ -700,7 +730,7 @@ function checkPdxScript(modRoot: string): Finding[] {
     const cleaned = stripLineComments(text);
     const bal = checkBraceQuoteBalance(cleaned);
     if (!bal.ok && bal.message)
-      findings.push({ severity: "error", rel, message: bal.message });
+      findings.push({ severity: bal.severity ?? "error", rel, message: bal.message });
     for (const f of checkOverrideKeywords(cleaned)) {
       // Keep the severity that checkOverrideKeywords reports. A nested keyword is a warn, not an error.
       findings.push({ severity: f.severity ?? "error", rel, message: f.message });

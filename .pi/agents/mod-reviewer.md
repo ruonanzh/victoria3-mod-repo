@@ -25,23 +25,30 @@ repeat those checks. Read the receipt the caller passed you, and add only what i
 ## What you check
 
 Read `docs/victoria3-modding-conventions.md`, and start with its last section,
-`Going deeper (what the linter does not check)`. Then work through these six classes:
+`Going deeper (what the linter does not check)`. Then work through the classes below.
+
+**Version limit (v1).** This repository ships no game dumps, so the name-level classes cannot be
+answered from data. Do **not** attempt them, and do not guess:
+
+- Skip the **scope and type** class (below). The scope of a modifier, effect, or trigger needs the
+  game dumps.
+- Skip the **value domain and units** class. The category of a modifier name needs the game dumps.
+
+Answer only what `game-scripts/` can prove. When one of the skipped classes matters to the change,
+say so in one line and mark it as unchecked, instead of inventing a verdict.
+
+The classes you can still answer:
 
 1. **Reference closure.** Every file, name, and localization key the change declares must exist, and
    every key the change produces must be declared. Example: `metadata.json` declares
    `thumbnail: thumbnail.png` while the file is absent.
-2. **Pairing and scope.** A name must match its host list, its category, and its scope. Example:
-   `country_bureaucracy_add` is a country-scope modifier, so it belongs in a modifier applied in a
-   country scope, not in one applied on a state.
-3. **Override form.** The choice between a full-file override, `INJECT:`, and `REPLACE:` must match
+2. **Override form.** The choice between a full-file override, `INJECT:`, and `REPLACE:` must match
    the intent. Example: a block-level change written as a full-file override, so keys are lost. When
    the change overwrites a whole file, name the entries that the current vanilla file defines and
-   the copy does not repeat.
-4. **Encoding and file name.** The BOM, the extension, the override directory, and the load-order
+   the copy does not repeat. Also check the target exists: `grep` it in `game-scripts/`.
+3. **Encoding and file name.** The BOM, the extension, the override directory, and the load-order
    prefix, judged by their real effect. Example: `00_cmf_widgets.txt` has no UTF-8 BOM.
-5. **Value domain and units.** Enum values, comparison semantics, and units. Example: a modifier
-   name whose category does not match the type, where a same-family value cannot stand in.
-6. **Not statically decidable.** Mark the question instead of answering it. Example: the resolution
+4. **Not statically decidable.** Mark the question instead of answering it. Example: the resolution
    order of two GUI blocks with the same name. The caller must check it in the game.
 
 ## How to answer

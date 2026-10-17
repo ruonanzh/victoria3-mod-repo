@@ -6,7 +6,7 @@
  * (`.pi/extensions/mod-lint.ts`): errors block saving, warnings do not.
  */
 const TEXT_FIELDS = ["name", "id", "version", "supported_game_version", "short_description", "thumbnail", "game_id"];
-const STANDARD_FIELDS = ["name", "id", "version", "supported_game_version", "short_description", "tags"];
+const STANDARD_FIELDS = ["name", "id", "version", "supported_game_version", "short_description", "tags", "game_custom_data"];
 const SEMVER_RE = /^\d+\.\d+(\.\d+)?$/;
 
 let writable = false;
@@ -40,7 +40,7 @@ function settle(requestId, value) {
 function validate(value) {
   const errors = [];
   const warnings = [];
-  if (!String(value.id || "").trim()) errors.push("id must be a non-empty string");
+  if (!String(value.id || "").trim()) warnings.push("id is empty (Steam fills it on upload; a unique id is recommended)");
   if (typeof value.version === "string" && value.version !== "" && !SEMVER_RE.test(value.version)) {
     errors.push(`version '${value.version}' is not semver x.x or x.x.x`);
   }
@@ -67,6 +67,9 @@ function splitTags(raw) {
 function readForm() {
   const next = { ...model };
   for (const field of TEXT_FIELDS) next[field] = $(`f-${field}`).value;
+  // An empty game_id must not be written back as `"game_id": ""`. The field is either a real value
+  // or absent; the game reads "victoria3" as the safety catch.
+  if (!String(next.game_id ?? "").trim()) delete next.game_id;
   next.tags = splitTags($("f-tags").value);
   // game_custom_data stays an object: the form edits only the one key that matters in play, and
   // keeps every other key (replace_paths, …) exactly as the file had it.

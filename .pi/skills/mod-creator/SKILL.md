@@ -98,6 +98,7 @@ Skip this step when the task only changes values inside an existing block.
 | `version` | `x.x` or `x.x.x`, two or three parts. |
 | `supported_game_version` | A patch-level wildcard, for example `1.13.*`. An exact version such as `1.0.4` goes stale: this game updates its minor version often, and the game then flags the mod outdated. A loose `1.*` is a WARN. |
 | `short_description` | A one-line summary. The field is **`short_description`**, not `description`. |
+| `game_id` | `"victoria3"`. The launcher uses it to refuse a mod built for another game. An empty or absent value is a WARN. |
 | `tags` | An array of strings. The wiki documents a maximum of 5; real Workshop mods do exceed it and still load, so the linter does not enforce the count. |
 | `thumbnail` | `"thumbnail.png"`, optional. The field is **`thumbnail`**, not `picture`. |
 | `relationships` | `[]`, optional. |
@@ -111,10 +112,15 @@ Skip this step when the task only changes values inside an existing block.
   "supported_game_version": "1.13.*",
   "short_description": "Adjusts expensive child education costs.",
   "tags": ["Gameplay", "Balance"],
+  "thumbnail": "thumbnail.png",
   "relationships": [],
+  "game_id": "victoria3",
   "game_custom_data": { "multiplayer_synchronized": true }
 }
 ```
+
+The mod root also holds `thumbnail.png` (the Steam Workshop image); `.metadata/thumbnail.png` is the
+launcher image. Both are optional, but shipping neither is a WARN.
 
 ## Localization YAML
 
@@ -181,8 +187,11 @@ vanilla folder, use `game_custom_data.replace_paths`. See the conventions docume
   after the files in the parent directory.
 - Prefix idioms: `00_` forces an early load, and `zz_`, `98_`, or `99_` forces a late load, so an
   override wins.
-- **GUI exception.** A `type` or `template` clash across mods resolves by **mod load order**, which
-  is the playlist position, and not by filename.
+- **GUI and events are the exception: the FIRST loaded definition wins.** A `type` or `template`
+  clash across mods is decided by **mod load order** (the playlist position), not by filename, and a
+  later mod **cannot** overwrite an earlier one. The same holds for `events`. So a late `zz_`
+  prefix does **not** win a GUI `type` or `template`; it loses. To replace one of those, you must be
+  the mod that loads first, and a full-file overwrite is the only reliable route.
 - The mod directory name is `lower_snake_case`. Do not leave scratch files in the mod directory:
   `temp_*`, `_tmp_*`, and editor backups.
 
@@ -236,15 +245,15 @@ A mod can also add its own content to one of the game's own data folders. The co
 | production methods | `common/production_methods/` (with `common/production_method_groups/`) | (see the vanilla files) |
 | buildings | `common/buildings/` (with `common/building_groups/`) | (see the vanilla files) |
 | goods | `common/goods/` | (see the vanilla files) |
-| technologies | `common/technology/` | (see the vanilla files) |
+| technologies | `common/technology/technologies/` (a container folder; `eras/` sits beside it) | (see the vanilla files) |
 | institutions | `common/institutions/` | (see the vanilla files) |
 | ideologies | `common/ideologies/` | (see the vanilla files) |
 | interest groups | `common/interest_groups/` | (see the vanilla files) |
 | modifier type definitions | `common/modifier_type_definitions/` | (see the vanilla files) |
 
-Most of these folders ship a `readme.txt` or a `.info` file that lists the fields. Read that file
-before you write the block. When a task only changes values inside an existing block, there is no new
-definition to place.
+A few of these folders ship a `readme.md` that lists the fields (`common/laws/` does). Victoria 3
+ships far fewer of them than you might expect: read one vanilla file in the folder instead. When a
+task only changes values inside an existing block, there is no new definition to place.
 
 ## Semantic lookup path
 
