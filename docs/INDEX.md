@@ -79,5 +79,5 @@ a controlled search for that one gap beats wandering through the whole catalogue
 |------|------------------------|
 | [`game.md`](game.md) | The game overview, the game systems, and the mod loading mechanics. |
 | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) | The reason behind the override, load-order, localization, and metadata rules. |
-| [`writing-standard.md`](writing-standard.md) | The writing rule for every English string that reaches an agent: terms, sentence limits, symbols, measured values. |
+| The writing standard | Not shipped in this repository. § Writing rule in [`AGENTS.md`](../AGENTS.md) holds the four rules that apply to the text here. The full file, with the term list and the measured values, is `docs/eu5-harness/v3-writing-standard.md` in the design repository. |
 | [`mod-wiki/INDEX.md`](mod-wiki/INDEX.md) | The mod API reference: 69 wiki pages. Start there for a mechanism, an effect, a trigger, or a folder's rules. Its [`SOURCE.md`](mod-wiki/SOURCE.md) records the snapshot and the CC BY-SA license. |

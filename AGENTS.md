@@ -36,17 +36,22 @@ These are fixed facts about this machine and this workspace. They prevent wasted
 
 ## Writing rule
 
-Every English string that reaches an agent follows [`docs/writing-standard.md`](docs/writing-standard.md).
-Read it before you edit a tool description, a `content` message, a SKILL, `AGENTS.md`, or a page
-under `docs/`. It fixes the term list, the sentence limits, and the symbol ban.
+Every English string that reaches an agent follows one standard. The full file is not shipped in
+this repository. It is `docs/eu5-harness/v3-writing-standard.md` in the design repository. Four of
+its rules matter most here:
+
+1. One word has one meaning. Use the term list instead of a synonym.
+2. A step sentence holds at most 20 words, and a description holds at most 25.
+3. Do not use a semicolon. Write two sentences.
+4. Do not use an arrow, an emoji, or "etc." to carry meaning.
 
 The pages under `docs/mod-wiki/` are a wiki snapshot under CC BY-SA 3.0. Do not edit them. Fix the
 text that points at them instead, or refresh the snapshot as `docs/mod-wiki/SOURCE.md` describes.
 
 ## Directory map
 
-- `docs/` — the knowledge layer. Start at [`docs/INDEX.md`](docs/INDEX.md) for the map, and read
-  [`docs/writing-standard.md`](docs/writing-standard.md) before you change any English text there.
+- `docs/` — the knowledge layer. Start at [`docs/INDEX.md`](docs/INDEX.md) for the map. The writing
+  rule for any English text there is in this file, under "Writing rule".
   The modding conventions live **only** in
   [`docs/victoria3-modding-conventions.md`](docs/victoria3-modding-conventions.md). They cover override,
   load order, localization, and metadata. [`docs/mod-wiki/`](docs/mod-wiki/INDEX.md) is a 69-page
