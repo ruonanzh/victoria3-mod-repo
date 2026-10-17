@@ -248,7 +248,7 @@ When debug mode is activated, some tooltips (especially on the map) will show de
 | nosupportloss | Prevent countries from losing war support |
 | noshortages | Prevents penalties for supply shortages in buildings |
 | observe | start observing the game |
-| own [province id/state region tag] [country tag] | Change the owner of specified province or state region. The state region tags can be found in the [list of state regions](https://vic3.paradoxwikis.com/List_of_state_regions) |
+| own [province id/state region tag] [country tag] | Change the owner of specified province or state region. The state region tags can be found in the [list of state regions](./List of state regions.md) |
 | particleeditor | Particle Node Editor |
 | permitmarginalizedingovernment | toggles the cheat mode permitmarginalizedingovernment |
 | pops\_account\_disconnect\_steam | Disconnect Paradox account from Steam |
@@ -361,7 +361,7 @@ When debug mode is activated, some tooltips (especially on the map) will show de
 
 | Interface | [Interface](./Interface modding.md) • [GUI script](./GUI script.md) • [Localization](./Localization.md) • [Customizable localization](./Localization.md#Customizable_Localization) • [Script localization](./Script localization.md) |
 
-| Graphics | [3D Models](./Model modding.md) • [Event images](https://vic3.paradoxwikis.com/Event_images) • [Graphical Assets](./Graphical asset modding.md) • Fonts • [Flags](./Flag modding.md) |
+| Graphics | [3D Models](./Model modding.md) • [Event images](./Event images.md) • [Graphical Assets](./Graphical asset modding.md) • Fonts • [Flags](./Flag modding.md) |
 
 | Audio | Music • [Sound](./Sound modding.md) |
 

@@ -124,7 +124,7 @@ Most events use a fixed localization, but you can give events dynamic text by us
 While the instruction is called `triggered_desc`, it works the same for the `title` and `flavor`. You have as many of these blocks as you like. If multiple `triggered_desc` blocks are valid, they are all displayed in the order they are listed in the event file; alternatively, any number of `triggered_desc` can be wrapped with a `first_valid` or `random_valid` block. These select only a single contained `triggered_desc`, either the first one to pass its triggers or a random one that passes its triggers.
 
 ### Event image
-*See also: [List of event images](https://vic3.paradoxwikis.com/Event_images)*
+*See also: [List of event images](./Event images.md)*
 
 There are two types of event images: videos and textures. Videos should be a .bk2 (Bink Video) file and textures should be a .dds (DirectDraw Surface) file.
 
@@ -564,7 +564,7 @@ temp_event.123 = {
 
 | Interface | [Interface](./Interface modding.md) • [GUI script](./GUI script.md) • [Localization](./Localization.md) • [Customizable localization](./Localization.md#Customizable_Localization) • [Script localization](./Script localization.md) |
 
-| Graphics | [3D Models](./Model modding.md) • [Event images](https://vic3.paradoxwikis.com/Event_images) • [Graphical Assets](./Graphical asset modding.md) • Fonts • [Flags](./Flag modding.md) |
+| Graphics | [3D Models](./Model modding.md) • [Event images](./Event images.md) • [Graphical Assets](./Graphical asset modding.md) • Fonts • [Flags](./Flag modding.md) |
 
 | Audio | Music • [Sound](./Sound modding.md) |
 

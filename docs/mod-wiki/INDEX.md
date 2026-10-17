@@ -1,7 +1,7 @@
 # Victoria 3 mod API reference (mod-wiki)
 
-A curated snapshot of the Victoria 3 wiki: **63 pages**, the modding set plus the core scripting
-reference. Load a page only when the task needs it.
+A curated snapshot of the Victoria 3 wiki: **69 pages**, the modding set plus the core scripting
+reference and the reference lists those pages point at. Load a page only when the task needs it.
 
 - Source, snapshot date, and license: [`SOURCE.md`](SOURCE.md).
 - The overall docs map: [`../INDEX.md`](../INDEX.md).
@@ -30,10 +30,12 @@ links to pages outside the set point at `vic3.paradoxwikis.com` so they still wo
 | [`Event target.md`](Event target.md) | Event targets: input and output scopes. |
 | [`Modifier.md`](Modifier.md) | Modifiers as script objects. |
 | [`Modifier types.md`](Modifier types.md) | The modifier type list and their categories. |
+| [`List of culture modifier types.md`](List of culture modifier types.md) | The culture- and religion-derived modifier type names. |
 | [`On action.md`](On action.md) | On-action hooks, and what a mod may append to them. |
 | [`Defines.md`](Defines.md) | Every define, grouped by category. |
 | [`Variable.md`](Variable.md) | Script variables. |
 | [`Script value.md`](Script value.md) | Script values. |
+| [`List of example script values.md`](List of example script values.md) | Worked script-value examples from vanilla. |
 | [`Macro.md`](Macro.md) | Script macros. |
 | [`Scripted gui.md`](Scripted gui.md) | Scripted GUIs. |
 | [`GUI script.md`](GUI script.md) | The GUI format and its containers. |
@@ -56,6 +58,7 @@ links to pages outside the set point at `vic3.paradoxwikis.com` so they still wo
 | [`Decree modding.md`](Decree modding.md) | Decrees. |
 | [`Diplomacy modding.md`](Diplomacy modding.md) | Diplomatic actions and plays. |
 | [`Event modding.md`](Event modding.md) | Events, and the first-loaded-wins rule. |
+| [`Event images.md`](Event images.md) | The event image assets, and how an event names one. |
 | [`Flag modding.md`](Flag modding.md) | Flags and coat-of-arms pieces. |
 | [`Geographic region modding.md`](Geographic region modding.md) | Geographic regions. |
 | [`Goods.md`](Goods.md) | Goods, and what consumes them. |
@@ -87,3 +90,17 @@ links to pages outside the set point at `vic3.paradoxwikis.com` so they still wo
 | [`Mod translation.md`](Mod translation.md) | Translating a mod's localization. |
 | [`New country modding.md`](New country modding.md) | A worked guide to adding a country. |
 | [`Save-game editing.md`](Save-game editing.md) | Editing a save game. |
+
+## Reference lists
+
+The wiki's own lists of what exists in vanilla. Use them to pick a real name before you write a
+block; `game-scripts/` is still the authority when the two disagree.
+
+| Page | Lists |
+|---|---|
+| [`List of buildings.md`](List of buildings.md) | Every building and its group. |
+| [`List of production methods.md`](List of production methods.md) | Every production method and the building that uses it. |
+| [`List of state regions.md`](List of state regions.md) | Every state region and its states. |
+| [`List of culture modifier types.md`](List of culture modifier types.md) | The culture- and religion-derived modifier type names. |
+| [`List of example script values.md`](List of example script values.md) | Worked script-value examples. |
+| [`List of GUI script functions.md`](List of GUI script functions.md) | The GUI datamodel functions. |

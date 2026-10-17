@@ -207,7 +207,7 @@ The following defined object-based modifier types are not included in the table 
 - `state_$Culture$_standard_of_living_add`
 - `state_$Religion$_standard_of_living_add`
 
-These types are exhaustively defined in the base game and can be seen at [List of culture modifier types](https://vic3.paradoxwikis.com/List_of_culture_modifier_types)
+These types are exhaustively defined in the base game and can be seen at [List of culture modifier types](./List of culture modifier types.md)
 
 List of modifier types
 
@@ -1615,7 +1615,7 @@ List of modifier types
 
 | Interface | [Interface](./Interface modding.md) • [GUI script](./GUI script.md) • [Localization](./Localization.md) • [Customizable localization](./Localization.md#Customizable_Localization) • [Script localization](./Script localization.md) |
 
-| Graphics | [3D Models](./Model modding.md) • [Event images](https://vic3.paradoxwikis.com/Event_images) • [Graphical Assets](./Graphical asset modding.md) • Fonts • [Flags](./Flag modding.md) |
+| Graphics | [3D Models](./Model modding.md) • [Event images](./Event images.md) • [Graphical Assets](./Graphical asset modding.md) • Fonts • [Flags](./Flag modding.md) |
 
 | Audio | Music • [Sound](./Sound modding.md) |
 

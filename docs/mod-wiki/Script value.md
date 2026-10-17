@@ -245,7 +245,7 @@ coal_synergy = {
 In this example code, if you have more coal mines than steel mills, the value is equal to the number of coal mines × number of steel mills. Otherwise, the value is equal to the number of coal mines + number of steel mills.
 
 ## List of example script values
-*Main article: [List of example script values](https://vic3.paradoxwikis.com/List_of_example_script_values)*
+*Main article: [List of example script values](./List of example script values.md)*
 
 This page holds examples of script values that may be useful or interesting to use or learn from. Feel free to add your own.
 
@@ -292,7 +292,7 @@ When using an @ value outside a formula, it must be called with the @; for examp
 
 | Interface | [Interface](./Interface modding.md) • [GUI script](./GUI script.md) • [Localization](./Localization.md) • [Customizable localization](./Localization.md#Customizable_Localization) • [Script localization](./Script localization.md) |
 
-| Graphics | [3D Models](./Model modding.md) • [Event images](https://vic3.paradoxwikis.com/Event_images) • [Graphical Assets](./Graphical asset modding.md) • Fonts • [Flags](./Flag modding.md) |
+| Graphics | [3D Models](./Model modding.md) • [Event images](./Event images.md) • [Graphical Assets](./Graphical asset modding.md) • Fonts • [Flags](./Flag modding.md) |
 
 | Audio | Music • [Sound](./Sound modding.md) |
 

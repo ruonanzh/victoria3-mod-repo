@@ -21,17 +21,23 @@ and its bound directory gate those actions.
   create files or prepare the environment, unless the player explicitly asks about their
   environment. Preparing the environment means locating paths and mirroring the scripts into
   `game-scripts/`.
-- **Writing or modifying the mod.** Do these steps in this order.
+- **Writing or modifying the mod.** When the request is about a game system, start with the wiki.
+  Compare the request with the routing table at the top of `docs/INDEX.md`, take the pages that row
+  names (usually one mechanism page, plus one or two reference pages that you grep rather than read
+  whole), and read them. A request that only changes a value skips this step. Then do these steps in
+  this order.
   1. **Research the real values first.** Victoria 3 is pure PDXScript, with no self-describing API and no
      framework. Run `sync_game_scripts` to load the modding context into `game-scripts/`. Then grep
      that directory carefully to pin down the real vanilla values and their connections: which
      goods, buildings, and modifiers exist, and what consumes or produces what. Do not guess from
      names alone. Three hard ordering rules:
-     1. For a player-worded feature request, name the question shape first. For a lookup of a name
-        that you already know, grep vanilla yourself, within calls 2 to 4:
-        `grep -rln <keyword> game-scripts/`. For a survey of what vanilla already has for a feature,
-        dispatch `entry-scout` and read its first candidate. The `## Survey before you research`
-        section below has the details.
+     1. Locate the entry and the real names. `entry-scout` and your own grep are peers, and
+        `entry-scout` is the default: it runs while you keep working, and its searches stay in the
+        child session, so your context holds answers. Dispatch one scout per independent part, in the
+        same turn, when the request has two or three parts. Grep `game-scripts/` yourself when you
+        already hold the exact name: `grep -rln <keyword> game-scripts/` settles it in one or two
+        calls, and a child agent costs more than that. Read the scout's first candidate yourself
+        before you write. The `## Survey or lookup` section below has the details.
      2. Read in this fixed order: `docs/victoria3-modding-conventions.md` (the single source of truth),
         then locate 1 or 2 reference mods of the same kind, then write.
      3. Decide the screen first, then research how to mount on that one screen. Where a mechanism
@@ -57,19 +63,21 @@ and its bound directory gate those actions.
   `fix-trade-companies`. It must not be a Windows reserved device name: `con`, `prn`, `aux`,
   `nul`, `com1` to `com9`, and `lpt1` to `lpt9`.
 
-## Survey before you research
+## Survey or lookup
 
-A survey answers "what does vanilla already have for this feature?". A lookup answers "where is this
-name defined?". The two questions need different work.
+Both questions are research, and both have the same two ways to run: `entry-scout`, or your own
+grep. They are peers. **`entry-scout` is the default**, for two reasons:
 
-For a survey, try `entry-scout` first. It runs in parallel, one per question, and its greps stay in
-the child session, so your context holds the answers, not the searches. Its answer is a candidate
-list, not a decision: read its first candidate yourself before you write.
+- It runs while you keep working, so a request with two or three independent parts fans out at once.
+- Its greps stay in the child session, so your context holds the answers instead of the search output.
 
-You choose. Run a lookup yourself when you know the name: `grep -rln <keyword> game-scripts/` finds it
-within a few calls.
+Grep yourself when you already hold the exact name. One or two calls settle it, and a child agent
+costs more than that.
 
-When the change has two or three independent parts, send all the surveys at once, one per part.
+A survey asks "what does vanilla already have for this feature?". A lookup asks "where is this name
+defined?". Route both through the same choice.
+
+An answer is a candidate list, not a decision: read the first candidate yourself before you write.
 
 Skip this step when the task only changes values inside an existing block.
 
@@ -263,7 +271,7 @@ For the question "does X exist, and what is the vanilla value?", follow the look
 - Exact vanilla object definitions, field values, INJECT targets, and loc keys: `game-scripts/game/game/`,
   which `sync_game_scripts` generates (it mirrors the install root, so the game's own `game/` lands
   one level deeper). Grep that mirror, not the game directory.
-- Mechanics concepts and the mod API: `docs/mod-wiki/` (a 63-page snapshot of the wiki; start at its
+- Mechanics concepts and the mod API: `docs/mod-wiki/` (a 69-page snapshot of the wiki; start at its
   `INDEX.md`), or the live wiki `vic3.paradoxwikis.com` when you need the newest wording. The modding
   conventions and the reason behind them: `docs/victoria3-modding-conventions.md`.
 

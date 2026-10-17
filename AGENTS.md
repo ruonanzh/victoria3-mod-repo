@@ -25,9 +25,11 @@ These are fixed facts about this machine and this workspace. They prevent wasted
   Read it from `get_game_info`, as section 5 of `docs/victoria3-modding-conventions.md` explains.
 - **Two read-only subagents ship with this repository.** `.pi/settings.json` declares the vendored
   `pi-subagents` package at `.pi/vendor/pi-subagents/`, so the `subagent` tool is available in a
-  trusted project. Prefer `entry-scout` over your own grep of `game-scripts/`. It runs in parallel,
-  one per question, and its searches stay in the child session, so your context holds answers, not
-  greps. Read its first candidate yourself. `mod-reviewer` checks the soft rules that `validate_mod`
+  trusted project. `entry-scout` and your own grep are peers, and `entry-scout` is the default: it
+  runs in parallel, one per question, and its searches stay in the child session, so your context
+  holds answers, not greps. Read its first candidate yourself. For a lookup of a name you already
+  hold, `grep -rln <keyword> game-scripts/` settles it in one or two calls.
+  `mod-reviewer` checks the soft rules that `validate_mod`
   cannot see, before you install. Neither writes, so you apply every change. When you cannot
   dispatch, run the search yourself, and work through the last section of
   `docs/victoria3-modding-conventions.md` by hand.
@@ -37,7 +39,7 @@ These are fixed facts about this machine and this workspace. They prevent wasted
 - `docs/` — the knowledge layer. Start at [`docs/INDEX.md`](docs/INDEX.md) for the map.
   The modding conventions live **only** in
   [`docs/victoria3-modding-conventions.md`](docs/victoria3-modding-conventions.md). They cover override,
-  load order, localization, and metadata. [`docs/mod-wiki/`](docs/mod-wiki/INDEX.md) is a 63-page
+  load order, localization, and metadata. [`docs/mod-wiki/`](docs/mod-wiki/INDEX.md) is a 69-page
   snapshot of the wiki's modding documentation; read it for a mechanism, an effect, or a folder's rules,
   and use it only on demand. It is CC BY-SA 3.0; see its `SOURCE.md`.
 - `game-scripts/` — the vanilla scripts. `sync_game_scripts` copies them and the
