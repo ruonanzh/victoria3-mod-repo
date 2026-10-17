@@ -18,8 +18,8 @@ import { join, relative, resolve, sep, basename } from "node:path";
  *     mods are flat and mirror the game's game/ directory.
  *     The tool checks the UTF-8 encoding, the `{` and `}` balance, and the `"` balance, with
  *     awareness of `#` comments and multiline strings. It also checks that the INJECT: and REPLACE:
- *     family starts only at the entry level (the file top level in most folders, one level in inside
- *     a container folder), and that the folder is gated for the keyword at all.
+ *     family sits at the file top level (the wiki allows no other level, and no real mod nests one),
+ *     and that the folder is gated for the keyword at all.
  *
  * The tool is read-only, and it has no third-party dependency. Its content output uses PASS or FAIL with NEXT,
  * in ASCII English, and its details hold only ok, errors, and warnings.
@@ -626,8 +626,8 @@ function checkBraceQuoteBalance(cleaned: string): BalanceResult {
 /**
  * A keyword of the INJECT: or REPLACE: family must sit directly before a *database entry*, in the
  * form `KEYWORD:key = {`. The tool scans depth with awareness of comments and strings. A keyword
- * nested below the entry level is a WARN (container folders legitimately nest entries one level in -
- * e.g. `genes/accessory_genes` - and vanilla itself does so), and a keyword not followed by `key = {`
+ * nested inside another block is an ERROR (the wiki allows the top level only, and 0 of 2,318 real
+ * uses are nested), and a keyword not followed by `key = {`
  * is an ERROR.
  */
 function checkOverrideKeywords(cleaned: string): Finding[] {
@@ -669,18 +669,14 @@ function checkOverrideKeywords(cleaned: string): Finding[] {
     if (m && m.index === 0 && m.groups?.key) {
       const hasKw = !!m.groups.kw;
       if (hasKw && depth > 0) {
-        // Downgraded from error to warn. The rule is "directly before a database entry", and the
-        // entry level depends on the folder. Most common/ folders put entries at the file top level,
-        // and a container folder nests them one level in, for example genes/ nests inside
-        // `accessory_genes = { <entry> = { } }`. Vanilla writes it that way itself: all 6
-        // A container folder (for example common/genes/, where the entries sit inside
-        // accessory_genes) puts the entry one level in. Victoria 3 vanilla does not itself use
-        // INJECT_OR_CREATE in common/genes/, so treat "one level in" as allowed, not as proven by
-        // vanilla.
+        // The wiki allows the keyword at the file top level only, and shows a nested example that
+        // does not work. The corpus agrees: Victoria 3 vanilla uses the keywords 0 times, and all
+        // 2,318 uses in 10 downloaded Workshop mods sit at the top level. A nested keyword is
+        // therefore a silent no-op, which is worse than an error.
         findings.push({
-          severity: "warn",
+          severity: "error",
           rel: "",
-          message: `line ${line}: '${m.groups.kw}' override keyword is nested (depth ${depth}). It must sit directly before a *database entry* - that is the file's top level in most common/ folders, but in container folders (e.g. genes/accessory_genes) the entry is one level in, and vanilla does that too. Confirm before treating as an error.`,
+          message: `line ${line}: ${m.groups.kw} is nested (depth ${depth}) and has no effect. Victoria 3 applies INJECT:/REPLACE: at the file top level only. Move the whole object to the top level, or overwrite the whole file.`,
         });
       }
       // Skip the whole `[KEYWORD:]key = {` up to the `{`, so the next round counts that brace.

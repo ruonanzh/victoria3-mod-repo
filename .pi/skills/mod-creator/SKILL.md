@@ -147,8 +147,8 @@ The `.txt`, `.gui`, `.gfx`, and `.asset` files live under the mod root (flat, mi
   line comment outside a string, and `#` is literal inside a string. A GUI string can span several
   lines.
 - The `INJECT:` and `REPLACE:` keywords go at the **entry level**, in the form
-  `KEYWORD:key = {`. That is the file's top level in most `common/` folders; in a container folder
-  (for example `common/genes/`) the entry is one level in, and vanilla writes it that way itself.
+  `KEYWORD:key = {`, at the **file top level** only. The wiki allows no other level, and no real mod
+  nests one. A container folder such as `common/genes/` can be replaced only as a whole container.
 
 ## Overriding vanilla
 
@@ -222,8 +222,8 @@ The `FAIL` messages below are the common ones. The text after each one is the fi
   on the same line.
 - `FAIL: unbalanced { }` or `unbalanced "`: fix the brace balance or add the missing closing quote.
 - `WARN: INJECT:/REPLACE: override keyword is nested`: the keyword is not at the entry level. Move
-  it out, unless the folder is a container folder (for example `common/genes/`), where one level in
-  is correct. This is a warning, and the game does not reject it.
+  it to the file top level. A nested keyword has no effect in Victoria 3, which is why this is an
+  error: a container folder such as `common/genes/` can only be replaced as a whole.
 
 ## Entry mechanisms and data kinds (what to add, and where it lives)
 

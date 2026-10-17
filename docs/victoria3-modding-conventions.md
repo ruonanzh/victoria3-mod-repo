@@ -36,11 +36,16 @@ Victoria 3 loads the mod files on top of the vanilla files. Three override mecha
   only outside keyword folders.
 - **`INJECT:` / `REPLACE:` keywords:** most `common/` folders (and some others) require
   a keyword to modify an existing object without a full file overwrite. Implicit replace does **not**
-  work in these folders. Keywords must sit **directly before a database entry** — that is the file's
-  **top level** in most `common/` folders, but in *container* folders the entry is **one level in**, e.g.
-  `genes/accessory_genes = { <entry> = { … } }`, where vanilla itself writes
-  `INJECT_OR_CREATE:<entry> = { … }` (see `common/genes/*.txt` in the vanilla scripts).
-  Injecting into a sub-block **below the entry level** is still invalid:
+  work in these folders. Keywords must sit at the **top level of the file**, directly before a database
+  entry. The wiki states the rule, and gives a nested example that does **not** work (an `INJECT:`
+  inside another `INJECT:`). The corpus agrees: Victoria 3 vanilla uses the keywords **0 times**, and
+  2,318 uses across 10 downloaded Workshop mods are **all** at the top level, with none nested. A
+  container folder such as `common/genes/` (`color_genes = { hair_color = { … } }`) can therefore be
+  replaced only as a whole container, not entry by entry:
+
+  ```txt
+  REPLACE:color_genes = { … }        # the whole container
+  ```
 
   | Keyword | Effect |
   | --- | --- |
@@ -60,8 +65,8 @@ Victoria 3 loads the mod files on top of the vanilla files. Three override mecha
 
 **Rule of thumb:** prefer additive new objects. Use `INJECT:`/`REPLACE:` (or the `TRY_`/`_OR_CREATE`
 variants) for surgical changes in keyword folders. Reserve full-file overwrite for when you must
-change most of a file. `validate_mod` flags a keyword nested below the entry level as a **WARN** (not a
-hard error — container folders legitimately nest entries one level in, and vanilla does so). Whether a
+change most of a file. `validate_mod` treats a keyword nested inside another block as an **ERROR**,
+because the game ignores it: the wiki documents top-level-only, and no real mod nests one. Whether a
 top-level object redefines a vanilla name **without** a keyword is a soft rule the agent checks with
 `grep`/`read` against `game-scripts/`.
 
@@ -74,9 +79,12 @@ else falls back to file overwrite or implicit replace. Folder-specific exception
   overwrite them.
 - **`defines`**: per-entry merge — `NSomeCategory = { A_SINGLE_DEFINE = X }` replaces that one define,
   not the whole category.
-- **`scripted_effects` / `scripted_triggers` / `script_values` / `scripted_rules`**: **REPLACE only**;
-  an `INJECT:` silently acts as `REPLACE:`.
-- **`genes`**: `INJECT:` works one level in (second-level entries inside the container).
+- **`scripted_effects` / `scripted_triggers` / `scripted_rules`**: **REPLACE only**; an `INJECT:`
+  silently acts as `REPLACE:`. (`script_values` is in the gated list but carries no such note.)
+- **`genes`**: a container folder. Only a whole-container replace works; there is no per-gene
+  injection, because the keyword cannot go below the top level.
+- **`on_actions`**: a mod may append `on_actions`, `events`, and `random_events` to an existing hook,
+  but it **cannot** replace that hook's `trigger` or `effect` block without overwriting the whole file.
 - **`dna_data`**: duplicates are produced, never overwritten.
 
 **Whole-path replacement.** To drop a vanilla folder entirely, list it in
