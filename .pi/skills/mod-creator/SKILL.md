@@ -98,7 +98,7 @@ Skip this step when the task only changes values inside an existing block.
 | `version` | `x.x` or `x.x.x`, two or three parts. |
 | `supported_game_version` | A patch-level wildcard, for example `1.13.*`. An exact version such as `1.0.4` goes stale: this game updates its minor version often, and the game then flags the mod outdated. A loose `1.*` is a WARN. |
 | `short_description` | A one-line summary. The field is **`short_description`**, not `description`. |
-| `tags` | An array of strings. |
+| `tags` | An array of strings. The wiki allows at most 5, to prevent tag spamming. |
 | `thumbnail` | `"thumbnail.png"`, optional. The field is **`thumbnail`**, not `picture`. |
 | `relationships` | `[]`, optional. |
 | `game_custom_data` | `{"multiplayer_synchronized": true}` normally, plus an optional `replace_paths` array. |

@@ -384,6 +384,15 @@ export default function (pi: ExtensionAPI) {
           `\nNOTE: the same mod (id ${identity.name}) is also installed as ${duplicateDir}. This tool did not touch that copy. Tell the player which one to enable, and delete the other manually if it is stale.`,
         );
       }
+      // The wiki states that Victoria 3 cannot load a mod whose file path contains non-ASCII
+      // characters. The workspace name can be clean while the Documents path is not (a Chinese
+      // Windows user name is the common case), so check the real install path, not the workspace one.
+      if (/[^\x00-\x7f]/.test(installDir)) {
+        notes.push(
+          `\nWARN: the install path contains non-ASCII characters (${installDir}). The Victoria 3 wiki states that the game cannot load a mod from such a path. Tell the player, and offer to move the mod directory by editing "gameDataPath" in the game's launcher-settings.json.`,
+        );
+      }
+      // Build this AFTER every note above, or a late note is silently dropped.
       const extraNotes = notes.join("");
       const note = renamed
         ? `\nNOTE: ${modName} was already in use, by ${occupiedBy ? `another mod (${occupiedBy})` : "content this tool did not install"}. ` +

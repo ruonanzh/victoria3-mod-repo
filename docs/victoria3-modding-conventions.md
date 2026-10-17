@@ -149,9 +149,10 @@ Per `Mod_structure`, section "Metadata": every mod **requires** a `metadata.json
 `.metadata` directory, or "the game will error". The documented standard structure is valid JSON
 with `name`, `id`, `version` (`x.x` or `x.x.x`), `supported_game_version` (for example `1.13.*`),
 `short_description`, and `tags`, plus optional `relationships` and `game_custom_data`. The summary
-field is `short_description`, not `description`. The wiki does not document an individual missing
-field as load-fatal, so the linter treats a missing file or invalid JSON as an ERROR, and a missing
-standard field as a WARN.
+field is `short_description`, not `description`. The wiki also documents `game_id` as a standard
+field with the value `victoria3`: it is a safety catch that stops the launcher from loading a mod
+built for another game. The wiki does not document an individual missing field as load-fatal, so the
+linter treats a missing file or invalid JSON as an ERROR, and a missing standard field as a WARN.
 Read `supported_game_version` from the `supportedGameVersion` value of `get_game_info`. Do not do
 binary forensics.
 
@@ -172,6 +173,14 @@ multiplayer-safe), and it may hold a `replace_paths` array (see section 1).
   it is a read-only reference.
 - Do not leave scratch files or backup files under `your_mods/<name>/`. Examples: `temp_*`,
   `_tmp_*`, and editor backups.
+- **The install path must be ASCII.** The wiki states that Victoria 3 "cannot load any mods whose file
+  path includes non-ASCII characters", for example a Windows user name with Chinese characters or
+  accents. The workspace copy is `your_mods/<name>/`, but the launcher reads
+  `<Documents>/Paradox Interactive/Victoria 3/mod/<name>`, so a non-ASCII Documents path breaks the
+  install. `install_mod` warns when it sees one.
+- **The launcher reads the mod directory from the game's own config.** `launcher-settings.json` holds
+  `"gameDataPath": "%USER_DOCUMENTS%/Paradox Interactive/Victoria 3"` and `"modPath": "mod"`, so the
+  mod directory is that path plus `/mod`. A player can move it by editing `gameDataPath`.
 
 ## 7. Choosing an entry mechanism
 
