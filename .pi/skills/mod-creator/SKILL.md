@@ -98,7 +98,7 @@ Skip this step when the task only changes values inside an existing block.
 | `version` | `x.x` or `x.x.x`, two or three parts. |
 | `supported_game_version` | A patch-level wildcard, for example `1.13.*`. An exact version such as `1.0.4` goes stale: this game updates its minor version often, and the game then flags the mod outdated. A loose `1.*` is a WARN. |
 | `short_description` | A one-line summary. The field is **`short_description`**, not `description`. |
-| `tags` | An array of strings. The wiki allows at most 5, to prevent tag spamming. |
+| `tags` | An array of strings. The wiki documents a maximum of 5; real Workshop mods do exceed it and still load, so the linter does not enforce the count. |
 | `thumbnail` | `"thumbnail.png"`, optional. The field is **`thumbnail`**, not `picture`. |
 | `relationships` | `[]`, optional. |
 | `game_custom_data` | `{"multiplayer_synchronized": true}` normally, plus an optional `replace_paths` array. |
@@ -251,8 +251,9 @@ definition to place.
 For the question "does X exist, and what is the vanilla value?", follow the lookup hierarchy in
 [`docs/INDEX.md`](docs/INDEX.md). It is the single authoritative map of which source to use.
 
-- Exact vanilla object definitions, field values, INJECT targets, and loc keys: `game-scripts/game/`,
-  which `sync_game_scripts` generates. Grep that mirror, not the game directory.
+- Exact vanilla object definitions, field values, INJECT targets, and loc keys: `game-scripts/game/game/`,
+  which `sync_game_scripts` generates (it mirrors the install root, so the game's own `game/` lands
+  one level deeper). Grep that mirror, not the game directory.
 - Mechanics concepts and the mod API: `vic3.paradoxwikis.com` (the live wiki). The modding
   conventions and the reason behind them: `docs/victoria3-modding-conventions.md`.
 

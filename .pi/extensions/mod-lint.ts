@@ -40,11 +40,13 @@ const STANDARD_METADATA_FIELDS = [
   "game_custom_data",
   "game_id",
 ];
-// Top-level folders where the INJECT:/REPLACE: family does not apply. `events` and the GUI
-// `type`/`template` definitions are first-loaded-wins, so an override keyword there cannot work.
-// `common/*` is excluded on purpose: most of it is gated, and a partial allowlist would produce
-// false warnings. The full gated list is on the wiki (Mod_compatibility).
-const NON_GATED_TOP_FOLDERS = ["events/", "gui/", "localization/"];
+// Top-level folders where the INJECT:/REPLACE: family is not applied. `events` and the localization
+// keys are not keyword-driven, so an override keyword there cannot work. `gui/` is deliberately NOT
+// listed: a GUI file may define top-level objects that accept the keywords (a real mod uses
+// `REPLACE_OR_CREATE:texticon`), and only the `type`/`template` containers are first-wins.
+// `common/*` is excluded for the same reason: most of it is gated, and a partial allowlist would
+// produce false warnings. The full gated list is on the wiki (Mod_compatibility).
+const NON_GATED_TOP_FOLDERS = ["events/", "localization/"];
 const IMAGE_EXTS = new Set([".png", ".dds", ".jpg", ".jpeg", ".tga"]);
 const SEMVER_RE = /^\d+\.\d+(\.\d+)?$/;
 // A wildcard supported_game_version names no concrete game version, so it is too loose. This table
@@ -57,11 +59,11 @@ const LOOSE_GAME_VERSION_RES = [
   /^\d+\.[xX]$/, // "1.x"   - wildcard patch level, spelled with x
 ];
 const PUA_RE = /[\ue000-\uf8ff]/;
-const LOC_KEY_RE = /^[ \t]*(?<key>[^\s:#][^:]*):(?<ver>\d*)\s*(?<rest>.*?)\s*$/;
+const LOC_KEY_RE = /^[ \t]*(?<key>[^\s:#][^:]*):\s*(?<ver>\d*)\s*(?<rest>.*?)\s*$/;
 const LOC_HEADER_RE = /^\ufeff?\s*l_(?<lang>[a-z_]+):(?<tail>.*)$/;
 const OVERRIDE_KEYWORD_RE = /(?:TRY_)?(?:INJECT|REPLACE)(?:_OR_CREATE)?:/;
 const TOPLEVEL_KEY_RE =
-  /(?<kw>(?:TRY_)?(?:INJECT|REPLACE)(?:_OR_CREATE)?:)?(?<key>[A-Za-z0-9_.\-]+)\s*=\s*\{/;
+  /(?<kw>(?:TRY_)?(?:INJECT|REPLACE)(?:_OR_CREATE)?:)?(?<key>[A-Za-z0-9_.\-]+)\s*=\s*(?<open>\{|[^{\s])/;
 
 type Severity = "error" | "warn";
 interface Finding {
@@ -213,6 +215,10 @@ function checkLocalization(modRoot: string): Finding[] {
       findings.push({ severity: "error", rel, message: "cannot read file" });
       continue;
     }
+    if (raw.length === 0) {
+      findings.push({ severity: "error", rel, message: "empty localization file" });
+      continue;
+    }
     if (!raw.subarray(0, 3).equals(UTF8_BOM)) {
       findings.push({
         severity: "error",
@@ -311,7 +317,7 @@ function checkLocalization(modRoot: string): Finding[] {
         findings.push({
           severity: "error",
           rel,
-          message: `line ${lineNo}: malformed localization line (expected '  key: \"value\"' or '  key:0 \"value\"')`,
+          message: `line ${lineNo}: malformed localization line (expected '  key: \"value\"', '  key:0 \"value\"', or '  key: 0 \"value\"')`,
         });
         continue;
       }
@@ -404,8 +410,16 @@ function checkMetadata(modRoot: string): Finding[] {
   // `testmod` and the community template `[modname].dev` both contain a dot, which proves it.
   // "It equals the directory name, in lower_snake_case" was this repository's own convention. The
   // linter no longer enforces it, and the SKILL suggests it only.
+  // The wiki requires the field; it does not require a value, and 4 of the 10 downloaded Workshop mods
+  // ship an empty one because Steam fills it on upload. An empty id is therefore a warning, not a
+  // reason to reject a real mod. A mod this repository writes should still carry a real id.
   if (!isValidModId(obj.id)) {
-    findings.push({ severity: "error", rel, message: "metadata.id must be a non-empty string" });
+    findings.push({
+      severity: "warn",
+      rel,
+      message:
+        "metadata.id is empty (Steam fills it on upload, so this is not fatal, but a unique id is recommended)",
+    });
   }
   for (const field of STANDARD_METADATA_FIELDS) {
     if (!(field in obj))
@@ -643,13 +657,15 @@ function checkOverrideKeywords(cleaned: string): Finding[] {
       i += m[0].length - 1;
       continue;
     }
-    // The match reached a bare keyword only, so `REPLACE:` is not followed by `key = {`. That is a format error.
+    // The match reached a bare keyword only, so `REPLACE:` is not followed by `key = {` or by a
+    // scalar value. Both forms are legal: `common/script_values/` entries may be a scalar, so a real
+    // mod writes `REPLACE:amenability = 50` (BPM, common/script_values/zz_bpm_negotiation_values.txt).
     const kw = OVERRIDE_KEYWORD_RE.exec(cleaned.slice(i, i + 40));
     if (kw && kw.index === 0) {
       findings.push({
         severity: "error",
         rel: "",
-        message: `line ${line}: malformed override '${kw[0]}' (expected '${kw[0]}key = {')`,
+        message: `line ${line}: malformed override '${kw[0]}' (expected '${kw[0]}key = {' or '${kw[0]}key = <value>')`,
       });
     }
     i += 1;
@@ -697,7 +713,7 @@ function checkPdxScript(modRoot: string): Finding[] {
         severity: "warn",
         rel,
         message:
-          "this folder is not gated for the INJECT:/REPLACE: family, so the keyword does nothing here. `events` and the GUI `type`/`template` definitions are first-loaded-wins; use a full-file overwrite instead.",
+          "this folder is not keyword-driven, so the INJECT:/REPLACE: family does nothing here. `events` is first-loaded-wins; use a full-file overwrite instead.",
       });
     }
   }

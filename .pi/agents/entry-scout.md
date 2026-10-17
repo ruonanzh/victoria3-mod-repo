@@ -31,7 +31,7 @@ When the change list is empty, you propose the list as part of your answer.
 
 Use the layers in this order. Stop when the first layer answers the question.
 
-1. `game-scripts/game/` — the vanilla scripts. This is the strongest evidence for a concrete object,
+1. `game-scripts/game/game/` — the vanilla scripts. This is the strongest evidence for a concrete object,
    an INJECT target, a field value, or a localization key, because the engine already accepts these
    files. v1 has no game dumps, so this is the only authoritative layer for exact names.
 2. `reference/` — the pattern mods (only `example_mod/` in v1).

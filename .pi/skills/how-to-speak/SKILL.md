@@ -21,7 +21,7 @@ overrides them.
    sentence.
 
 2. **A path follows where the file is.** A file **inside the workspace** is written **relative to the
-   workspace root** (`your_mods/ChurchFix/common/buildings/church.txt`): the player opens
+   workspace root** (`your_mods/FoodFix/common/buildings/zz_buildings.txt`): the player opens
    the workspace and finds it. A file **outside the workspace** is written as an **absolute path**
    (`D:\...`): there is no common root, so a relative path would land somewhere else on the player's
    machine. State a path only when the player must open, find or type it (see *Vocabulary*).

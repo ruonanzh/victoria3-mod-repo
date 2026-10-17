@@ -206,7 +206,7 @@ folder it names and read one of the examples in it.
 A mod can also add its own content to one of the game's own data folders, such as scripted effects,
 script values, laws, or pop types. The `mod-creator` skill lists the common ones.
 
-The four families are a **persistent mechanic** (`journal_entries`), a **panel** (`scripted_gui`), an
+The four families are a **persistent mechanic** (`journal_entries`), a **panel** (`scripted_guis`), an
 **action** (`decisions` / `character_interactions`), and **event-driven content** (`events`).
 
 **Decide this before you write any script: does this version need its own panel, or any new entry
