@@ -1,0 +1,5 @@
+zz_example_modifier = {
+    # An additive scripted modifier. Reference it from a law, event, or building with
+    # `add_modifier = zz_example_modifier`. This file only defines the modifier; it changes
+    # nothing on its own, so it is the smallest safe addition.
+}
