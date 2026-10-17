@@ -18,7 +18,8 @@
  *
  * Victoria 3 facts: the install scripts live in `<gameDir>/game/...`. The vanilla copy lives in
  * `game-scripts/game/game/...`, which carries one more `game/` layer. That copy holds vanilla
- * scripts only, and the agent must count it with `find -L`, because `game-scripts` is a symlink.
+ * scripts only, and the agent must count it with `find`, because `game-scripts` is a real directory
+ * copied by `sync_game_scripts`, not a symlink.
  */
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -88,7 +89,7 @@ export default function (pi: ExtensionAPI) {
       const build = typeof state.gameBuild === "string" ? state.gameBuild : null;
       const version = supportedGameVersion(build);
 
-      // The vanilla copy holds the scripts, and `game-scripts` is a symlink, so the agent counts
+      // The vanilla copy holds the scripts, and `game-scripts` is a real copy, so the agent counts
       // it with `find -L`. This check reads one directory entry only.
       const vanillaPresent = existsSync(join(cwd, "game-scripts", "game", "game"));
 

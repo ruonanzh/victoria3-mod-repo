@@ -11,9 +11,11 @@ enforces nothing.
 - The boundaries and the mandatory `validate_mod` step live in [`AGENTS.md`](../AGENTS.md). The
   step-by-step procedure, with the product shapes and the `validate_mod` usage, is in
   [`../.pi/skills/mod-creator/SKILL.md`](../.pi/skills/mod-creator/SKILL.md).
-- v1 ships no game-generated dumps (the `script_docs` / `dump_data_types` console commands produce
-  them, and they are not regenerated yet). For exact semantic names, grep `game-scripts/`, and read
-  [`mod-wiki/`](mod-wiki/INDEX.md) for a mechanism or a definition.
+- v1 ships no game-generated dumps. The player produces them by running `script_docs` (and
+  `dump_data_types`, which the wiki spells `DumpDataTypes`) in a loaded game with debug mode on; the
+  game writes them to `<Documents>/Paradox Interactive/Victoria 3/docs/`. For exact semantic names
+  until then, grep `game-scripts/`, and read [`mod-wiki/`](mod-wiki/INDEX.md) for a mechanism or a
+  definition.
 - A mod is PDXScript text only. The game engine is C++, and it is out of scope. A mod cannot add
   behavior that the engine does not expose.
 
@@ -71,9 +73,9 @@ top-level object redefines a vanilla name **without** a keyword is a soft rule t
 `grep`/`read` against `game-scripts/`.
 
 **Folder gating and special rules (Victoria 3).** The `INJECT:`/`REPLACE:` keywords work only in a
-documented folder list (~130 folders: most `common/*`, some `gfx/*`, `map_data/state_regions`,
-`music`, `notifications`, `modifier_icons`, `gui_animations`, `sound/persistent_objects`). Everything
-else falls back to file overwrite or implicit replace.
+documented list of **122 folders** (most `common/*`, some `gfx/*`, plus `gui_animations`,
+`modifier_icons`, `music`, `notifications`, and `sound/persistent_objects`; see `mod-wiki/Mod
+compatibility.md`). Everything else falls back to file overwrite or implicit replace.
 
 The wiki's `Mod compatibility` page then has an `Exceptions` section. These six are quoted from it:
 
@@ -116,9 +118,9 @@ Per `Mod_files_load_order`, section "File loading order":
   semantically.
   - `00_...` forces an **early** load, for base and framework definitions that others build on.
   - `zz_...`, `98_...`, and `99_...` force a **late** load.
-- **GUI is an exception.** A `type` or `template` definition is **first-loaded-wins** across mods, so
-  a later mod cannot overwrite one. **Filenames have no effect** for GUI. `events` follows the same
-  first-loaded-wins rule.
+- **GUI is an exception.** A `type` or `template` definition is **first-loaded-wins** across mods,
+  so a later mod cannot overwrite one, and the filename order does not decide it. Everything else in
+  the GUI files still loads in ASCII order. `events` follows the same first-loaded-wins rule.
 
 ## 3. Localization (BOM, filename, header, and the override directory)
 
@@ -200,9 +202,12 @@ multiplayer-safe), and it may hold a `replace_paths` array (see section 1).
   accents. The workspace copy is `your_mods/<name>/`, but the launcher reads
   `<Documents>/Paradox Interactive/Victoria 3/mod/<name>`, so a non-ASCII Documents path breaks the
   install. `install_mod` warns when it sees one.
-- **The launcher reads the mod directory from the game's own config.** `launcher-settings.json` holds
+- **The launcher reads the mod directory from the game's own config.**
+  `<install>/launcher/launcher-settings.json` holds
   `"gameDataPath": "%USER_DOCUMENTS%/Paradox Interactive/Victoria 3"` and `"modPath": "mod"`, so the
-  mod directory is that path plus `/mod`. A player can move it by editing `gameDataPath`.
+  mod directory is that path plus `/mod`. A player can move it by editing `gameDataPath`. The wiki
+  snapshot (`mod-wiki/Mod structure.md`) names only `gameDataPath`; `modPath` comes from the installed
+  file itself.
 
 ## 7. Choosing an entry mechanism
 

@@ -728,7 +728,8 @@ function checkPdxScript(modRoot: string): Finding[] {
     if (!bal.ok && bal.message)
       findings.push({ severity: bal.severity ?? "error", rel, message: bal.message });
     for (const f of checkOverrideKeywords(cleaned)) {
-      // Keep the severity that checkOverrideKeywords reports. A nested keyword is a warn, not an error.
+      // Keep the severity that checkOverrideKeywords reports. A nested keyword is an error, because the
+      // game ignores it in silence.
       findings.push({ severity: f.severity ?? "error", rel, message: f.message });
     }
     // Folder gating: the keyword family is not applied everywhere. Warn (not error) in the folders

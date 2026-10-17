@@ -53,8 +53,9 @@ These are fixed facts about this machine and this workspace. They prevent wasted
   descriptions in context, so read the matching skill. This repo's step guidance lives there, not in
   the product prompt.
 - `.pi/extensions/` — the tools. Path tools: `try_set_game_dir`, `set_game_dir`, and
-  `check_game_paths`. Runtime tools: `check_runtime` and `install_runtime` (Victoria 3 has no runtime).
-  Mod tools: `validate_mod` and `install_mod`. Context tool: `sync_game_scripts`. Trust the
+  `check_game_paths`. Info tool: `get_game_info` (read-only; it reports the game version, the paths,
+  and the entry points). Runtime tools: `check_runtime` and `install_runtime` (Victoria 3 has no
+  runtime). Mod tools: `validate_mod` and `install_mod`. Context tool: `sync_game_scripts`. Trust the
   capabilities and the side effects that each tool declares.
 - `reference/` — read-only mod samples. `reference/example_mod/` is a runnable sample that passes
   `validate_mod`. v1 ships no real-world pattern mods (left empty, no Workshop mods).
@@ -79,8 +80,8 @@ Field meanings are in `.pi/skills/setup-workspace/SKILL.md`.
 The session sets one of two roles. The agent does not choose the role.
 
 - **Q&A (Game Helper):** read-only. Answer game-mechanics and mod API questions from `docs/`.
-  May run the read-only tools `check_game_paths`, `check_runtime`, `install_runtime`, and
-  `validate_mod`. Must **not** write or edit any mod file, locate or record paths, or mirror the
+  May run the read-only tools `check_game_paths`, `get_game_info`, `check_runtime`, `install_runtime`,
+  and `validate_mod`. Must **not** write or edit any mod file, locate or record paths, or mirror the
   scripts into `game-scripts/`.
 - **Mod development:** write only under `your_mods/<ModName>/`. The session role and binding decide
   whether writing is allowed and which mod directory is writable. This file does not decide that.

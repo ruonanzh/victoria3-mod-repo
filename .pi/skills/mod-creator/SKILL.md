@@ -17,7 +17,7 @@ and its bound directory gate those actions.
 ## Usage modes (two roles)
 
 - **Q&A and consultation (read-only).** Answer game-mechanics and mod API questions by reading the
-  knowledge layer. Start from [`docs/INDEX.md`](docs/INDEX.md) to locate the right source. Do **not**
+  knowledge layer. Start from `docs/INDEX.md` to locate the right source. Do **not**
   create files or prepare the environment, unless the player explicitly asks about their
   environment. Preparing the environment means locating paths and mirroring the scripts into
   `game-scripts/`.
@@ -142,7 +142,8 @@ The files are `**/localization/**/*.yml`, under the mod root (for example `local
 - The first content line is `l_<lang>:`, and it must match the directory.
 - An entry is `  key: "value"` or `  key:0 "value"` with an explicit version. The value starts
   and ends with a double quote on the same line, so an inner `"` and a doubled `""` are legal. A
-  value with no closing `"` on its line is an error. Keep the `[` and `]` placeholders balanced.
+  value with no closing `"` on its line is an error. Keep the `[` and `]` placeholders balanced:
+  the linter does not check that, and an unbalanced placeholder breaks the string at run time.
 - One file must not hold duplicate keys.
 - To override a vanilla loc key, use a `replace/` subdirectory:
   `<lang>/replace/overwriting_l_<lang>.yml`. Keys there overwrite identical keys elsewhere.
@@ -154,14 +155,15 @@ The `.txt`, `.gui`, `.gfx`, and `.asset` files live under the mod root (flat, mi
 - The encoding is UTF-8. Keep the `{` and `}` balanced, and keep the `"` balanced. A `#` starts a
   line comment outside a string, and `#` is literal inside a string. A GUI string can span several
   lines.
-- The `INJECT:` and `REPLACE:` keywords go at the **entry level**, in the form
-  `KEYWORD:key = {`, at the **file top level** only. The wiki allows no other level, and no real mod
-  nests one. A container folder such as `common/genes/` can be replaced only as a whole container.
+- The `INJECT:` and `REPLACE:` keywords go at the **file top level** only, in the form
+  `KEYWORD:key = {`. A scalar value is also legal where the object itself is a scalar, for example
+  `REPLACE:amenability = 50` in `common/script_values/`. The wiki allows no other level, and no real
+  mod nests one: a container folder such as `common/genes/` can be replaced only as a whole.
 
 ## Overriding vanilla
 
 Three mechanisms exist. The reason and the edge cases are in
-[`docs/victoria3-modding-conventions.md`](docs/victoria3-modding-conventions.md).
+`docs/victoria3-modding-conventions.md`.
 
 1. **Direct file overwrite.** A file with the same path and filename replaces the vanilla file
    entirely. This is brittle.
@@ -185,9 +187,11 @@ REPLACE:expensive_in_depth_education = {
 
 **Rule of thumb.** Prefer additive new objects. Use `INJECT:` or `REPLACE:` for a surgical
 modification in a keyword directory. Reserve a full-file overwrite for a modification to most of a
-file. The keywords are folder-gated (~130 folders) with special rules (GUI/events first-wins, defines
-per-entry merge, scripted_* REPLACE-only, genes second-level, dna_data duplicates); to drop a whole
-vanilla folder, use `game_custom_data.replace_paths`. See the conventions document section 1.
+file. The keywords work in 122 gated folders only, with special rules: GUI types and events are
+first-loaded-wins, defines merge per entry, `scripted_effects`/`scripted_triggers`/`scripted_rules`
+accept `REPLACE:` only, a container folder such as `common/genes/` can be replaced only as a whole,
+and `dna_data` produces duplicates. To drop a whole vanilla folder, use
+`game_custom_data.replace_paths`. See the conventions document section 1.
 
 ## Load order and naming
 
@@ -218,20 +222,28 @@ Call `validate_mod` with `modDir = your_mods/<ModName>/`.
 
 ## Common errors
 
-The `FAIL` messages below are the common ones. The text after each one is the fix.
+A failing run starts with `FAIL: <name> has N error(s), M warning(s)`, then one `ERROR: <file>: <message>`
+line per error, then the `WARN:` lines. The messages below are the common ones, quoted as the tool
+prints them. The text after each one is the fix.
 
-- `FAIL: .metadata/metadata.json not found`: create the file with the standard fields above.
-- `FAIL: metadata.json is not valid JSON` or `not an object`: fix the JSON.
-- `FAIL: metadata.version is not semver`: use `x.x` or `x.x.x`.
-- `FAIL: localization file is not UTF-8 with BOM`: save the file as UTF-8 **with BOM** (`EF BB BF`).
-- `FAIL: filename must end with _l_<language>`: rename the file to `<name>_l_<language>.yml`.
-- `FAIL: missing/incorrect l_<lang>: header`: the first content line must be `l_<lang>:`.
-- `FAIL: key line not in 'key: "value"' form`: write `  key: "value"` with a closing double quote
-  on the same line.
-- `FAIL: unbalanced { }` or `unbalanced "`: fix the brace balance or add the missing closing quote.
-- `WARN: INJECT:/REPLACE: override keyword is nested`: the keyword is not at the entry level. Move
-  it to the file top level. A nested keyword has no effect in Victoria 3, which is why this is an
-  error: a container folder such as `common/genes/` can only be replaced as a whole.
+- `ERROR: .metadata/metadata.json: missing .metadata/metadata.json`: create the file with the
+  standard fields above.
+- `metadata.json is not valid JSON` or `not a JSON object`: fix the JSON.
+- `version '<v>' is not semver x.x or x.x.x`: use `x.x` or `x.x.x`.
+- `missing UTF-8 BOM (game ignores localization files without a BOM)`: save the file as UTF-8
+  **with BOM** (`EF BB BF`).
+- `filename must end with '_l_<language>.yml'`: rename the file, and make the suffix match its
+  language directory.
+- `line N: expected a language header 'l_<lang>:' as the first content line`: the first content line
+  must be `l_<lang>:`.
+- `malformed localization line (expected '  key: "value"' or '  key:0 "value"')`: write
+  `  key: "value"` with a closing double quote on the same line.
+- `unbalanced braces: extra '}'` (ERROR) or `unbalanced '"' (unterminated string)` (ERROR): fix the
+  balance. An unclosed `{` at end of file is only a **WARN** (`unbalanced braces: N '{' never closed`),
+  because vanilla itself ships such files in `common/dna_data/`.
+- `ERROR: ... is nested (depth N) and has no effect`: the keyword is not at the file top level. Move
+  the whole object up. A nested keyword is a silent no-op in Victoria 3, which is why it is an error,
+  and a container folder such as `common/genes/` can be replaced only as a whole.
 
 ## Entry mechanisms and data kinds (what to add, and where it lives)
 
@@ -266,7 +278,7 @@ task only changes values inside an existing block, there is no new definition to
 ## Semantic lookup path
 
 For the question "does X exist, and what is the vanilla value?", follow the lookup hierarchy in
-[`docs/INDEX.md`](docs/INDEX.md). It is the single authoritative map of which source to use.
+`docs/INDEX.md`. It is the single authoritative map of which source to use.
 
 - Exact vanilla object definitions, field values, INJECT targets, and loc keys: `game-scripts/game/game/`,
   which `sync_game_scripts` generates (it mirrors the install root, so the game's own `game/` lands

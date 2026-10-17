@@ -47,8 +47,15 @@ When the `subagent` tool is not available, work through the last section of
 
 An `install_mod` success does not mean the game loaded or enabled the mod. Report the three states
 separately: copied into the mod directory, visible in the launcher, and active in the game.
-The player must enable the mod in the launcher **playlist**. Follow the instructions in
-`docs/INDEX.md` and `docs/game.md` for the next step that you give the player.
+The player must enable the mod in the launcher **playlist**. Give these steps:
+
+1. Open the Paradox launcher for Victoria 3.
+2. Open **Playsets**, and select the playset you want, or create one.
+3. Find the mod by the name in its `metadata.json`, and tick it on.
+4. Press **Play** from the launcher. The game restarts, and the mod loads from that playlist.
+
+Steam does not enable it. A mod in the mod folder is only a candidate; the playlist is what the game
+reads.
 
 ## Related skills
 

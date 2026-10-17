@@ -75,8 +75,10 @@ Do not mix these tools up. They share one implementation in `.pi/lib/game-paths.
   scripts into `game-scripts/`. PDXScript has no self-describing API, so you cannot write correct
   PDXScript without this context. This step is **required**, and it is not a "find it when needed"
   step.
-  For exact effect, trigger, and modifier names, grep `game-scripts/` (v1 has no game dumps; they
-  return when `script_docs` / `dump_data_types` are regenerated).
+  For exact effect, trigger, and modifier names, grep `game-scripts/`. A full list exists only as a
+  game dump: the player runs `script_docs` (the wiki also spells the second one `DumpDataTypes`) in a
+  loaded game with debug mode on, and the game writes it to
+  `<Documents>/Paradox Interactive/Victoria 3/docs/`.
 - **Failures.** Follow the `NEXT` line the tool gives. When the same failure repeats, resolve the
   precondition instead of retrying.
 

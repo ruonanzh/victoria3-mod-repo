@@ -18,7 +18,8 @@ applies every change.
 
 ## What the mechanical checks already cover
 
-`validate_mod` checks braces, quotes, the encoding, the file name, and the conventions. It states
+`validate_mod` checks the brace and quote balance of script files, the localization BOM and filename,
+and the metadata fields. It states
 its own limit: `syntax and conventions only. Scope, type, values, and names are not checked.` Do not
 repeat those checks. Read the receipt the caller passed you, and add only what it does not cover.
 
@@ -46,8 +47,9 @@ The classes you can still answer:
    the intent. Example: a block-level change written as a full-file override, so keys are lost. When
    the change overwrites a whole file, name the entries that the current vanilla file defines and
    the copy does not repeat. Also check the target exists: `grep` it in `game-scripts/`.
-3. **Encoding and file name.** The BOM, the extension, the override directory, and the load-order
-   prefix, judged by their real effect. Example: `00_cmf_widgets.txt` has no UTF-8 BOM.
+3. **Encoding and file name, where `validate_mod` does not look.** It reads the BOM only for
+   localization files, so check the BOM and the extension of a script file yourself, along with the
+   override directory and the load-order prefix. Example: `00_cmf_widgets.txt` has no UTF-8 BOM.
 4. **Not statically decidable.** Mark the question instead of answering it. Example: the resolution
    order of two GUI blocks with the same name. The caller must check it in the game.
 

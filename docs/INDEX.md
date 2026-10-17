@@ -41,7 +41,7 @@ a controlled search for that one gap beats wandering through the whole catalogue
 
 | You need | Source |
 |---|---|
-| Whether a name exists in this game version | The dump under `game-scripts/script-docs/`, when it is present (see the note below) |
+| Whether a name exists in this game version | The `script_docs` dump, when the player has produced one (see the note below) |
 | Exact vanilla object definitions, field values, INJECT targets, and loc keys | `game-scripts/` (the script mirror that `sync_game_scripts` generates) |
 | How to call something, what scope it needs, what the pitfalls are | [`mod-wiki/`](mod-wiki/) (a snapshot of the wiki, 69 pages), or the live wiki `vic3.paradoxwikis.com` |
 | The modding conventions and the reason behind them | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) |
@@ -51,9 +51,14 @@ a controlled search for that one gap beats wandering through the whole catalogue
 > this", and it cannot answer "does this exist": a name missing from the wiki is usually just
 > undocumented. For existence, grep the dump or `game-scripts/`.
 >
-> **No dump ships with this repository yet.** Run `script_docs` in a loaded game to produce it; it
-> lands in `game-scripts/script-docs/`. Until then, for exact names and values, grep `game-scripts/`
-> after you run `sync_game_scripts`; for concepts, read [`mod-wiki/`](mod-wiki/).
+> **The dump is produced by the player, not by this repository.** Start a game with debug mode on,
+> load a campaign, and run `script_docs` in the console. The game writes the logs to
+> `<Documents>/Paradox Interactive/Victoria 3/docs/`: `effects.log`, `triggers.log`,
+> `modifiers.log`, `event_targets.log`, `on_actions.log`, and `custom_localization.log`. It writes
+> them there and nowhere else; nothing in this workspace copies them. Ask the player for the path, or
+> read it from `<Documents>`, which `try_set_game_dir` already recorded. Until a dump exists, for exact
+> names and values grep `game-scripts/` after you run `sync_game_scripts`; for concepts, read
+> [`mod-wiki/`](mod-wiki/).
 
 - **Start here:** [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md). This cheat-sheet
   covers override and `INJECT` semantics, ASCII load order, localization, and metadata. It answers
