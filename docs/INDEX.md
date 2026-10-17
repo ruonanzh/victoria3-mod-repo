@@ -9,13 +9,13 @@ task needs, instead of pulling the whole `docs/` directory into context.
 | You need | Source |
 |---|---|
 | Exact vanilla object definitions, field values, INJECT targets, and loc keys | `game-scripts/` (the script mirror that `sync_game_scripts` generates) |
-| Mechanics concepts and the mod API | the live wiki, `vic3.paradoxwikis.com` |
+| Mechanics concepts and the mod API | [`mod-wiki/`](mod-wiki/) (a snapshot of the wiki, 63 pages), or the live wiki `vic3.paradoxwikis.com` |
 | The modding conventions and the reason behind them | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) |
 
-> **v1 ships no game dumps.** The `script_docs/` and `data_types/` dumps are not regenerated yet
-> (they need the game in debug mode), and there is no local wiki snapshot. For exact names and
-> values, grep `game-scripts/` after you run `sync_game_scripts`, and read the live wiki for
-> concepts. The deep name-level semantic checks return when the dumps are regenerated.
+> **v1 ships no game-generated dumps.** The `script_docs/` and `data_types/` dumps are not
+> regenerated yet (they need the game in debug mode). For exact names and values, grep
+> `game-scripts/` after you run `sync_game_scripts`; for concepts, read [`mod-wiki/`](mod-wiki/).
+> The deep name-level semantic checks return when the dumps are regenerated.
 
 - **Start here:** [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md). This cheat-sheet
   covers override and `INJECT` semantics, ASCII load order, localization, and metadata. It answers
@@ -36,3 +36,4 @@ task needs, instead of pulling the whole `docs/` directory into context.
 |------|------------------------|
 | [`game.md`](game.md) | The game overview, the game systems, and the mod loading mechanics. |
 | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) | The reason behind the override, load-order, localization, and metadata rules. |
+| [`mod-wiki/INDEX.md`](mod-wiki/INDEX.md) | The mod API reference: 63 wiki pages. Start there for a mechanism, an effect, a trigger, or a folder's rules. Its [`SOURCE.md`](mod-wiki/SOURCE.md) records the snapshot and the CC BY-SA license. |

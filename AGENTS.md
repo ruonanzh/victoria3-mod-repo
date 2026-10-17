@@ -37,7 +37,9 @@ These are fixed facts about this machine and this workspace. They prevent wasted
 - `docs/` — the knowledge layer. Start at [`docs/INDEX.md`](docs/INDEX.md) for the map.
   The modding conventions live **only** in
   [`docs/victoria3-modding-conventions.md`](docs/victoria3-modding-conventions.md). They cover override,
-  load order, localization, and metadata.
+  load order, localization, and metadata. [`docs/mod-wiki/`](docs/mod-wiki/INDEX.md) is a 63-page
+  snapshot of the wiki's modding documentation; read it for a mechanism, an effect, or a folder's rules,
+  and use it only on demand. It is CC BY-SA 3.0; see its `SOURCE.md`.
 - `game-scripts/` — the vanilla scripts. `sync_game_scripts` copies them and the
   `workshop/` scripts into it, and git ignores it. This is the modding context you must load
   before writing mods. PDXScript has no self-describing API, so you cannot write a correct override

@@ -263,7 +263,8 @@ For the question "does X exist, and what is the vanilla value?", follow the look
 - Exact vanilla object definitions, field values, INJECT targets, and loc keys: `game-scripts/game/game/`,
   which `sync_game_scripts` generates (it mirrors the install root, so the game's own `game/` lands
   one level deeper). Grep that mirror, not the game directory.
-- Mechanics concepts and the mod API: `vic3.paradoxwikis.com` (the live wiki). The modding
+- Mechanics concepts and the mod API: `docs/mod-wiki/` (a 63-page snapshot of the wiki; start at its
+  `INDEX.md`), or the live wiki `vic3.paradoxwikis.com` when you need the newest wording. The modding
   conventions and the reason behind them: `docs/victoria3-modding-conventions.md`.
 
 For a survey, `entry-scout` runs this search and returns candidates as `file:line`.
