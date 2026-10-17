@@ -4,7 +4,7 @@ import { Type } from "typebox";
 /**
  * install_runtime - the runtime contract.
  *
- * An Victoria 3 mod is pure PDXScript. There is no compilation, no SDK, and no runtime to install, so
+ * A Victoria 3 mod is pure PDXScript. There is no compilation, no SDK, and no runtime to install, so
  * install_runtime always succeeds. The player must install the game itself. try_set_game_dir
  * locates the game directory and records it.
  */
@@ -13,7 +13,7 @@ export default function (pi: ExtensionAPI) {
     name: "install_runtime",
     label: "Install Runtime",
     description:
-      "An Victoria 3 mod is pure PDXScript, with no runtime and no SDK to install. This tool reports that Victoria 3 needs no runtime, and it installs nothing. It also tells the agent that the player must install the game itself. Use try_set_game_dir to record the game directory and the two derived directories.",
+      "A Victoria 3 mod is pure PDXScript, with no runtime and no SDK to install. This tool reports that Victoria 3 needs no runtime, and it installs nothing. It also tells the agent that the player must install the game itself. Use try_set_game_dir to record the game directory and the two derived directories.",
     promptSnippet: "Install runtime (Victoria 3: nothing to install)",
     promptGuidelines: [
       "Use install_runtime only when you think a runtime is missing. For Victoria 3 it always reports SKIP: no dependencies, and nothing installed.",

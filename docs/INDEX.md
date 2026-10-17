@@ -8,7 +8,7 @@ task needs, instead of pulling the whole `docs/` directory into context.
 
 | You need | Source |
 |---|---|
-| Exact vanilla object definitions, field values, INJECT targets, and loc keys | `game-scripts/` (the script mirror that `sync_game_scripts` generates), or the local game directory recorded by `try_set_game_dir` |
+| Exact vanilla object definitions, field values, INJECT targets, and loc keys | `game-scripts/` (the script mirror that `sync_game_scripts` generates) |
 | Mechanics concepts and the mod API | the live wiki, `vic3.paradoxwikis.com` |
 | The modding conventions and the reason behind them | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) |
 

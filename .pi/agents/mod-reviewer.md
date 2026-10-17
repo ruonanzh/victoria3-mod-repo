@@ -31,7 +31,8 @@ Read `docs/victoria3-modding-conventions.md`, and start with its last section,
    every key the change produces must be declared. Example: `metadata.json` declares
    `thumbnail: thumbnail.png` while the file is absent.
 2. **Pairing and scope.** A name must match its host list, its category, and its scope. Example:
-   `local_unrest`, a Location modifier, placed in a country static modifier.
+   `country_bureaucracy_add` is a country-scope modifier, so it belongs in a modifier applied in a
+   country scope, not in one applied on a state.
 3. **Override form.** The choice between a full-file override, `INJECT:`, and `REPLACE:` must match
    the intent. Example: a block-level change written as a full-file override, so keys are lost. When
    the change overwrites a whole file, name the entries that the current vanilla file defines and

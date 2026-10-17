@@ -5,8 +5,8 @@
  * `editor:theme`): no network, no permissions beyond that. Validation mirrors this repo's `validate_mod`
  * (`.pi/extensions/mod-lint.ts`): errors block saving, warnings do not.
  */
-const TEXT_FIELDS = ["name", "id", "version", "supported_game_version", "short_description", "thumbnail"];
-const STANDARD_FIELDS = ["name", "id", "version", "supported_game_version", "tags"];
+const TEXT_FIELDS = ["name", "id", "version", "supported_game_version", "short_description", "thumbnail", "game_id"];
+const STANDARD_FIELDS = ["name", "id", "version", "supported_game_version", "short_description", "tags"];
 const SEMVER_RE = /^\d+\.\d+(\.\d+)?$/;
 
 let writable = false;
@@ -49,6 +49,11 @@ function validate(value) {
     if (!(field in value)) warnings.push(`missing expected field '${field}'`);
   }
   if (!value.thumbnail) warnings.push('missing "thumbnail" (e.g. "thumbnail.png")');
+  const custom = value.game_custom_data;
+  if (custom && typeof custom === "object" && !Array.isArray(custom)) {
+    if (!("multiplayer_synchronized" in custom))
+      warnings.push("game_custom_data has no 'multiplayer_synchronized' entry (set it unless the mod is single-player only)");
+  }
   return { errors, warnings };
 }
 
@@ -63,6 +68,14 @@ function readForm() {
   const next = { ...model };
   for (const field of TEXT_FIELDS) next[field] = $(`f-${field}`).value;
   next.tags = splitTags($("f-tags").value);
+  // game_custom_data stays an object: the form edits only the one key that matters in play, and
+  // keeps every other key (replace_paths, …) exactly as the file had it.
+  const custom =
+    model.game_custom_data && typeof model.game_custom_data === "object" && !Array.isArray(model.game_custom_data)
+      ? { ...model.game_custom_data }
+      : {};
+  custom.multiplayer_synchronized = $("f-multiplayer_synchronized").checked;
+  next.game_custom_data = custom;
   return next;
 }
 
@@ -94,6 +107,11 @@ function fill(value) {
     $(`f-${field}`).value = current == null ? "" : String(current);
   }
   $("f-tags").value = Array.isArray(model.tags) ? model.tags.map((tag) => String(tag)).join(", ") : "";
+  const custom =
+    model.game_custom_data && typeof model.game_custom_data === "object" && !Array.isArray(model.game_custom_data)
+      ? model.game_custom_data
+      : {};
+  $("f-multiplayer_synchronized").checked = custom.multiplayer_synchronized === true;
   dirty = false;
   paint();
 }
@@ -176,7 +194,7 @@ window.addEventListener("message", (event) => {
   }
 });
 
-for (const field of [...TEXT_FIELDS, "tags"]) $(`f-${field}`).addEventListener("input", () => setDirty(true));
+for (const field of [...TEXT_FIELDS, "tags", "multiplayer_synchronized"]) $(`f-${field}`).addEventListener("input", () => setDirty(true));
 $("reload").addEventListener("click", () => void load());
 $("save").addEventListener("click", () => void save());
 window.addEventListener("keydown", (event) => {

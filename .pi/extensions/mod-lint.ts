@@ -18,7 +18,8 @@ import { join, relative, resolve, sep, basename } from "node:path";
  *     mods are flat and mirror the game's game/ directory.
  *     The tool checks the UTF-8 encoding, the `{` and `}` balance, and the `"` balance, with
  *     awareness of `#` comments and multiline strings. It also checks that the INJECT: and REPLACE:
- *     family starts only at a top-level block.
+ *     family starts only at the entry level (the file top level in most folders, one level in inside
+ *     a container folder), and that the folder is gated for the keyword at all.
  *
  * The tool is read-only, and it has no third-party dependency. Its content output uses PASS or FAIL with NEXT,
  * in ASCII English, and its details hold only ok, errors, and warnings.
@@ -34,8 +35,16 @@ const STANDARD_METADATA_FIELDS = [
   "id",
   "version",
   "supported_game_version",
+  "short_description",
   "tags",
+  "game_custom_data",
+  "game_id",
 ];
+// Top-level folders where the INJECT:/REPLACE: family does not apply. `events` and the GUI
+// `type`/`template` definitions are first-loaded-wins, so an override keyword there cannot work.
+// `common/*` is excluded on purpose: most of it is gated, and a partial allowlist would produce
+// false warnings. The full gated list is on the wiki (Mod_compatibility).
+const NON_GATED_TOP_FOLDERS = ["events/", "gui/", "localization/"];
 const IMAGE_EXTS = new Set([".png", ".dds", ".jpg", ".jpeg", ".tga"]);
 const SEMVER_RE = /^\d+\.\d+(\.\d+)?$/;
 // A wildcard supported_game_version names no concrete game version, so it is too loose. This table
@@ -88,7 +97,9 @@ function walkFiles(root: string): Array<{ abs: string; rel: string }> {
 
 function isLocalizationYml(rel: string): boolean {
   const r = rel.toLowerCase();
-  return r.endsWith(".yml") && r.includes("/localization/");
+  // Victoria 3 mods are flat, so a localization file sits at `localization/<lang>/...` with no
+  // leading directory. The nested form (`<any>/localization/...`) is also accepted.
+  return r.endsWith(".yml") && (r.startsWith("localization/") || r.includes("/localization/"));
 }
 
 // The languages Victoria 3 ships. A localization file names its language with the `_l_<lang>` filename
@@ -401,8 +412,27 @@ function checkMetadata(modRoot: string): Finding[] {
       findings.push({
         severity: "warn",
         rel,
-        message: `missing expected field '${field}' (Victoria 3 wiki metadata.json standard structure)`,
+        // `game_id` and `game_custom_data` are advisory in practice: many real Workshop mods omit
+        // them and still load. The message says so, because the linter must not present a
+        // convention as a game rule.
+        message:
+          field === "game_id" || field === "game_custom_data"
+            ? `missing field '${field}' (optional in practice; the launcher and the Workshop upload can add it)`
+            : `missing expected field '${field}' (Victoria 3 wiki metadata.json standard structure)`,
       });
+  }
+  // multiplayer_synchronized is the one game_custom_data key that matters in play: a mod that
+  // changes shared state without it desyncs a multiplayer game.
+  const customData = obj.game_custom_data;
+  if (customData && typeof customData === "object" && !Array.isArray(customData)) {
+    if (!("multiplayer_synchronized" in (customData as Record<string, unknown>))) {
+      findings.push({
+        severity: "warn",
+        rel,
+        message:
+          "game_custom_data has no 'multiplayer_synchronized' entry (set it to true unless the mod is single-player only)",
+      });
+    }
   }
   // The field presence check above does not read the value. A value such as "1.*" or "*" matches
   // every release and tells the player nothing about the supported game version, so warn. A concrete
@@ -632,7 +662,6 @@ function checkPdxScript(modRoot: string): Finding[] {
   for (const { abs, rel } of walkFiles(modRoot)) {
     const dot = rel.lastIndexOf(".");
     if (dot < 0 || !PDX_SUFFIXES.has(rel.slice(dot).toLowerCase())) continue;
-    if (isLocalizationYml(rel)) continue;
     const rl = "/" + rel.toLowerCase();
     if (NON_SCRIPT_DIR_PREFIXES.some((p) => rl.startsWith(p))) continue; // A non-game helper such as a metadata or tools file.
     if (basename(rel).toLowerCase().startsWith("readme")) continue; // A README.txt at the mod root is not game script.
@@ -659,6 +688,17 @@ function checkPdxScript(modRoot: string): Finding[] {
     for (const f of checkOverrideKeywords(cleaned)) {
       // Keep the severity that checkOverrideKeywords reports. A nested keyword is a warn, not an error.
       findings.push({ severity: f.severity ?? "error", rel, message: f.message });
+    }
+    // Folder gating: the keyword family is not applied everywhere. Warn (not error) in the folders
+    // where it is known not to work, so the agent reconsiders instead of trusting a silent no-op.
+    const lowered = rel.toLowerCase();
+    if (NON_GATED_TOP_FOLDERS.some((p) => lowered.startsWith(p)) && OVERRIDE_KEYWORD_RE.test(cleaned)) {
+      findings.push({
+        severity: "warn",
+        rel,
+        message:
+          "this folder is not gated for the INJECT:/REPLACE: family, so the keyword does nothing here. `events` and the GUI `type`/`template` definitions are first-loaded-wins; use a full-file overwrite instead.",
+      });
     }
   }
   return findings;
@@ -714,6 +754,9 @@ export default function (pi: ExtensionAPI) {
         for (const w of warnings.slice(0, MAX_CONTENT_LINES)) {
           lines.push(`WARN: ${w.rel}: ${w.message}`);
         }
+        if (warnings.length > MAX_CONTENT_LINES) {
+          lines.push(`... ${warnings.length - MAX_CONTENT_LINES} more warning(s) omitted`);
+        }
       } else {
         lines.push(
           `FAIL: ${name} has ${errors.length} error(s), ${warnings.length} warning(s)`,
@@ -725,6 +768,12 @@ export default function (pi: ExtensionAPI) {
           lines.push(
             `... ${errors.length - MAX_CONTENT_LINES} more error(s) omitted`,
           );
+        }
+        for (const w of warnings.slice(0, MAX_CONTENT_LINES)) {
+          lines.push(`WARN: ${w.rel}: ${w.message}`);
+        }
+        if (warnings.length > MAX_CONTENT_LINES) {
+          lines.push(`... ${warnings.length - MAX_CONTENT_LINES} more warning(s) omitted`);
         }
         lines.push(`NEXT: fix the errors above and re-run validate_mod.`);
       }

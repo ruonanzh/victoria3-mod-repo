@@ -140,8 +140,9 @@ The `.txt`, `.gui`, `.gfx`, and `.asset` files live under the mod root (flat, mi
 - The encoding is UTF-8. Keep the `{` and `}` balanced, and keep the `"` balanced. A `#` starts a
   line comment outside a string, and `#` is literal inside a string. A GUI string can span several
   lines.
-- The `INJECT:` and `REPLACE:` keywords go in **top-level blocks** only, in the form
-  `KEYWORD:key = {`.
+- The `INJECT:` and `REPLACE:` keywords go at the **entry level**, in the form
+  `KEYWORD:key = {`. That is the file's top level in most `common/` folders; in a container folder
+  (for example `common/genes/`) the entry is one level in, and vanilla writes it that way itself.
 
 ## Overriding vanilla
 
@@ -211,7 +212,9 @@ The `FAIL` messages below are the common ones. The text after each one is the fi
 - `FAIL: key line not in 'key: "value"' form`: write `  key: "value"` with a closing double quote
   on the same line.
 - `FAIL: unbalanced { }` or `unbalanced "`: fix the brace balance or add the missing closing quote.
-- `FAIL: INJECT:/REPLACE: must be in a top-level block`: move the keyword to the top level.
+- `WARN: INJECT:/REPLACE: override keyword is nested`: the keyword is not at the entry level. Move
+  it out, unless the folder is a container folder (for example `common/genes/`), where one level in
+  is correct. This is a warning, and the game does not reject it.
 
 ## Entry mechanisms and data kinds (what to add, and where it lives)
 
@@ -249,7 +252,7 @@ For the question "does X exist, and what is the vanilla value?", follow the look
 [`docs/INDEX.md`](docs/INDEX.md). It is the single authoritative map of which source to use.
 
 - Exact vanilla object definitions, field values, INJECT targets, and loc keys: `game-scripts/game/`,
-  which `sync_game_scripts` generates, or the local game directory.
+  which `sync_game_scripts` generates. Grep that mirror, not the game directory.
 - Mechanics concepts and the mod API: `vic3.paradoxwikis.com` (the live wiki). The modding
   conventions and the reason behind them: `docs/victoria3-modding-conventions.md`.
 

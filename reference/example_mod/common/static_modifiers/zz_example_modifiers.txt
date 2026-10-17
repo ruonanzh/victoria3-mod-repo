@@ -1,0 +1,15 @@
+zz_example_modifier = {
+	# A static modifier. `common/static_modifiers/` is where the game defines these, and it takes a
+	# plain entry: no INJECT: and no REPLACE:, because it is a new object.
+	#
+	# To apply it, a scripted effect, an event, a law, or a journal entry uses:
+	#     add_modifier = {
+	#         name = zz_example_modifier
+	#         days = short_modifier_time
+	#     }
+	# on a state or country scope, as the modifier's own keys require.
+	#
+	# The icon is a vanilla path, so the mod ships no art.
+	icon = gfx/interface/icons/timed_modifier_icons/modifier_documents_positive.dds
+	country_bureaucracy_add = 10
+}

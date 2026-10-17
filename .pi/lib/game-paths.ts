@@ -29,7 +29,7 @@ import os from "node:os";
 export const GAME_SENTINEL = join("binaries", "victoria3.exe");
 
 export interface ModRepoConfig {
-  game?: { name?: string; steamAppId?: string | number; installDirHint?: Record<string, string> };
+  game?: { name?: string; steamAppId?: string | number; installDirHint?: Record<string, string | string[]> };
   modInstall?: { path?: string; relativeTo?: string };
   /** Whether this game has a Workshop. A missing field means unknown, and it does not mean false. */
   workshop?: { supported?: boolean };
@@ -322,7 +322,10 @@ export function gameDirCandidates(cfg: ModRepoConfig, state: RuntimeState, expli
   };
   if (explicit?.trim()) push(explicit);
   push(state.gameDir);
-  push(cfg.game?.installDirHint?.windows); // v1 searches Windows only, so the hint has a windows key only (mac/linux TODO).
+  // The hint may be a single path or a list of paths. mod-repo.json declares a list per platform.
+  const hint = cfg.game?.installDirHint?.windows;
+  if (typeof hint === "string") push(hint);
+  else if (Array.isArray(hint)) for (const h of hint) push(h); // v1 searches Windows only (mac/linux TODO).
   if (process.platform === "win32") {
     for (const root of discoverSteamLibraryRoots()) out.push(join(root, "steamapps", "common", GAME_FOLDER_NAME));
   }
@@ -373,24 +376,77 @@ export function pathsFor(
   return { modInstallDir, workshopDir, notes };
 }
 
-// The build tag. It is the only true version source for the game, and the tool reads it once.
-// The pattern anchors the `/release/` prefix, because the executable also holds dependency version
-// strings, and zlib `1.2.11` is one of them. `VersionInfo` is not a source: it says `1.0`.
-// The lookahead rejects a match that a further digit follows, so a window that ends in `1.13.1` of
-// `1.13.11` does not match.
-const BUILD_TAG_RE = /[a-zA-Z0-9_]+\/release\/(\d+\.\d+\.\d+)(?![0-9])/;
+// The build tag. Victoria 3 publishes it in two plain-text files at the install root, which is
+// cheaper and more exact than a scan of the executable:
+//   - `launcher/launcher-settings.json`, field `rawVersion` (for example `1.13.11`)
+//   - `caligula_branch.txt`, the whole file (for example `release/1.13.11`)
+// The executable is the last resort. Its build string is `caligula/release/1.13.x` (a wildcard, not a
+// patch version), so the executable alone cannot answer the question.
+const BUILD_TAG_RE = /(?:^|[^A-Za-z0-9_])release\/(\d+\.\d+\.\d+)(?![0-9])/;
 const BUILD_TAG_TIMEOUT_MS = 30_000;
 /** The overlap between two chunks. A tag that starts in one chunk and ends in the next must still match. */
 const BUILD_TAG_OVERLAP = 64;
+/** The patch-level version value: exactly three numeric parts. */
+const PATCH_VERSION_RE = /^\d+\.\d+\.\d+$/;
 
 /**
- * Reads the game build tag from `<gameDir>/binaries/victoria3.exe`, for example `1.13.11`.
- * It reads the file in chunks, because the executable is larger than 100 MB, and it stops at the
- * 30-second limit. It returns `null` when the file is missing, unreadable, holds no tag, or does not
- * finish in time. It does not guess.
+ * Reads the game build tag from the install root, for example `1.13.11`.
+ * Order: the launcher settings, then the branch file, then the executable. It returns `null` when
+ * none of them holds a patch-level tag. It does not guess, and it does not return a wildcard.
  */
 export async function readGameBuildTag(gameDir: string): Promise<string | null> {
+  const cheap = readGameBuildTagCheap(gameDir);
+  if (cheap) return cheap;
+  return readExecutableVersion(gameDir);
+}
+
+/**
+ * The cheap half of the version read: the two plain-text files only, no executable scan.
+ * A caller that already paid for a failed executable scan can retry this at no real cost, so a
+ * stale `null` in the state does not hide a version that a later game update installed.
+ */
+export function readGameBuildTagCheap(gameDir: string): string | null {
   if (typeof gameDir !== "string" || !gameDir.trim()) return null;
+  return readLauncherVersion(gameDir) ?? readBranchVersion(gameDir);
+}
+
+/** `launcher/launcher-settings.json` -> `rawVersion`. Falls back to the leading part of `version`. */
+function readLauncherVersion(gameDir: string): string | null {
+  try {
+    const raw = JSON.parse(readFileSync(join(gameDir, "launcher", "launcher-settings.json"), "utf8")) as {
+      rawVersion?: unknown;
+      version?: unknown;
+    };
+    for (const value of [raw.rawVersion, raw.version]) {
+      if (typeof value !== "string") continue;
+      const m = /(\d+\.\d+\.\d+)/.exec(value);
+      if (m) return m[1];
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** `caligula_branch.txt` -> `release/<x.y.z>`. The file is small, so read it whole. */
+function readBranchVersion(gameDir: string): string | null {
+  try {
+    const text = readFileSync(join(gameDir, "caligula_branch.txt"), "utf8").trim();
+    const m = BUILD_TAG_RE.exec(text);
+    if (m) return m[1];
+    return PATCH_VERSION_RE.test(text) ? text : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The last resort: scan the executable for a `release/<x.y.z>` tag.
+ * It reads the file in chunks, because the executable is larger than 100 MB, and it stops at the
+ * 30-second limit. It returns `null` when the file is missing, unreadable, holds no tag, or does not
+ * finish in time.
+ */
+async function readExecutableVersion(gameDir: string): Promise<string | null> {
   try {
     const stream = createReadStream(join(gameDir, GAME_SENTINEL), {
       encoding: "latin1",
@@ -617,6 +673,15 @@ export async function ensureGameDir(cwd: string, cfg: ModRepoConfig): Promise<En
         gameBuild = await readGameBuildTag(remembered.path as string);
         writeState(cwd, { gameBuild, gameBuildTried: true });
         wroteState = true;
+      } else if (gameBuild === null) {
+        // A previous run cached a `null`. The cheap files are two small reads, so check them again:
+        // a game update can add them, and a stale null would then hide the version for ever.
+        const retried = readGameBuildTagCheap(remembered.path as string);
+        if (retried) {
+          gameBuild = retried;
+          writeState(cwd, { gameBuild: retried });
+          wroteState = true;
+        }
       }
       return {
         status: "already",

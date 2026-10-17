@@ -94,7 +94,9 @@ Keep these in mind while you write a mod. They prevent most `validate_mod` failu
 - Keep `{` and `}` balanced. Keep `"` balanced. A `#` starts a line comment, and `#` is literal
   inside a string.
 - To override a vanilla-defined object in a keyword directory, prefix it with `REPLACE:` or
-  `INJECT:`. The keyword must be in a top-level block.
+  `INJECT:` at the entry level. That is the file's top level in most `common/` folders; in a
+  container folder (for example `common/genes/`) the entry is one level in. A keyword nested below
+  the entry level is a WARN, not a hard error.
 - Use load-order prefixes so an override loads after its target: `00_` early, and `zz_`, `98_`, or
   `99_` late.
 - Localization YAML must be UTF-8 **with BOM**. The filename must end with `_l_<language>`. The

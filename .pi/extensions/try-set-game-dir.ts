@@ -16,7 +16,8 @@
  * Why no arguments: the agent does not have to know the path first. The tool ensures the state is
  * ready by itself. Only after the tool fails does the agent look for clues or ask the player.
  *
- * Victoria 3 facts: pure PDXScript, Windows only, and no runtime. modInstallDir is the Paradox launcher
+ * Victoria 3 facts: pure PDXScript, and no runtime. v1 locates it on Windows only; the game itself
+ * also ships for macOS and Linux. modInstallDir is the Paradox launcher
  * directory, which is independent of gameDir. The tool derives workshopDir from gameDir, and the
  * tools treat workshopDir as a read-only reference.
  */

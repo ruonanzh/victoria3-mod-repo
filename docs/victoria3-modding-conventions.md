@@ -34,7 +34,7 @@ Victoria 3 loads the mod files on top of the vanilla files. Three override mecha
 - **Implicit replace:** in folders that do **not** use the keyword system, if two files define the
   same top-level object, the **later-loaded definition wins** (the object is redefined). This works
   only outside keyword folders.
-- **`INJECT:` / `REPLACE:` keywords:** most `<top_folder>/common/` folders (and some others) require
+- **`INJECT:` / `REPLACE:` keywords:** most `common/` folders (and some others) require
   a keyword to modify an existing object without a full file overwrite. Implicit replace does **not**
   work in these folders. Keywords must sit **directly before a database entry** — that is the file's
   **top level** in most `common/` folders, but in *container* folders the entry is **one level in**, e.g.
@@ -63,7 +63,7 @@ variants) for surgical changes in keyword folders. Reserve full-file overwrite f
 change most of a file. `validate_mod` flags a keyword nested below the entry level as a **WARN** (not a
 hard error — container folders legitimately nest entries one level in, and vanilla does so). Whether a
 top-level object redefines a vanilla name **without** a keyword is a soft rule the agent checks with
-`grep`/`read` against the local game directory.
+`grep`/`read` against `game-scripts/`.
 
 **Folder gating and special rules (Victoria 3).** The `INJECT:`/`REPLACE:` keywords work only in a
 documented folder list (~130 folders: most `common/*`, some `gfx/*`, `map_data/state_regions`,
@@ -98,14 +98,15 @@ Per `Mod_files_load_order`, section "File loading order":
   semantically.
   - `00_...` forces an **early** load, for base and framework definitions that others build on.
   - `zz_...`, `98_...`, and `99_...` force a **late** load.
-- **GUI is an exception.** **Mod load order**, which is the playlist position, resolves a `type` or
-  `template` definition that clashes across mods. It does not resolve a `types` container. The
-  definition that loads last wins. **Filenames have no effect** for GUI.
+- **GUI is an exception.** A `type` or `template` definition is **first-loaded-wins** across mods, so
+  a later mod cannot overwrite one. **Filenames have no effect** for GUI. `events` follows the same
+  first-loaded-wins rule.
 
 ## 3. Localization (BOM, filename, header, and the override directory)
 
-Write the files under `your_mods/<name>/<top_folder>/localization/<lang>/...`. See `Localization`
-and `Mod_files_load_order`, section "Localization".
+Write the files under `your_mods/<name>/localization/<lang>/...`. See `Localization`
+and `Mod_files_load_order`, section "Localization". The mod root is flat in Victoria 3, so there is
+no `<top_folder>` level.
 
 - **Encoding (mandatory):** UTF-8 **with BOM** (`EF BB BF`). Without a BOM the game **ignores the
   file**. This failure is fatal, not cosmetic, so the linter treats a missing BOM as an ERROR.
