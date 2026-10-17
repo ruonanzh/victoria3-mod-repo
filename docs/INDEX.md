@@ -79,4 +79,5 @@ a controlled search for that one gap beats wandering through the whole catalogue
 |------|------------------------|
 | [`game.md`](game.md) | The game overview, the game systems, and the mod loading mechanics. |
 | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) | The reason behind the override, load-order, localization, and metadata rules. |
+| [`writing-standard.md`](writing-standard.md) | The writing rule for every English string that reaches an agent: terms, sentence limits, symbols, measured values. |
 | [`mod-wiki/INDEX.md`](mod-wiki/INDEX.md) | The mod API reference: 69 wiki pages. Start there for a mechanism, an effect, a trigger, or a folder's rules. Its [`SOURCE.md`](mod-wiki/SOURCE.md) records the snapshot and the CC BY-SA license. |
