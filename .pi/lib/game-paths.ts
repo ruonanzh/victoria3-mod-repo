@@ -376,7 +376,7 @@ export function pathsFor(
 // The build tag. It is the only true version source for the game, and the tool reads it once.
 // The pattern anchors the `/release/` prefix, because the executable also holds dependency version
 // strings, and zlib `1.2.11` is one of them. `VersionInfo` is not a source: it says `1.0`.
-// The lookahead rejects a match that a further digit follows, so a window that ends in `1.3.1` of
+// The lookahead rejects a match that a further digit follows, so a window that ends in `1.13.1` of
 // `1.13.11` does not match.
 const BUILD_TAG_RE = /[a-zA-Z0-9_]+\/release\/(\d+\.\d+\.\d+)(?![0-9])/;
 const BUILD_TAG_TIMEOUT_MS = 30_000;
