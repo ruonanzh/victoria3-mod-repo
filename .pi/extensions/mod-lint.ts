@@ -720,7 +720,7 @@ export default function (pi: ExtensionAPI) {
     name: "validate_mod",
     label: "Validate Mod",
     description:
-      "Validate a Victoria 3 mod of the pdx-script type, under your_mods/. It checks the metadata.json fields, the localization YAML, and the brace and quote balance in PDXScript and GUI files. It also checks the rule that INJECT: and REPLACE: stay at the top level. Then it checks the names: that a REPLACE:/INJECT: target exists, that an effect or trigger name is not a near miss for a known name, and that a new decision, character trait, or journal entry has its localization keys. It reads docs/script_docs/ and game-scripts/vanilla/ for that check. It is not a scope or type validator.",
+      "Validate a Victoria 3 mod of the pdx-script type, under your_mods/. It checks the metadata.json fields, the localization YAML, and the brace and quote balance in PDXScript and GUI files. It also checks the rule that INJECT: and REPLACE: stay at the top level. Then it checks the names: that a REPLACE:/INJECT: target exists, that an effect or trigger name is not a near miss for a known name, and that a new decision, character trait, journal entry, or journal entry group has its localization keys. It reads docs/script_docs/ and game-scripts/vanilla/ for that check. It is not a scope or type validator.",
     promptSnippet: "Validate a mod under your_mods/",
     promptGuidelines: [
       "Use validate_mod after you write a mod, to check that it passes the rules.",

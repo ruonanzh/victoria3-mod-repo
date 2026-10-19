@@ -53,6 +53,23 @@ export const CASES = [
     ],
   },
   {
+    // A scope path is not a game name, and the body of the scope block is still scanned.
+    dir: "c2-scope-path",
+    checked: ["C2"],
+    warnings: [
+      { code: "c2-near-miss", level: "warn", includes: "'add_devastaton'" },
+    ],
+  },
+  {
+    // An effect inside an `if` and one inside a `custom_tooltip` are both scanned.
+    dir: "c2-if-block",
+    checked: ["C2"],
+    warnings: [
+      { code: "c2-near-miss", level: "warn", includes: "'add_devastaton'" },
+      { code: "c2-near-miss", level: "warn", includes: "'add_fervr'" },
+    ],
+  },
+  {
     dir: "c2-clean",
     checked: ["C2"],
     warnings: [],

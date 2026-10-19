@@ -9,7 +9,7 @@ checks, and this page records where they came from, so the next maintainer can r
 2. Load a campaign. The dump needs a loaded game, not the main menu.
 3. Open the console and run `script_docs`.
 4. The game writes the files to `<Documents>/Paradox Interactive/Victoria 3/docs/`.
-5. Copy the six `.log` files here, and update the table below.
+5. Copy the six `.log` files here, and update the table under *What each file holds*.
 
 For the GUI data types dump, run `dump_data_types` in the same session. It writes to
 `<Documents>/Paradox Interactive/Victoria 3/logs/data_types/`, which is a different directory.
@@ -51,12 +51,14 @@ console.log(f,"entries",n,"unique",s.size)}
 
 No check in this repository reads these files yet. They are the evidence for a GUI data model name
 such as `StatusWidget.ToggleLoginWindow`. Read them when a `.gui` file uses a name you cannot place.
+The five files are the game's data binding groups: the GUI group, the Jomini group, the script group,
+and the two catch-all groups. Do not read `common` or `script` as GUI-only.
 
 ## Provenance
 
 | Field | Value |
 |---|---|
-| Game version | `1.13.11 (Matcha)` (from `launcher/launcher-settings.json`, field `rawVersion`) |
+| Game version | `1.13.11 (Matcha)` (from `launcher/launcher-settings.json`, field `version`; `rawVersion` holds `1.13.11`) |
 | Script dump command | `script_docs` |
 | Data types dump command | `dump_data_types` |
 | Dumped on | 2026-10-19 |
@@ -99,6 +101,6 @@ for(const f of ["modifiers","on_actions","custom_localization"])console.log(f,n(
 `docs/INDEX.md` points here for the measured coverage. The snapshot mentions 560 of the 3152 effects
 and 818 of the 1816 triggers: a word match, measured on 2026-10-19. Regenerating the dump at a new game
 version changes those counts, so re-measure them before you repeat the numbers. Re-run
-`node scripts/measure-wiki-coverage.mjs`, which reads every `docs/script_docs/*.log` and every
+`node scripts/measure-wiki-coverage.mjs`, which reads `effects.log` and `triggers.log` and every
 `docs/mod-wiki/*.md` page, counts a name as mentioned when it appears as a whole word, then update this
 page.

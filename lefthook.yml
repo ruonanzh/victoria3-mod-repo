@@ -1,11 +1,13 @@
 # Maintainer hooks for this repository. They cover the environment only, never your_mods/.
 #
-# There are no automatic hooks today, and this file is kept as the place for them. Two maintainer
-# checks exist, and both run by hand:
-#   - node scripts/check-doc-refs.mjs    every Markdown link resolves, and every repository path in
-#                                       backticks exists, and no agent-facing file points at the
-#                                       design repository.
-#   - validate_mod                       the mod checks; open the repository in pi and call the tool
-#                                       on reference/example_mod/.
-# A future pre-commit hook must call those two, so the repository never holds a second copy of a
-# check.
+# There are no automatic hooks today, and this file is kept as the place for them. The maintainer
+# checks run by hand:
+#   - node scripts/check-doc-refs.mjs     every Markdown link resolves, every repository path in
+#                                         backticks exists, and no agent-facing file points outside
+#                                         this repository.
+#   - node scripts/test-semantics.mjs     the three name-level classes, the fixtures, the missing
+#                                         mirror and dump paths, and the Workshop smoke test.
+#   - node scripts/test-tools.mjs         all nine tools, under a temporary workspace.
+#   - validate_mod                        the mod checks; open the repository in pi and call the tool
+#                                         on reference/example_mod/.
+# A future pre-commit hook must call these, so the repository never holds a second copy of a check.

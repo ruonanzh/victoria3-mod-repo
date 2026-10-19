@@ -33,11 +33,12 @@ surface you can mod. If a mechanism is absent from them, you cannot mod it.
    routing table at the top of `docs/INDEX.md`. Take the pages that row names, and read them. A
    request that only changes a value skips this step.
 2. **Pick where the objects go.** When the change stays inside one existing block, skip to step 5,
-   except when that block is in a `.gui` file: do step 4 first. A change can need an entry point, an
-   existing data directory, or both. Read section 7 of `docs/victoria3-modding-conventions.md` and
-   pick the row that matches the feature. Read one example in the directory that row names. When the
-   change needs no entry point, go to `## Data kinds` below for the directory. When the row is
-   unclear, or no listed kind matches, dispatch `entry-scout` and open its first candidate.
+   except when that block is in a `.gui` file: do steps 3 and 4 first. A change can need an entry
+   point, an existing data directory, or both. Read section 7 of
+   `docs/victoria3-modding-conventions.md` and pick the row that matches the feature. Read one example
+   in the directory that row names. When the change needs no entry point, go to `## Data kinds` below
+   for the directory. When the row is unclear, or no listed kind matches, dispatch `entry-scout` and
+   open its first candidate.
 3. **Research the vanilla code.** Find the objects your change touches, and how they connect. Before
    you search, write down the mechanism family and the object name you expect. Do not guess from
    names alone. Then pick one path:
@@ -46,9 +47,11 @@ surface you can mod. If a mechanism is absent from them, you cannot mod it.
      context holds the answers, not the greps. Open its first candidate yourself.
    - One name you already know: grep it yourself,
      `grep -rln <keyword> game-scripts/vanilla/`.
-   A name exists when the dumps in `docs/script_docs/` list it. An object definition, a field value,
-   an `INJECT:` target, or a loc key comes from `game-scripts/vanilla/game/`. Never grep
-   `game-scripts/workshop/` for evidence: that part holds other authors' mods.
+   A name that the dumps in `docs/script_docs/` list exists. A name that they omit is not proof of
+   absence, because the game leaves some names out, so check its definition in
+   `game-scripts/vanilla/game/`. An object definition, a field value, an `INJECT:` target, or a loc key
+   comes from `game-scripts/vanilla/game/`. A building, law, good, or technology id is not in the dumps
+   at all. Never grep `game-scripts/workshop/` for evidence: that part holds other authors' mods.
 4. **Research the UI window when the change touches one.** A UI window is one window that the game
    shows to the player. This change has two separate questions: which mechanism you use, and what you
    change inside a UI window. Step 2 answers the first, and section 7 also names the directories that
@@ -81,11 +84,11 @@ surface you can mod. If a mechanism is absent from them, you cannot mod it.
    `create_mod_folder` with a `lower_snake_case` name, as the **Directory name** rule below defines
    it. Do not create a second binding when one already exists.
 9. **Check the result, then dispatch the reviewer.** Run `validate_mod` on
-   `your_mods/<ModName>/`, and fix every ERROR. Then dispatch `mod-reviewer`, and apply what it
-   finds. Before you finish, ask: does this modification need an icon, a UI label (localization), a
-   menu entry, a column, a filter, or a panel? Add what is missing. Reuse an existing in-game icon or
-   asset when one fits, because you do not have to create new art. Do not wait for the player to ask
-   about the icon.
+   `your_mods/<ModName>/`, and fix every ERROR. Then dispatch `mod-reviewer` and pass it the
+   `validate_mod` output, so it does not repeat those checks. Apply what it finds. Before you finish,
+   ask: does this modification need an icon, a UI label (localization), a menu entry, a column, a
+   filter, or a panel? Add what is missing. Reuse an existing in-game icon or asset when one fits,
+   because you do not have to create new art. Do not wait for the player to ask about the icon.
 
 - **Directory name** (this repository's rule, enforced by `create_mod_folder`). The name is
   `lower_snake_case`: it starts with a lowercase letter, then holds only lowercase letters, digits,
@@ -248,8 +251,9 @@ has the list and the exception for scripted effects and triggers.
 Call `validate_mod` with `modDir = your_mods/<ModName>/`.
 
 - `PASS: <name> is valid` means the static checks passed. It does not mean the mod ran in the game.
-- `FAIL: <reason>` gives one reason per line, in English, and points at the offending file or field.
-  Use the `NEXT:` line to locate it. Fix every ERROR, and do not modify another mod.
+- `FAIL: <reason>` gives one reason per line, in English. Each `ERROR:` line names the file and the
+  field, so read those lines instead of looking for a path in `NEXT:`. Fix every ERROR, and do not
+  modify another mod.
 - The tool checks the syntax and the conventions, and then three name-level classes:
   - that the target of a `REPLACE:`/`INJECT:` keyword exists in the same `common/<directory>/`, in
     this mod or in `game-scripts/vanilla/`;

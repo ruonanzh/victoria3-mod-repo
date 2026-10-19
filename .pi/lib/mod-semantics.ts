@@ -364,6 +364,22 @@ const EFFECT_CONTAINERS = new Set([
   "random_events",
   "first_valid",
   "weight",
+  // A block inside an if, a while, or a loop is still an effect or trigger list. `limit` is the
+  // guard of that block, so its body is a trigger list too.
+  "if",
+  "else_if",
+  "else",
+  "while",
+  "limit",
+  // A tooltip block carries a trigger or an effect list, beside its `text` key.
+  "custom_tooltip",
+  "custom_description",
+  // The body of `scope:<name> = { … }` is an effect or trigger list, and the scope path itself is
+  // never a game name. The scan pushes this name for it.
+  "scope",
+  // `not`, `or`, `and`, `nor`, and `nand` are **not** containers here. A real mod writes
+  // `AND = { … }` as a country-definition block, so scanning its body reports the data fields of the
+  // definition as near misses. The boolean operators are left out on purpose.
 ]);
 
 /**
@@ -475,12 +491,16 @@ function containerChildren(text: string): Array<{ container: string; name: strin
   let ident = "";
   let inString = false;
   let pendingName: string | null = null;
+  // `scope:<name> = { … }` is a scope path, not a game name. The flag survives the `:` and the
+  // scope name, so the `=` pushes a `scope` container instead of reporting the path as a name.
+  let scopePath = false;
   const isWord = (ch: string): boolean => /[A-Za-z0-9_.]/.test(ch);
   for (let i = 0; i < text.length; i += 1) {
     const ch = text[i];
     if (ch === '"') {
       inString = !inString;
       ident = "";
+      scopePath = false;
       continue;
     }
     if (inString) continue;
@@ -488,10 +508,21 @@ function containerChildren(text: string): Array<{ container: string; name: strin
       ident += ch;
       continue;
     }
+    if (ch === ":") {
+      if (ident.toLowerCase() === "scope") scopePath = true;
+      ident = "";
+      continue;
+    }
     if (ch === "=") {
       const top = stack[stack.length - 1];
       const name = ident;
       ident = "";
+      if (scopePath) {
+        // Never a game name. A block after it is a `scope` container, and its children are checked.
+        scopePath = false;
+        pendingName = "scope";
+        continue;
+      }
       pendingName = name || null;
       if (name && top && EFFECT_CONTAINERS.has(top.name)) out.push({ container: top.name, name });
       continue;
@@ -500,12 +531,14 @@ function containerChildren(text: string): Array<{ container: string; name: strin
       stack.push({ name: (pendingName ?? "").toLowerCase() });
       pendingName = null;
       ident = "";
+      scopePath = false;
       continue;
     }
     if (ch === "}") {
       stack.pop();
       pendingName = null;
       ident = "";
+      scopePath = false;
       continue;
     }
     // A name never spans a line, so a line break ends it. A space or a tab does not: the file
@@ -699,18 +732,19 @@ export function analyzeSemantics(modPath: string, opts?: SemanticOptions): Seman
           if (modDefinedNames.has(name)) continue;
           const key = `${rel.replace(/^\/+/, "")}|${lower}`;
           if (reported.has(key)) continue;
-          if (candidates >= C2_MAX_ITEMS) {
-            candidates += 1;
-            continue;
-          }
+          // The distance check runs for every candidate, so the truncated count is exact. Only the
+          // printed items are capped.
           const guess = suggest(name, known);
           if (!guess) continue;
           reported.add(key);
           candidates += 1;
+          if (candidates > C2_MAX_ITEMS) continue;
           warnings.push({
             code: "c2-near-miss",
             level: "warn",
-            message: `${rel.replace(/^\/+/, "")}: '${name}' in a ${container} block is not a known effect, trigger, or modifier name. Did you mean '${guess}'? The dumps in docs/script_docs/ name ${dumps.counts.effects} effects and ${dumps.counts.triggers} triggers.`,
+            message: `${
+              rel.replace(/^\/+/, "")
+            }: '${name}' inside the ${container} block is not a known effect, trigger, or modifier name. Did you mean '${guess}'? The dumps in docs/script_docs/ name ${dumps.counts.effects} effects and ${dumps.counts.triggers} triggers.`,
           });
         }
       }

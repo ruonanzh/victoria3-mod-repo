@@ -1,0 +1,15 @@
+namespace = test
+
+country_event = {
+	id = test.1
+	immediate = {
+		if = {
+			limit = { always = yes }
+			add_devastaton = 5
+		}
+		custom_tooltip = {
+			text = some_key
+			add_fervr = 1
+		}
+	}
+}

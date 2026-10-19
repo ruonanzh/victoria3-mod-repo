@@ -365,10 +365,17 @@ name-level conclusion is not proof.
   WARN, because the wiki states that it acts as `REPLACE:` there.
 - **C2, a near miss inside an effect or trigger block.** The check reads a fixed list of containers
   (`immediate`, `effect`, `hidden_effect`, `trigger`, `potential`, `visible`, `allow`, `is_valid`,
-  `ai_chance`, `after`, `option`, and similar). A name of 8 characters or more that is not a known
-  name and is within two edits of one gives a WARN with a suggestion. The suggestion must also share
-  the first letter and be within two characters of the length. A shorter name, a name the mod
-  defines, and a name that starts with an uppercase letter are not reported.
+  `ai_chance`, `after`, `option`, `if`, `while`, `limit`, `scope:<name>`, and similar). A name of 8
+  characters or more that is not a known name and is within two edits of one gives a WARN with a
+  suggestion. The suggestion must also share the first letter and be within two characters of the
+  length. A shorter name, a name the mod defines, and a name that starts with an uppercase letter are
+  not reported.
+
+  **The dump is not complete.** The game leaves some names out of it, such as the trigger
+  `any_princely_state`, which the vanilla files use. A name that the dump omits is not proof that the
+  name is wrong. C2 reports only a near miss against a listed name, so a valid name that the game
+  does not document is not reported. When a warning names a trigger or an effect that you believe is
+  real, check its definition in `game-scripts/vanilla/`.
 - **C3, the localization keys of a new object.** The wiki documents the keys for a decision
   (`<id>` and `<id>_desc`), a character trait (`<id>` and `<id>_desc`), a journal entry (`<id>` and
   `<id>_reason`), and a journal entry group (`<id>`). A new object of those classes without the key in

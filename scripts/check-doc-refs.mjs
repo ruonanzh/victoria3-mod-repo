@@ -86,9 +86,10 @@ for (const file of files) {
   const inSnapshot = file.startsWith(EXTERNAL_SNAPSHOT);
   const naked = stripFences(text);
   if (!inSnapshot) {
-    // A: a Markdown link. A link inside a code fence is an example, not a reference.
-    for (const m of naked.matchAll(/\[[^\]]*\]\(([^)\s]+\.md)(#[^)]*)?\)/g)) {
-      const target = m[1];
+    // A: a Markdown link. A link inside a code fence is an example, not a reference. A target can
+    // hold a space, because the wiki snapshot pages have names such as `Mod structure.md`.
+    for (const m of naked.matchAll(/\[[^\]]*\]\(([^)\n]+?\.md)(#[^)]*)?\)/g)) {
+      const target = m[1].trim();
       if (/^(https?:|\/\/|mailto:)/.test(target)) continue;
       if (!existsSync(resolve(dirname(file), target)))
         problems.push(`A broken link: ${where} -> ${target}`);

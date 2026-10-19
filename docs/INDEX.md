@@ -41,7 +41,8 @@ a controlled search for that one gap beats wandering through the whole catalogue
 
 | You need | Source |
 |---|---|
-| Whether a name exists in this game version | The dumps in [`script_docs/`](script_docs/SOURCE.md). They ship with this repository, and `validate_mod` reads them. |
+| Whether an effect, trigger, modifier, event target, or on-action name exists | The dumps in [`script_docs/`](script_docs/SOURCE.md). They ship with this repository, and `validate_mod` reads them. A hit proves the name exists. A miss is not proof, because the game leaves some names out of the dump: check their definition in `game-scripts/vanilla/game/`. |
+| Whether a building, law, good, technology, or another game object exists | Its definition under `game-scripts/vanilla/game/common/`. These object ids are not in the dumps. |
 | Exact vanilla object definitions, field values, INJECT targets, and loc keys | The vanilla scripts at `game-scripts/vanilla/game/`, which `sync_game_scripts` writes. The `game-scripts/workshop/` part holds other authors' mods, so it is not evidence. |
 | How to call something, what scope it needs, what the pitfalls are | [`mod-wiki/`](mod-wiki/) (a snapshot of the wiki), or the live wiki `vic3.paradoxwikis.com` |
 | The exact name of a GUI data model entry | [`data_types/`](data_types/) (the `dump_data_types` dump; [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records it) |

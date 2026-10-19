@@ -42,7 +42,8 @@ This page describes the game mechanics only.
 - **Localization YAML must be UTF-8 with BOM.** Without a BOM, the game ignores the file silently,
   and that failure is fatal.
 - **The dumps and the vanilla scripts are the two evidence layers.** The dumps in `docs/script_docs/`
-  prove that a name exists. The vanilla scripts at `game-scripts/vanilla/game/`, which
-  `sync_game_scripts` writes, prove an object definition, a field value, an `INJECT:` target, and a
-  loc key. Read the dumps for a name, and grep the vanilla scripts for a definition. The official
-  wiki (vic3.paradoxwikis.com) holds the same data as prose, and it can lag one patch behind.
+  list the effect, trigger, modifier, event target, and on-action names. A hit proves that the name
+  exists. A miss is not proof of absence, because the game leaves some names out: check the definition
+  in `game-scripts/vanilla/game/` too. A building, law, good, or technology id is not in the dump at
+  all, and its definition is the evidence. The official wiki (vic3.paradoxwikis.com) holds the same data
+  as prose, and it can lag one patch behind.

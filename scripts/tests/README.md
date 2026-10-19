@@ -22,7 +22,7 @@ a relative import without an extension resolves to the `.ts` file.
 | `scripts/test-semantics.mjs` | Every committed error case under `tests/fixtures/`, the missing-mirror and missing-dump paths, `reference/example_mod/`, and a smoke run over `game-scripts/workshop/`. |
 | `scripts/test-tools.mjs` | All nine tools: registration, the no-state errors, `set_game_dir`, `try_set_game_dir`, `check_game_paths`, `get_game_info`, `sync_game_scripts`, `validate_mod`, `install_mod`, `check_runtime`, and `install_runtime`. |
 | `tests/expectations.mjs` | The exact warnings that each fixture must produce. A new warning, a missing warning, or a silently skipped check fails the case. |
-| `tests/fixtures/` | The error cases: C1 missing target, `TRY_`, `_OR_CREATE`, `INJECT:` on a scripted effect, C2 near misses, C3 missing localization keys, the C2 output cap, BOM, CRLF, tabs, and localization filename shapes. |
+| `tests/fixtures/` | The error cases: C1 missing target, `TRY_`, `_OR_CREATE`, `INJECT:` on a scripted effect, C2 near misses (including a scope path and an `if`/`custom_tooltip` body), C3 missing localization keys, the C2 output cap, BOM, CRLF, tabs, and localization filename shapes. |
 | `tests/helpers.mjs` | Module loading, tool invocation, assertions, and the small suite runner. |
 
 ## The Workshop smoke test
@@ -37,12 +37,14 @@ ten mirrored mods, it requires the two known true positives:
 Any other warning fails the test. Notes are allowed, because a name-level note is informational.
 When a new true positive is found, add it to `KNOWN_WORKSHOP_WARNINGS` in the test.
 
-## Known gaps, not yet fixtures
+## Two cases that guard a fixed defect
 
-Two defects found by the same review are not committed as fixtures, because they would fail today:
+Two defects of the C2 scan have their own fixture, so they cannot come back:
 
-- `scope:<name> = {` is read as an effect name, so a valid scope path produces a false near-miss
-  warning.
-- A near miss inside `if`, `else_if`, `while`, or `custom_tooltip` is not scanned.
+- `c2-scope-path`: `scope:<name> = { … }` is a scope path, not a game name. The fixture proves that
+  the path is not reported, and that the body of the scope block is still scanned.
+- `c2-if-block`: an effect inside `if`, and one inside `custom_tooltip`, are scanned.
 
-Add a case for each one after the fix, so the gap cannot return.
+The boolean operators `not`, `or`, `and`, `nor`, and `nand` are **not** containers on purpose. A real
+Workshop mod writes `AND = { … }` as a country-definition block, so scanning that body reports the
+fields of the definition as near misses.

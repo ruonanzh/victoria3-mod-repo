@@ -8,7 +8,7 @@ description: Prepare the Victoria 3 (pdx-script) environment and the paths. Loca
 Get the facts straight, then record them: where the game is, what the three paths are, and whether
 the modding context is ready.
 **This step produces facts only.** It does not produce a mod.
-Loading this skill does not grant write permission. In a consulting session you can explain the
+Loading this skill does not grant write permission. In a Q&A session you can explain the
 method without recording anything.
 
 Victoria 3 mods are **pure PDXScript text**. There is no compilation, no runtime SDK, and **no runtime to
@@ -52,6 +52,7 @@ Do not mix these tools up. They share one implementation in `.pi/lib/game-paths.
 | `set_game_dir` | **Record one concrete game directory**, either from the player or one you found. It checks the path first, then records it. | Writes path state. |
 | `check_game_paths` | **Check only.** Read-only. It checks the paths you give or the remembered ones, and it records nothing. | None. |
 | `check_runtime` | **Report the runtime prerequisites only.** Victoria 3 has none, so it always passes. It does **not** locate the game, and it does not touch the paths. | None. |
+| `install_runtime` | **Report that there is nothing to install.** Victoria 3 has no runtime, so the tool passes without writing anything. | None. |
 | `sync_game_scripts` | **Mirror the vanilla and Workshop scripts into `game-scripts/`.** It writes `game-scripts/vanilla/` and `game-scripts/workshop/`. This is the context you need before you write mods. | Writes `game-scripts/`. |
 
 ## How to use
@@ -79,8 +80,9 @@ Do not mix these tools up. They share one implementation in `.pi/lib/game-paths.
   For an object definition, a field value, or a loc key, grep `game-scripts/vanilla/`. The
   `game-scripts/workshop/` part holds other authors' mods, so it is not vanilla.
   For a name, read the dumps in `docs/script_docs/`. They ship with this repository, and
-  `docs/script_docs/SOURCE.md` records the game version and how to regenerate them. A GUI data model
-  name is in `docs/data_types/`. The player does not have to dump anything.
+  `docs/script_docs/SOURCE.md` records the game version and how to regenerate them. A name that the
+  dump omits is not proof of absence, so check the definition in `game-scripts/vanilla/game/` too. A
+  GUI data model name is in `docs/data_types/`. The player does not have to dump anything.
 - **Failures.** Follow the `NEXT` line the tool gives. When the same failure repeats, resolve the
   precondition instead of retrying.
 

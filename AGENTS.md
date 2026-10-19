@@ -23,9 +23,11 @@ These are fixed facts about this machine and this workspace. They prevent wasted
   `<user documents>/Paradox Interactive/Victoria 3/mod/`.
 - **The name dumps ship with this repository**, in `docs/script_docs/`. They are the game's own name
   lists, and `validate_mod` reads them. `docs/script_docs/SOURCE.md` records the game version and how
-  to regenerate them. Read a dump to settle "does this name exist". Read the vanilla scripts to settle
-  "what fields does this object have". The GUI data types dump is separate, in `docs/data_types/`, and
-  no tool reads it.
+  to regenerate them. A name that the dump lists exists. A name that it omits is **not** proof that the
+  name is absent, because the game leaves some of them out, so check the definition in the vanilla
+  scripts too. Read the vanilla scripts to settle "what fields does this object have". A building, law,
+  good, or technology id is not in the dump at all: read `game-scripts/vanilla/game/common/`. The GUI
+  data types dump is separate, in [`docs/data_types/`](docs/data_types/), and no tool reads it.
 - **`supported_game_version`: write a patch-level wildcard** (e.g. `1.13.*`). An exact
   version such as `1.0.4` goes stale. This game updates its minor version often, and the game flags
   an exact version as outdated. Do not take the easy way out with a loose `1.*` — `validate_mod` WARNs on it.
@@ -87,7 +89,9 @@ text that points at them instead, or refresh the snapshot as `docs/mod-wiki/SOUR
   `validate_mod`. v1 ships no real-world pattern mods (left empty, no Workshop mods).
 - `scripts/` — maintainer scripts. `check-doc-refs.mjs` checks that every Markdown link resolves,
   that every repository-root path in backticks exists, and that no agent-facing file points outside
-  this repository. Run it after you edit a document. `measure-wiki-coverage.mjs` re-measures the share
+  this repository. Run it after you edit a document. `test-semantics.mjs` and `test-tools.mjs` are the
+  regression suites for the name-level checks and for the nine tools. `measure-wiki-coverage.mjs`
+  re-measures the share
   of dump names that the wiki snapshot mentions.
 - `mod-repo.json` — the machine-readable game and environment declaration. `workshop.supported`
   declares whether this game has a Steam Workshop. `workshopDir` is a read-only reference and is
@@ -112,9 +116,12 @@ The session sets one of two roles. The agent does not choose the role.
 - **Q&A (Game Helper):** read-only. Answer game-mechanics and mod API questions from `docs/`.
   May run the read-only tools `check_game_paths`, `get_game_info`, `check_runtime`, `install_runtime`,
   and `validate_mod`. Must **not** write or edit any mod file, locate or record paths, or mirror the
-  scripts into `game-scripts/`.
+  scripts into `game-scripts/`. `validate_mod` reads the dumps and the mirror, so without a mirror it
+  reports only the syntax checks and C2, and it says so.
 - **Mod development:** write only under `your_mods/<ModName>/`. The session role and binding decide
-  whether writing is allowed and which mod directory is writable. This file does not decide that.
+  whether writing is allowed and which mod directory is writable. This file does not decide that. The
+  path tools write `.gamer-agent.local.json`, and `sync_game_scripts` writes `game-scripts/`. Those
+  writes prepare the workspace, and they are not a mod edit.
 - **The subagents never write.** `entry-scout` and `mod-reviewer` hold `read` and `grep` only.
   Their results are advice. They are not session roles. Any session may
   dispatch them.
