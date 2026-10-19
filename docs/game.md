@@ -45,5 +45,6 @@ This page describes the game mechanics only.
   list the effect, trigger, modifier, event target, and on-action names. A hit proves that the name
   exists. A miss is not proof of absence, because the game leaves some names out: check the definition
   in `game-scripts/vanilla/game/` too. A building, law, good, or technology id is not in the dump at
-  all, and its definition is the evidence. The official wiki (vic3.paradoxwikis.com) holds the same data
-  as prose, and it can lag one patch behind.
+  all, and its definition is the evidence. The official wiki (vic3.paradoxwikis.com) explains the
+  concepts, and it covers only a minority of the names: `docs/INDEX.md` gives the measured share. Read
+  the wiki for a method, and read the dump or the vanilla scripts for a name.

@@ -70,6 +70,22 @@ export const CASES = [
     ],
   },
   {
+    // The body of `when_taken` is an effect list.
+    dir: "c2-decision-block",
+    checked: ["C2", "C3"],
+    warnings: [
+      { code: "c2-near-miss", level: "warn", includes: "'add_devastaton'" },
+    ],
+  },
+  {
+    // The body of a top-level scripted effect is an effect list, and the definition name is not a name.
+    dir: "c2-scripted-body",
+    checked: ["C2"],
+    warnings: [
+      { code: "c2-near-miss", level: "warn", includes: "'add_devastaton'" },
+    ],
+  },
+  {
     dir: "c2-clean",
     checked: ["C2"],
     warnings: [],

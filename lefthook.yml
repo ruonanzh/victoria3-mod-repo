@@ -6,7 +6,9 @@
 #                                         backticks exists, and no agent-facing file points outside
 #                                         this repository.
 #   - node scripts/test-semantics.mjs     the three name-level classes, the fixtures, the missing
-#                                         mirror and dump paths, and the Workshop smoke test.
+#                                         mirror and dump paths, and the Workshop smoke test. The
+#                                         fixtures read the committed dumps and tests/vanilla/, so
+#                                         only the smoke test needs sync_game_scripts first.
 #   - node scripts/test-tools.mjs         all nine tools, under a temporary workspace.
 #   - validate_mod                        the mod checks; open the repository in pi and call the tool
 #                                         on reference/example_mod/.

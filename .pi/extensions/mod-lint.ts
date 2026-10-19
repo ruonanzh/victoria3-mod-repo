@@ -395,10 +395,11 @@ function checkMetadata(modRoot: string): Finding[] {
     return findings;
   }
   const obj = data as Record<string, unknown>;
-  // Check the id against the game rule only. The Victoria 3 wiki metadata page says that the id is the
-  // "Id of the mod for recognition", and it only requires the field. There is no hard rule for
-  // lowercase snake_case, and no hard rule that it equals the directory name. The official example
-  // `testmod` and the community template `[modname].dev` both contain a dot, which proves it.
+  // Check the id against the game rule only. The wiki says the id is the "Id of the mod, as chosen by
+  // the modder", that it "must be unique", and that it "needs to be consistent over time". It
+  // requires the field. There is no hard rule for lowercase snake_case, and no hard rule that it
+  // equals the directory name. The wiki's example is a reverse domain name, `com.github.mymod`, and
+  // it also says "Do not use the example ID given here".
   // "It equals the directory name, in lower_snake_case" was this repository's own convention. The
   // linter no longer enforces it, and the SKILL suggests it only.
   // The wiki requires the field; it does not require a value, and 4 of the 10 downloaded Workshop mods
@@ -551,12 +552,19 @@ function checkBraceQuoteBalance(cleaned: string): BalanceResult {
   let inString = false;
   let stringStartLine = 0;
   let line = 1;
-  for (const ch of cleaned) {
+  for (let i = 0; i < cleaned.length; i += 1) {
+    const ch = cleaned[i];
     if (ch === "\n") {
       line += 1;
       continue;
     }
     if (inString) {
+      // An escaped character is part of the string, so a quote after a backslash does not close it.
+      // The same rule lives in `.pi/lib/pdx-text.ts` for the comment stripper.
+      if (ch === "\\" && cleaned[i + 1] !== "\n") {
+        i += 1;
+        continue;
+      }
       if (ch === '"') inString = false;
       continue;
     }

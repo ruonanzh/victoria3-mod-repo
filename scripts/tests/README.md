@@ -19,11 +19,18 @@ a relative import without an extension resolves to the `.ts` file.
 
 | File | Covers |
 | --- | --- |
-| `scripts/test-semantics.mjs` | Every committed error case under `tests/fixtures/`, the missing-mirror and missing-dump paths, `reference/example_mod/`, and a smoke run over `game-scripts/workshop/`. |
+| `scripts/test-semantics.mjs` | Every committed error case under `tests/fixtures/`, the missing-mirror and missing-dump paths, `reference/example_mod/`, and a smoke run over `game-scripts/workshop/` when that mirror exists. The fixtures use the committed dumps and `tests/vanilla/`, so they need no mirror. |
 | `scripts/test-tools.mjs` | All nine tools: registration, the no-state errors, `set_game_dir`, `try_set_game_dir`, `check_game_paths`, `get_game_info`, `sync_game_scripts`, `validate_mod`, `install_mod`, `check_runtime`, and `install_runtime`. |
 | `tests/expectations.mjs` | The exact warnings that each fixture must produce. A new warning, a missing warning, or a silently skipped check fails the case. |
-| `tests/fixtures/` | The error cases: C1 missing target, `TRY_`, `_OR_CREATE`, `INJECT:` on a scripted effect, C2 near misses (including a scope path and an `if`/`custom_tooltip` body), C3 missing localization keys, the C2 output cap, BOM, CRLF, tabs, and localization filename shapes. |
+| `tests/fixtures/` | The error cases: C1 missing target, `TRY_`, `_OR_CREATE`, `INJECT:` on a scripted effect, C2 near misses (including a scope path, an `if`/`custom_tooltip` body, a `when_taken` body, and a top-level scripted effect body), C3 missing localization keys, the C2 output cap, BOM, CRLF, tabs, and localization filename shapes. |
 | `tests/helpers.mjs` | Module loading, tool invocation, assertions, and the small suite runner. |
+| `tests/vanilla/` | The minimal vanilla mirror that the fixtures read: one empty directory for each `common/<class>` a fixture uses, and one scripted effect that the `INJECT:` case targets. The fixtures copy the committed dumps and this mirror into a temporary repository, so **`game-scripts/` is not needed** and a fresh clone passes. |
+
+## What needs the real mirror
+
+Only the Workshop smoke test reads `game-scripts/workshop/`, which `sync_game_scripts` writes and git
+ignores. That test is skipped when the mirror is absent, so a fresh clone passes 26 of 26 cases with
+the smoke test skipped. Run `sync_game_scripts` first when you want the smoke test.
 
 ## The Workshop smoke test
 

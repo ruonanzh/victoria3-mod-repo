@@ -104,12 +104,29 @@ function copyFixture(caseName, repo) {
 
 const tests = [];
 
+// The fixtures are hermetic: they read a throwaway repository root that holds the committed dumps
+// and the committed minimal vanilla mirror under `scripts/tests/vanilla/`. `game-scripts/` is
+// gitignored, so a fixture that read the real root would fail on a fresh clone.
+const fixtureRepo = (() => {
+  const root = makeTempRepo({ dumps: false, vanilla: false });
+  const dumpTarget = join(root, "docs", "script_docs");
+  mkdirSync(dumpTarget, { recursive: true });
+  const dumpSource = join(repoRoot, "docs", "script_docs");
+  for (const name of readdirSync(dumpSource)) {
+    if (name.endsWith(".log")) cpSync(join(dumpSource, name), join(dumpTarget, name));
+  }
+  cpSync(join(fixtureRoot, "..", "vanilla"), join(root, "game-scripts", "vanilla"), { recursive: true });
+  process.on("exit", () => rmSync(root, { recursive: true, force: true }));
+  return root;
+})();
+
 for (const testCase of CASES) {
   tests.push([
     `fixture ${testCase.dir}`,
     () => {
-      const modPath = join(fixtureRoot, testCase.dir);
-      const result = analyzeSemantics(modPath, { repoRoot });
+      // A fresh copy per case, so one case can never see another case's files.
+      const modPath = copyFixture(testCase.dir, fixtureRepo);
+      const result = analyzeSemantics(modPath, { repoRoot: fixtureRepo });
       assertChecked(testCase.dir, result, testCase.checked);
       compareWarnings(testCase.dir, result.warnings, testCase.warnings);
     },

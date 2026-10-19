@@ -68,9 +68,9 @@ Victoria 3 loads the mod files on top of the vanilla files. Three override mecha
 
 Three limits that the wiki states and that catch authors:
 
-- **`INJECT:` fails on a block type that already exists in the entry.** The wiki's example is an
-  `is_visible` block injected into a law that already defines `is_visible`. The injection does
-  nothing. The same block works when the entry does not define it yet.
+- **`INJECT:` fails on most trigger and effect blocks that the entry already defines.** The wiki's
+  example is an `is_visible` block injected into a law that already defines `is_visible`. That
+  injection fails. The same block works when the entry does not define it yet.
 - **`INJECT:` appends a duplicate block when the block can appear many times.** The wiki shows a
   `wargoal_scores` example, where a second block is added and the two can then conflict.
 - **`REPLACE:` still obeys load order.** If two mods replace the same entry, the last one loaded
@@ -156,8 +156,8 @@ Per `Mod compatibility.md`, sections *File loading order* and *Game object load 
 
 Ordering prefixes. `00_...` forces an **early** load, for base and framework definitions that others
 build on. `zz_...`, `98_...`, and `99_...` force a **late** load. The wiki documents the `00_`/`01_`
-illustration only, so read `zz_`, `98_`, and `99_` as a convention of this repository and of the
-vanilla files, not as a wiki rule.
+illustration only. The vanilla 1.13.11 files use `99_` (17 files) and `98_` (1 file), and no `zz_` file. So `98_` and
+`99_` are a vanilla convention, and `zz_` is this repository's own convention.
 
 The prefix matters for the winner. In a directory without keywords, the **later-loaded definition
 wins**, so a late prefix is how an override wins. In a gated directory the keyword decides the
@@ -197,7 +197,8 @@ one of the wiki's documented failure modes.
   in `""`. The wiki snapshot does not describe the quote parsing, so this rule is engine behaviour
   observed in the vanilla files.
 - **Overriding vanilla loc keys:** the mechanism the wiki states is a `replace` **subdirectory**,
-  `<lang>/replace/overwriting_l_<lang>.yml`. Keys there overwrite identical keys elsewhere.
+  `<lang>/replace/overwriting_l_<lang>.yml`. Keys there overwrite identical keys elsewhere. The wiki
+  also states that a full file overwrite still works.
 - **Precedence outside `replace/` is contested in the snapshot.** `Localization.md` states that files
   are processed in reverse alphabetical order, and it offers an `a` or `0` filename prefix to "make
   sure it applied last". `Mod compatibility.md` states that a later-loaded key does **not** overwrite
@@ -219,9 +220,9 @@ checks and how severe each finding is.
 - Every `.txt`, `.gui`, `.gfx`, and `.asset` file under the mod root is checked for balanced `{ }` and
   balanced `"`. An **extra `}`** and a **`"` that never closes** are ERRORs. A `{` that never closes
   is only a **WARN**, because vanilla itself ships files like that in `common/dna_data/`.
-- A `#` starts a line comment **outside** a quoted string. Inside a string, `#` is literal. The wiki
-  states this rule for localization files, and `Localization.md` writes the comment marker the same
-  way.
+- A `#` starts a line comment **outside** a quoted string. Inside a quoted string, a `#` belongs to
+  the string: in a localization value it starts formatting markup such as `#italic … #!`, which
+  `Localization.md` documents under *Formatting*.
 - **A GUI string can span several physical lines.** A datamodel expression such as
   `visible = "[Or( ... )]"` legitimately wraps across lines, and the closing `"` can sit several
   lines below the opening one. That is correct as long as the string closes. The wiki does not state
@@ -256,7 +257,7 @@ at all". The standard structure is valid JSON with `name`, `id`, `version` (`x.x
 | `tags` | An array of strings. The wiki states a maximum of 5, and that the tags affect the local listing only. |
 | `game_id` | `"victoria3"`. The wiki calls it a "safety catch" that keeps the launcher from loading a mod built for another game. |
 | `game_custom_data` | `{"multiplayer_synchronized": true}` normally. |
-| `relationships` | `[]` when the mod has none. The wiki states `resource_type` is `"mod"` and `rel_type` is one of `dependency`, `incompatible_with`, `load_before`, and `load_after`. |
+| `relationships` | `[]` when the mod has none. The wiki states `resource_type` is `"mod"` and `rel_type` is one of `dependency`, `incompatible_with`, `load_before`, and `load_after`, and it notes that the latter three are still being tested in launcher `2023.10-rc`. |
 | `thumbnail` | `"thumbnail.png"`, optional. The wiki's metadata block does not list it, so this is a `validate_mod` rule: the tool warns when the entry is missing or when it names no file in the mod root or in `.metadata/`. |
 
 The wiki documents that the `.metadata` directory may also hold a `thumbnail.png` for the launcher. It
@@ -308,8 +309,8 @@ directory it names and read one of the examples in it.
 | `events` | The feature surfaces as an **event window** (a one-off window with options). `popup = yes` only makes the window open by itself. | `events/` (top level, not under `common/`) |
 | `scripted_guis` | The feature needs **script logic behind a button or a widget**. The layout itself lives in `gui/`. | `common/scripted_guis/` plus the layout under `gui/` |
 | `on_actions` | The feature hooks a **hook that the game calls** at a specific circumstance. | `common/on_actions/` |
-| `character_interactions` | The action becomes available **after the player selects a character**. The wiki snapshot has no page for this directory, so treat the rule as unverified. | `common/character_interactions/` |
-| `objectives` | The feature is a **goal** the player works toward. The wiki snapshot has no page for this directory, so treat the rule as unverified. | `common/objectives/` |
+| `character_interactions` | The action becomes available **after the player selects a character**. The keyword list names the directory, and no page in the snapshot documents it, so treat the rule as unverified. | `common/character_interactions/` |
+| `objectives` | The feature is a **goal** the player works toward. The keyword list names the directory, and no page in the snapshot documents it, so treat the rule as unverified. | `common/objectives/` |
 | Other mechanisms for an existing UI window and a hook | These hook into an existing UI window or hook, and the entry points above do not cover them. | `gui/` (panels), `common/scripted_buttons/`, `common/scripted_progress_bars/`, `common/scripted_triggers/`, `common/scripted_effects/` |
 
 A mod can also add its own content to one of the game's own data directories, such as scripted
@@ -342,7 +343,7 @@ Use one word for one thing. The right column is the only spelling this repositor
 | vanilla scripts | The game's own scripts, mirrored at `game-scripts/vanilla/game/`. The only evidence root for a vanilla object, a field value, an `INJECT:` target, or a loc key. | game files, base files, the copy |
 | mirror | The `game-scripts/` directory, which `sync_game_scripts` writes. It has two parts: `vanilla/` and `workshop/`. | script dump, game-scripts copy |
 | dumps | The six name lists in `docs/script_docs/`, produced by the game's `script_docs` command. | logs, script docs, wiki dump |
-| gated directory | A `common/<directory>` that accepts the `INJECT:`/`REPLACE:` keywords. The wiki calls the list "folders that use these keywords". | keyword folder |
+| gated directory | A directory on the wiki's keyword list: most `common/*`, some `gfx/*`, and `gui_animations`, `modifier_icons`, `music`, `notifications`, and `sound/persistent_objects`. | keyword folder |
 | `validate_mod` | The tool that runs the syntax, convention, and name-level checks. | the linter, the validator |
 | UI | What the player sees and clicks. | screen, interface |
 | UI window | One window that the game shows, and the panel inside it. | screen, page |

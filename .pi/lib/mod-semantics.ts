@@ -5,14 +5,14 @@
  * mod-lint.ts. This file answers the three questions that a brace and BOM check cannot answer:
  *   - C1  Does the target of a `REPLACE:` or `INJECT:` keyword exist? The target must sit in the
  *         same `common/<directory>/` as the keyword, either in this mod or in the vanilla scripts.
- *         A `TRY_*` or `*_OR_CREATE` keyword is best effort by design, so a missing target is a
- *         note there, never a warning.
+ *         A `TRY_*` keyword gives a NOTE. An `*_OR_CREATE` keyword is not reported at all, because
+ *         creating the entry is its intended use.
  *   - C2  Is a name inside an effect list or a trigger list a near miss for a known name? The known
  *         names come from `docs/script_docs/`, which this repository ships. The check reports only
  *         a name within an edit distance of 2 from a known name, so a structure field is not
  *         reported.
  *   - C3  Does a new game object have its localization keys? The wiki states the key shape for
- *         decisions, character traits, and journal entries.
+ *         decisions, character traits, journal entries, and journal entry groups.
  *
  * The evidence comes from the repository itself, not from the player's machine:
  *   - `docs/script_docs/` holds the game's own dumps (effects, triggers, modifiers, event targets,
@@ -374,9 +374,28 @@ const EFFECT_CONTAINERS = new Set([
   // A tooltip block carries a trigger or an effect list, beside its `text` key.
   "custom_tooltip",
   "custom_description",
+  // The blocks that a decision, a journal entry, an event, or a pulse hook writes around its script.
+  // The count after each one is its block occurrences in the vanilla 1.13.11 tree.
+  "when_taken", // 60
+  "is_shown", // 61
+  "is_shown_when_inactive", // 147
+  "possible", // 2019
+  "complete", // 411
+  "fail", // 204
+  "invalid", // 187
+  "on_complete", // 368
+  "on_fail", // 141
+  "on_invalid", // 54
+  "on_timeout", // 65
+  "on_weekly_pulse", // 116
+  "on_monthly_pulse", // 166
+  "on_yearly_pulse", // 32
   // The body of `scope:<name> = { … }` is an effect or trigger list, and the scope path itself is
   // never a game name. The scan pushes this name for it.
   "scope",
+  // A top-level definition in `common/scripted_effects`, `common/scripted_triggers`, or
+  // `common/scripted_rules` has a list body. The scan pushes this name for it.
+  "scripted body",
   // `not`, `or`, `and`, `nor`, and `nand` are **not** containers here. A real mod writes
   // `AND = { … }` as a country-definition block, so scanning its body reports the data fields of the
   // definition as near misses. The boolean operators are left out on purpose.
@@ -484,8 +503,15 @@ function suggest(name: string, known: Set<string>): string | null {
  * The direct children of the effect and trigger containers in one file. A child is reported as
  * `<container>` plus `<name>`, so the item can name both. The scan is per token, not per line: a
  * vanilla file often writes a whole block on one line, and a per-line match would miss it.
+ *
+ * `topLevelBodiesAreLists` serves `common/scripted_effects`, `common/scripted_triggers`, and
+ * `common/scripted_rules`: every top-level definition in those directories has a body that is an
+ * effect or a trigger list, and the definition name itself is not a game name.
  */
-function containerChildren(text: string): Array<{ container: string; name: string }> {
+function containerChildren(
+  text: string,
+  topLevelBodiesAreLists = false,
+): Array<{ container: string; name: string }> {
   const out: Array<{ container: string; name: string }> = [];
   const stack: Array<{ name: string }> = [];
   let ident = "";
@@ -528,7 +554,8 @@ function containerChildren(text: string): Array<{ container: string; name: strin
       continue;
     }
     if (ch === "{") {
-      stack.push({ name: (pendingName ?? "").toLowerCase() });
+      const atRoot = stack.length === 0;
+      stack.push({ name: atRoot && topLevelBodiesAreLists ? "scripted body" : (pendingName ?? "").toLowerCase() });
       pendingName = null;
       ident = "";
       scopePath = false;
@@ -542,9 +569,11 @@ function containerChildren(text: string): Array<{ container: string; name: strin
       continue;
     }
     // A name never spans a line, so a line break ends it. A space or a tab does not: the file
-    // writes `name = value`, and that space sits inside the pair.
+    // writes `name = value`, and that space sits inside the pair. A scope path that is not followed
+    // by a block also ends at the line break.
     if (ch === "\n" || ch === "\r") {
       ident = "";
+      scopePath = false;
       continue;
     }
     if (ch !== " " && ch !== "\t") ident = "";
@@ -667,12 +696,20 @@ export function analyzeSemantics(modPath: string, opts?: SemanticOptions): Seman
     } else {
       let targetCount = 0;
       for (const o of overrides) {
-        const vanilla = vanillaCategoryNames(vanillaRoot, o.category);
-        if (vanilla === null) continue; // This category has no vanilla file, so a target cannot exist there.
         targetCount += 1;
-        const known = (defsByCategory.get(o.category)?.has(o.name) ?? false) || vanilla.has(o.name);
+        const vanilla = vanillaCategoryNames(vanillaRoot, o.category);
+        const inMod = defsByCategory.get(o.category)?.has(o.name) ?? false;
+        const known = inMod || (vanilla?.has(o.name) ?? false);
         if (!known && isCreateKeyword(o.keyword)) continue; // The keyword creates the entry on purpose.
-        if (!known) {
+        if (!known && vanilla === null) {
+          // The mirror has no directory for this class, so the vanilla side is unknown. The mod does
+          // not define the name either, so the target exists nowhere that this tool can see.
+          warnings.push({
+            code: "c1-unknown-category",
+            level: "note",
+            message: `${o.file}: ${o.keyword}:${o.name} names no top-level object in ${o.category}, and the vanilla mirror has no such directory. Run sync_game_scripts, then check the target again.`,
+          });
+        } else if (!known) {
           warnings.push({
             code: "c1-missing-target",
             level: isTryKeyword(o.keyword) ? "note" : "warn",
@@ -721,7 +758,12 @@ export function analyzeSemantics(modPath: string, opts?: SemanticOptions): Seman
         if (!category && !rel.toLowerCase().startsWith("/events/")) continue;
         const text = readText(abs);
         if (text === null) continue;
-        for (const { container, name } of containerChildren(stripLineComments(text))) {
+        // In a scripted effect, trigger, or rule, every top-level definition has a list body.
+        const scriptedBody =
+          category === "common/scripted_effects" ||
+          category === "common/scripted_triggers" ||
+          category === "common/scripted_rules";
+        for (const { container, name } of containerChildren(stripLineComments(text), scriptedBody)) {
           const lower = name.toLowerCase();
           // A game name is lowercase snake_case. An uppercase identifier is a constant such as a
           // state or a good, and the game names it somewhere else, so it is not a candidate. A

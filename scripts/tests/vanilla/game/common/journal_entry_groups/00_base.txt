@@ -1,0 +1,1 @@
+# This file only makes the directory part of the fixture mirror.

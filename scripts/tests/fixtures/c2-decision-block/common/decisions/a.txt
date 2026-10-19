@@ -1,0 +1,6 @@
+zz_dec = {
+	potential = { always = yes }
+	when_taken = {
+		add_devastaton = 5
+	}
+}

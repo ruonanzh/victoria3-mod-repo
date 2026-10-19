@@ -1,0 +1,3 @@
+zz_effect = {
+	add_devastaton = 5
+}
