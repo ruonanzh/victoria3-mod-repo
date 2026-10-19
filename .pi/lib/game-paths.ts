@@ -28,6 +28,37 @@ import os from "node:os";
 /** The game directory sentinel: the executable `binaries/victoria3.exe`. Duckov uses `TeamSoda.Duckov.Core.dll` in the same way. */
 export const GAME_SENTINEL = join("binaries", "victoria3.exe");
 
+/** The mirror root, which `sync_game_scripts` writes. This is the only definition of the name. */
+export const MIRROR_DIRNAME = "game-scripts";
+/**
+ * The vanilla part of the mirror: a copy of the game install root. The game's own scripts therefore
+ * read as `game-scripts/vanilla/game/...`, and the engine's other trees keep their own names.
+ */
+export const VANILLA_MIRROR_DIRNAME = "vanilla";
+/** The Workshop part of the mirror: one directory per mirrored Workshop mod. */
+export const WORKSHOP_MIRROR_DIRNAME = "workshop";
+/**
+ * The mirror name that the vanilla part used before it was renamed to `vanilla`. `sync_game_scripts`
+ * removes that copy after it writes the new one, because a stale copy keeps posing as the current
+ * game content.
+ */
+export const LEGACY_VANILLA_MIRROR_DIRNAME = "game";
+/** The file that blocks the Workshop part of the mirror. The harness creates it, and no tool has a parameter for it. */
+export const NO_WORKSHOP_MARKER = ".no-workshop";
+
+/** The mirror root under the workspace. */
+export const mirrorDir = (cwd: string): string => join(cwd, MIRROR_DIRNAME);
+/** The vanilla part of the mirror (the copy of the install root). */
+export const vanillaMirrorDir = (cwd: string): string => join(mirrorDir(cwd), VANILLA_MIRROR_DIRNAME);
+/**
+ * The vanilla scripts: the mirror's copy of the game's own `game/` tree. This is the only evidence
+ * root for a vanilla object, a field value, an `INJECT:` target, or a loc key. The Workshop part
+ * holds other authors' mods, so it is not evidence.
+ */
+export const vanillaScriptsDir = (cwd: string): string => join(vanillaMirrorDir(cwd), "game");
+/** The Workshop part of the mirror. It is a read-only reference, and it is not vanilla. */
+export const workshopMirrorDir = (cwd: string): string => join(mirrorDir(cwd), WORKSHOP_MIRROR_DIRNAME);
+
 export interface ModRepoConfig {
   game?: { name?: string; steamAppId?: string | number; installDirHint?: Record<string, string | string[]> };
   modInstall?: { path?: string; relativeTo?: string };

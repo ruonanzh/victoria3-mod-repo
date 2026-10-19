@@ -1,14 +1,13 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { isValidModId } from "../lib/mod-identity";
+import { analyzeSemantics } from "../lib/mod-semantics";
 import { Type } from "typebox";
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative, resolve, sep, basename } from "node:path";
 
 /**
  * validate_mod - the Victoria 3 mod validation tool for the pdx-script mod type.
- * It checks syntax and convention rules only. The name-level semantic checks (the effect, trigger,
- * and modifier names; the INJECT: and REPLACE: targets; the new-object localization keys) are cut
- * in v1 and return when the game dumps are regenerated.
+ * It checks syntax and conventions, and then the name-level semantics in ../lib/mod-semantics:
  *   - metadata.json: presence, valid JSON, a top-level object, a semver version, the standard
  *     fields, and the thumbnail entry.
  *   - Localization YAML: the UTF-8 BOM, the encoding, the `_l_<lang>` filename, the `l_<lang>:`
@@ -20,9 +19,13 @@ import { join, relative, resolve, sep, basename } from "node:path";
  *     awareness of `#` comments and multiline strings. It also checks that the INJECT: and REPLACE:
  *     family sits at the file top level (the wiki allows no other level, and no real mod nests one),
  *     and that the folder is gated for the keyword at all.
+ *   - Semantics (name level, in ../lib/mod-semantics): the target of a REPLACE:/INJECT: keyword, a
+ *     near-miss effect or trigger name, and the localization keys of a new object. That layer reads
+ *     the dumps in docs/script_docs/ and the vanilla mirror in game-scripts/vanilla/. A semantic
+ *     item is a warning or a note, never a failure.
  *
- * The tool is read-only, and it has no third-party dependency. Its content output uses PASS or FAIL with NEXT,
- * in ASCII English, and its details hold only ok, errors, and warnings.
+ * The tool is read-only, and it has no third-party dependency. Its content output uses PASS or FAIL
+ * with NEXT, in ASCII English, and its details hold only ok, errors, and warnings.
  */
 
 const UTF8_BOM = Buffer.from([0xef, 0xbb, 0xbf]);
@@ -754,7 +757,7 @@ export default function (pi: ExtensionAPI) {
     name: "validate_mod",
     label: "Validate Mod",
     description:
-      "Validate a Victoria 3 mod of the pdx-script type, under your_mods/. It checks the metadata.json fields, the localization YAML, and the brace and quote balance in PDXScript and GUI files. It also checks the rule that INJECT: and REPLACE: stay at the top level. It is not a scope or type validator, and it does not check effect, trigger, or modifier names in this version.",
+      "Validate a Victoria 3 mod of the pdx-script type, under your_mods/. It checks the metadata.json fields, the localization YAML, and the brace and quote balance in PDXScript and GUI files. It also checks the rule that INJECT: and REPLACE: stay at the top level. Then it checks the names: that a REPLACE:/INJECT: target exists, that an effect or trigger name is not a near miss for a known name, and that a new decision, character trait, or journal entry has its localization keys. It reads docs/script_docs/ and game-scripts/vanilla/ for that check. It is not a scope or type validator.",
     promptSnippet: "Validate a mod under your_mods/",
     promptGuidelines: [
       "Use validate_mod after you write a mod, to check that it passes the rules.",
@@ -787,12 +790,20 @@ export default function (pi: ExtensionAPI) {
       ];
       const errors = findings.filter((f) => f.severity === "error");
       const warnings = findings.filter((f) => f.severity === "warn");
+      // The semantic layer reads the workspace dumps and the vanilla mirror, so it needs ctx.cwd.
+      // It never turns into an error: a name-level conclusion is not proof.
+      const semantic = analyzeSemantics(modDir, { repoRoot: ctx.cwd });
+      const semanticLines = semantic.warnings.map(
+        (w) => `${w.level === "note" ? "NOTE" : "WARN"}: semantic: ${w.message}`,
+      );
+      const semanticWarnCount = semantic.warnings.filter((w) => w.level !== "note").length;
+      const totalWarnings = warnings.length + semanticWarnCount;
 
       const name = modDir.split(/[\\/]/).pop() || modDir;
       const lines: string[] = [];
       if (errors.length === 0) {
         lines.push(
-          `PASS: ${name} is valid - syntax and conventions only. Scope, type, values, and names are not checked.${warnings.length > 0 ? ` (${warnings.length} warning(s))` : ""}`,
+          `PASS: ${name} is valid - syntax, conventions, and the name-level checks listed below. Scope, type, and value domains are not checked.${totalWarnings > 0 ? ` (${totalWarnings} warning(s))` : ""}`,
         );
         for (const w of warnings.slice(0, MAX_CONTENT_LINES)) {
           lines.push(`WARN: ${w.rel}: ${w.message}`);
@@ -800,9 +811,13 @@ export default function (pi: ExtensionAPI) {
         if (warnings.length > MAX_CONTENT_LINES) {
           lines.push(`... ${warnings.length - MAX_CONTENT_LINES} more warning(s) omitted`);
         }
+        lines.push(...semanticLines.slice(0, MAX_CONTENT_LINES));
+        if (semanticLines.length > MAX_CONTENT_LINES) {
+          lines.push(`... ${semanticLines.length - MAX_CONTENT_LINES} more semantic item(s) omitted`);
+        }
       } else {
         lines.push(
-          `FAIL: ${name} has ${errors.length} error(s), ${warnings.length} warning(s)`,
+          `FAIL: ${name} has ${errors.length} error(s), ${totalWarnings} warning(s)`,
         );
         for (const e of errors.slice(0, MAX_CONTENT_LINES)) {
           lines.push(`ERROR: ${e.rel}: ${e.message}`);
@@ -818,6 +833,10 @@ export default function (pi: ExtensionAPI) {
         if (warnings.length > MAX_CONTENT_LINES) {
           lines.push(`... ${warnings.length - MAX_CONTENT_LINES} more warning(s) omitted`);
         }
+        lines.push(...semanticLines.slice(0, MAX_CONTENT_LINES));
+        if (semanticLines.length > MAX_CONTENT_LINES) {
+          lines.push(`... ${semanticLines.length - MAX_CONTENT_LINES} more semantic item(s) omitted`);
+        }
         lines.push(`NEXT: fix the errors above and re-run validate_mod.`);
       }
 
@@ -827,6 +846,7 @@ export default function (pi: ExtensionAPI) {
           ok: errors.length === 0,
           errors: errors.map((e) => `${e.rel}: ${e.message}`),
           warnings: warnings.map((w) => `${w.rel}: ${w.message}`),
+          semantic: { checked: semantic.checked, warnings: semantic.warnings },
         },
       };
     },

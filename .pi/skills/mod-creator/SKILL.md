@@ -1,6 +1,6 @@
 ---
 name: mod-creator
-description: The guide for writing and modifying Victoria 3 (pdx-script) mods. Always read it first, before you search the vanilla scripts, before you read the reference mods, and before your first write. Covers the order of work, the mod structure, the `metadata.json` fields, localization YAML, PDXScript and GUI syntax, `INJECT:` and `REPLACE:` overrides, load order and naming, the entry mechanisms, `validate_mod` errors, and the semantic lookup path.
+description: The guide for writing and modifying Victoria 3 (pdx-script) mods. Always read it first, before you search the vanilla scripts, before you read the reference mods, and before your first write. Covers the order of work, the mod structure, the `metadata.json` fields, localization YAML, PDXScript and GUI syntax, `INJECT:` and `REPLACE:` overrides, load order and naming, the entry mechanisms, the `validate_mod` output, and the semantic lookup path.
 ---
 
 # Writing Victoria 3 mods (pdx-script)
@@ -14,49 +14,79 @@ This skill provides domain method only, and it **grants no permissions**. Readin
 you to create directories, to check or install runtimes, or to modify source files. The session role
 and its bound directory gate those actions.
 
-## Usage modes (two roles)
+## The order of work
 
-- **Q&A and consultation (read-only).** Answer game-mechanics and mod API questions by reading the
-  knowledge layer. Start from `docs/INDEX.md` to locate the right source. Do **not**
-  create files or prepare the environment, unless the player explicitly asks about their
-  environment. Preparing the environment means locating paths and mirroring the scripts into
-  `game-scripts/`.
-- **Writing or modifying the mod.** When the request is about a game system, start with the wiki.
-  Compare the request with the routing table at the top of `docs/INDEX.md`, take the pages that row
-  names (usually one mechanism page, plus one or two reference pages that you grep rather than read
-  whole), and read them. A request that only changes a value skips this step. Then do these steps in
-  this order.
-  1. **Research the real values first.** Victoria 3 is pure PDXScript, with no self-describing API and no
-     framework. Run `sync_game_scripts` to load the modding context into `game-scripts/`. Then grep
-     that directory carefully to pin down the real vanilla values and their connections: which
-     goods, buildings, and modifiers exist, and what consumes or produces what. Do not guess from
-     names alone. Three hard ordering rules:
-     1. Locate the entry and the real names. `entry-scout` and your own grep are peers, and
-        `entry-scout` is the default: it runs while you keep working, and its searches stay in the
-        child session, so your context holds answers. Dispatch one scout per independent part, in the
-        same turn, when the request has two or three parts. Grep `game-scripts/` yourself when you
-        already hold the exact name: `grep -rln <keyword> game-scripts/` settles it in one or two
-        calls, and a child agent costs more than that. Read the scout's first candidate yourself
-        before you write. The `## Survey or lookup` section below has the details.
-     2. Read in this fixed order: `docs/victoria3-modding-conventions.md` (the single source of truth),
-        then locate 1 or 2 reference mods of the same kind, then write.
-     3. Decide the screen first, then research how to mount on that one screen. Where a mechanism
-        lives and where to attach something inside an existing screen are two different questions.
-        Section 7 answers the first. For the second, read that screen's own `.gui` file and find the
-        block to override.
-  2. **Agree with the player before you write.** Give a short description of the mod content: what it
-     modifies, its scope, and the shape of the mod. Then wait for the player's confirmation. Do this
-     **even when the request looks specific**. Skip it only when the player explicitly says to start,
-     for example "start now, no confirmation".
-  3. **Then write.** Produce or modify a mod under `your_mods/<ModName>/`. Reuse
-     `reference/example_mod/`. You may write only inside the bound mod directory. With no binding,
-     call `create_mod_folder` with a `lower_snake_case` name, as the **Directory name** rule below
-     defines it. Do not create a second binding when one already exists.
-  4. **Then check the UI side.** A mod here is mostly PDXScript code, but an in-game check often
-     fails without the UI part. Before you finish, ask: does this modification need an icon, a UI
-     label (localization), a menu entry, a column, a filter, or a panel? Add what is missing. Reuse
-     an existing in-game icon or asset when one fits, because you do not have to create new art. Do
-     not wait for the player to ask about the icon.
+Work in two stages. Stage 1 settles what the player wants, backed by research. Stage 2 writes the
+mod. Do not start stage 2 until the player confirms the shape in step 5.
+
+### Stage 1: Settle what the player wants
+
+**Must know fact.** Victoria 3 is a C++ engine, and PDXScript is the layer on top of it. There is no
+self-describing API and no framework. The game's mechanics, its data, and its UI are text in the
+vanilla scripts: PDXScript, GUI layout, asset definitions, and localization. Those files are the whole
+surface you can mod. If a mechanism is absent from them, you cannot mod it.
+
+0. **Load the modding context.** Run `sync_game_scripts`, then check that
+   `game-scripts/vanilla/game/` exists. When it does not, the workspace is not ready: use
+   `setup-workspace` first.
+1. **If the request is about a game system, start with the wiki.** Compare the request with the
+   routing table at the top of `docs/INDEX.md`. Take the pages that row names, and read them. A
+   request that only changes a value skips this step.
+2. **Pick where the objects go.** When the change stays inside one existing block, skip to step 5:
+   no new object and no new entry point. A change can need an entry point, an existing data
+   directory, or both. Read section 7 of `docs/victoria3-modding-conventions.md` and pick the row that
+   matches the feature. Read one example in the directory that row names. When the change needs no
+   entry point, go to `## Data kinds` below for the directory. When the row is unclear, or no listed
+   kind matches, dispatch `entry-scout` and open its first candidate.
+3. **Research the vanilla code.** Find the objects your change touches, and how they connect. Before
+   you search, write down the mechanism family and the object name you expect. Do not guess from
+   names alone. Then pick one path:
+   - Three or more searches, or no name yet: dispatch `entry-scout` with the intent, the files you
+     plan to write, and the questions already closed. Its searches stay in the child session, so your
+     context holds the answers, not the greps. Open its first candidate yourself.
+   - One name you already know: grep it yourself,
+     `grep -rln <keyword> game-scripts/vanilla/`.
+   A name exists when the dumps in `docs/script_docs/` list it. An object definition, a field value,
+   an `INJECT:` target, or a loc key comes from `game-scripts/vanilla/game/`. Never grep
+   `game-scripts/workshop/` for evidence: that part holds other authors' mods.
+4. **Research the UI window when the change touches one.** A UI window is one window that the game
+   shows to the player. This change has two separate questions: which mechanism you use, and what you
+   change inside a UI window. Step 2 answers the first, and section 7 also names the directories that
+   attach to an existing UI window. For the second, read that window's own `.gui` file and note the
+   `block` you can fill.
+
+   The readable copy of that file is under `game-scripts/vanilla/game/gui/`. A GUI `type` or
+   `template` is first-loaded-wins, so an override of one has to load first. Read the block names
+   before you write.
+5. **Confirm the mod shape with the player.** Describe what the mod changes, its scope, and its
+   shape. Then wait for the player to confirm. Do this **even when the request looks specific**.
+   Skip it only when the player says to start, for example "start now, no confirmation".
+
+### Stage 2: Write the mod
+
+6. **Read the modding conventions in full.** Read `docs/victoria3-modding-conventions.md`. It is the
+   single source of truth. Section 7 gave you the entry mechanism in step 2, and the rest gives the
+   rules you write under.
+7. **Find the vanilla you want to modify, then pick the override form.** Open the file that holds the
+   object, and read the object. Section 1 of the conventions has the forms and their limits. Pick
+   one:
+   - a new object
+   - an implicit replace, in a directory without keywords
+   - one of the `INJECT:`/`REPLACE:` keywords, or its `TRY_` or `_OR_CREATE` variant
+   - a full-file overwrite
+
+   Check that the target of a keyword exists in `game-scripts/vanilla/` before you write it.
+8. **Write the files.** Produce or modify a mod under `your_mods/<ModName>/`. Reuse
+   `reference/example_mod/`. You may write only inside the bound mod directory. With no binding, call
+   `create_mod_folder` with a `lower_snake_case` name, as the **Directory name** rule below defines
+   it. Do not create a second binding when one already exists.
+9. **Check the result, then dispatch the reviewer.** Run `validate_mod` on
+   `your_mods/<ModName>/`, and fix every ERROR. Then dispatch `mod-reviewer`, and apply what it
+   finds. Before you finish, ask: does this modification need an icon, a UI label (localization), a
+   menu entry, a column, a filter, or a panel? Add what is missing. Reuse an existing in-game icon or
+   asset when one fits, because you do not have to create new art. Do not wait for the player to ask
+   about the icon.
+
 - **Directory name** (this repository's rule, enforced by `create_mod_folder`). The name is
   `lower_snake_case`: it starts with a lowercase letter, then holds only lowercase letters, digits,
   and underscores, at most 40 characters. Do **not** use hyphens: `fix_trade_companies`, not
@@ -68,7 +98,7 @@ and its bound directory gate those actions.
 Both questions are research, and both have the same two ways to run: `entry-scout`, or your own
 grep. They are peers. **`entry-scout` is the default**, for two reasons:
 
-- It runs while you keep working, so a request with two or three independent parts fans out at once.
+- It runs while you keep working, so a request with three independent parts fans out at once.
 - Its greps stay in the child session, so your context holds the answers instead of the search output.
 
 Grep yourself when you already hold the exact name. One or two calls settle it, and a child agent
@@ -92,7 +122,7 @@ Skip this step when the task only changes values inside an existing block.
 ├── events/
 ├── gui/
 ├── localization/
-└── thumbnail.png            # Steam Workshop image (optional)
+└── thumbnail.png            # optional mod image
 ```
 
 ## metadata.json
@@ -102,15 +132,15 @@ Skip this step when the task only changes values inside an existing block.
 | Field | Rule |
 |---|---|
 | `name` | A non-empty string: the mod title that the player reads. |
-| `id` | A non-empty string. The game requires only that the value identifies the mod (Victoria 3 wiki). **This repository suggests** lowercase snake_case that matches the `your_mods/` directory name. That is not a game rule. `install_mod` uses the `your_mods/` directory name as the install directory name, so a match helps the player. `validate_mod` does **not** report an error when the two differ. |
-| `version` | `x.x` or `x.x.x`, two or three parts. |
-| `supported_game_version` | A patch-level wildcard, for example `1.13.*`. An exact version such as `1.0.4` goes stale: this game updates its minor version often, and the game then flags the mod outdated. A loose `1.*` is a WARN. |
+| `id` | A non-empty string. The wiki requires the field and states that the value must stay stable over time: do not include a version number, and do not change it on a rename. **This repository suggests** lowercase snake_case that matches the `your_mods/` directory name. That is not a game rule. `install_mod` uses the `your_mods/` directory name as the install directory name, so a match helps the player. `validate_mod` does **not** report an error when the two differ. |
+| `version` | `x.x` or `x.x.x`, two or three parts. The wiki example is `1.1`, and it states that the launcher understands semantic versioning. |
+| `supported_game_version` | A patch-level wildcard, for example `1.13.*`. An exact version such as `1.0.4` goes stale: this game updates its minor version often, and the game then flags the mod outdated. A loose `1.*` is a WARN. The wiki also states that `+` means "or higher". |
 | `short_description` | A one-line summary. The field is **`short_description`**, not `description`. |
 | `game_id` | `"victoria3"`. The launcher uses it to refuse a mod built for another game. An empty or absent value is a WARN. |
-| `tags` | An array of strings. The wiki documents a maximum of 5; real Workshop mods do exceed it and still load, so the linter does not enforce the count. |
+| `tags` | An array of strings. The wiki documents a maximum of 5, and states that the tags affect the local listing only. |
 | `thumbnail` | `"thumbnail.png"`, optional. The field is **`thumbnail`**, not `picture`. |
-| `relationships` | `[]`, optional. |
-| `game_custom_data` | `{"multiplayer_synchronized": true}` normally, plus an optional `replace_paths` array. |
+| `relationships` | `[]`, optional. `rel_type` is one of `dependency`, `incompatible_with`, `load_before`, and `load_after`, and `resource_type` is `"mod"`. |
+| `game_custom_data` | `{"multiplayer_synchronized": true}` normally. |
 
 ```json
 {
@@ -127,26 +157,33 @@ Skip this step when the task only changes values inside an existing block.
 }
 ```
 
-The mod root also holds `thumbnail.png` (the Steam Workshop image); `.metadata/thumbnail.png` is the
-launcher image. Both are optional, but shipping neither is a WARN.
+The wiki's own example carries `/* */` comments, so it is **not valid JSON**. Copy the fields, not
+the comments. `.metadata/thumbnail.png` is the launcher image, and the wiki documents it as optional.
+`validate_mod` warns when the `thumbnail` entry is missing, or when its value names no existing file.
+
+`game_custom_data.replace_paths` is not in the wiki snapshot, and this repository has not verified
+it. Prefer a full-file overwrite, which the wiki states. See convention section 1.
 
 ## Localization YAML
 
-The files are `**/localization/**/*.yml`, under the mod root (for example `localization/english/`).
+The files are `localization/<lang>/*.yml`, under the mod root. The directory name is spelled with a
+z, and a misspelling is a documented failure mode.
 
 - **Write the file as UTF-8 with BOM** (`EF BB BF`) in the call that creates it: start the content
   with the BOM character. A later rewrite of the file drops the BOM, and the game then ignores the
-  file in silence. That failure is fatal, not cosmetic. To add the BOM to a file that already
+  file. That failure is fatal, not cosmetic. To add the BOM to a file that already
   exists, use: `printf '\xEF\xBB\xBF' | cat - <file> > tmp && mv tmp <file>`.
 - The filename must end with `_l_<language>`, which matches the language directory.
 - The first content line is `l_<lang>:`, and it must match the directory.
-- An entry is `  key: "value"` or `  key:0 "value"` with an explicit version. The value starts
-  and ends with a double quote on the same line, so an inner `"` and a doubled `""` are legal. A
-  value with no closing `"` on its line is an error. Keep the `[` and `]` placeholders balanced:
-  the linter does not check that, and an unbalanced placeholder breaks the string at run time.
+- An entry is ` key: "value"` or ` key:0 "value"` with an explicit version. The value starts
+  and ends with a double quote. An inner `"` and a doubled `""` are legal, and the engine accepts
+  them in the vanilla files. A value with no closing `"` on its line is an error. Keep the `[` and
+  `]` placeholders balanced: `validate_mod` does not check that, and an unbalanced placeholder breaks
+  the string at run time.
 - One file must not hold duplicate keys.
 - To override a vanilla loc key, use a `replace/` subdirectory:
   `<lang>/replace/overwriting_l_<lang>.yml`. Keys there overwrite identical keys elsewhere.
+- Every string the player reads is a key. Do not write a display string into the script.
 
 ## PDXScript and GUI
 
@@ -158,7 +195,7 @@ The `.txt`, `.gui`, `.gfx`, and `.asset` files live under the mod root (flat, mi
 - The `INJECT:` and `REPLACE:` keywords go at the **file top level** only, in the form
   `KEYWORD:key = {`. A scalar value is also legal where the object itself is a scalar, for example
   `REPLACE:amenability = 50` in `common/script_values/`. The wiki allows no other level, and no real
-  mod nests one: a container folder such as `common/genes/` can be replaced only as a whole.
+  mod nests one: a container directory such as `common/genes/` can be replaced only as a whole.
 
 ## Overriding vanilla
 
@@ -166,10 +203,10 @@ Three mechanisms exist. The reason and the edge cases are in
 `docs/victoria3-modding-conventions.md`.
 
 1. **Direct file overwrite.** A file with the same path and filename replaces the vanilla file
-   entirely. This is brittle.
-2. **Implicit replace.** In a directory that is not a keyword directory, a later top-level object
-   with the same name wins.
-3. **The `INJECT:` and `REPLACE:` keywords.** A keyword directory, which is most `common/`
+   entirely. This is brittle across patches.
+2. **Implicit replace.** In a directory that does not use the keywords, the later-loaded top-level
+   object with the same name wins.
+3. **The `INJECT:` and `REPLACE:` keywords.** A gated directory, which is most `common/`
    subdirectories, requires a keyword to modify an existing object. Implicit replace does not work
    there.
 
@@ -186,24 +223,23 @@ REPLACE:expensive_in_depth_education = {
 ```
 
 **Rule of thumb.** Prefer additive new objects. Use `INJECT:` or `REPLACE:` for a surgical
-modification in a keyword directory. Reserve a full-file overwrite for a modification to most of a
-file. The keywords work in 122 gated folders only, with special rules: GUI types and events are
-first-loaded-wins, defines merge per entry, `scripted_effects`/`scripted_triggers`/`scripted_rules`
-accept `REPLACE:` only, a container folder such as `common/genes/` can be replaced only as a whole,
-and `dna_data` produces duplicates. To drop a whole vanilla folder, use
-`game_custom_data.replace_paths`. See the conventions document section 1.
+modification in a gated directory. Reserve a full-file overwrite for a modification to most of a
+file. The keyword works in a documented list of directories, and the list is community-maintained.
+Two traps that the wiki states: an `INJECT:` does nothing when that block type already exists in the
+entry, and an `INJECT:` of a multi-occurrence block appends a duplicate. Section 1 of the conventions
+has the list and the exception for scripted effects and triggers.
 
 ## Load order and naming
 
 - Files load in **ASCII order**: `00_foo.txt` before `01_bar.txt`. A file in a subdirectory loads
   after the files in the parent directory.
-- Prefix idioms: `00_` forces an early load, and `zz_`, `98_`, or `99_` forces a late load, so an
-  override wins.
+- Prefix idioms: `00_` forces an early load, and `zz_`, `98_`, or `99_` forces a late load. In a
+  directory without keywords the later definition wins, so a late prefix is how an override wins.
 - **GUI and events are the exception: the FIRST loaded definition wins.** A `type` or `template`
   clash across mods is decided by **mod load order** (the playlist position), not by filename, and a
-  later mod **cannot** overwrite an earlier one. The same holds for `events`. So a late `zz_`
-  prefix does **not** win a GUI `type` or `template`; it loses. To replace one of those, you must be
-  the mod that loads first, and a full-file overwrite is the only reliable route.
+  later mod **cannot** overwrite an earlier one. The same holds for `events`. A late `zz_` prefix does
+  **not** win a GUI `type` or `template`, it loses. To replace one of those, you must be the mod that
+  loads first, and a full-file overwrite is the only reliable route.
 - The mod directory name is `lower_snake_case`. Do not leave scratch files in the mod directory:
   `temp_*`, `_tmp_*`, and editor backups.
 
@@ -211,14 +247,20 @@ and `dna_data` produces duplicates. To drop a whole vanilla folder, use
 
 Call `validate_mod` with `modDir = your_mods/<ModName>/`.
 
-- `PASS: <name> is valid` means the static syntax and convention checks passed. It does not mean the
-  mod ran in the game, and it does not check effect, trigger, or modifier names in this version.
+- `PASS: <name> is valid` means the static checks passed. It does not mean the mod ran in the game.
 - `FAIL: <reason>` gives one reason per line, in English, and points at the offending file or field.
   Use the `NEXT:` line to locate it. Fix every ERROR, and do not modify another mod.
-- The tool checks syntax and conventions only in v1: it does **not** check whether an effect,
-  trigger, or modifier name exists, whether an `INJECT:`/`REPLACE:` target exists, or whether a new
-  object has its localization keys (those checks return when the game dumps are regenerated). Use
-  `how-to-speak` to report the result to the player.
+- The tool checks the syntax and the conventions, and then three name-level classes:
+  - that the target of a `REPLACE:`/`INJECT:` keyword exists in the same `common/<directory>/`, in
+    this mod or in `game-scripts/vanilla/`;
+  - that an effect or trigger name inside an effect or trigger block is not a near miss for a name in
+    `docs/script_docs/`;
+  - that a new decision, character trait, or journal entry has its localization keys.
+- A name-level finding is a `WARN:` or a `NOTE:`, never an ERROR. Read them. They are evidence that a
+  name is wrong, not proof of a load failure.
+- The tool does not check a scope, a type, a value domain, or a GUI resolution order. Section 10 of
+  the conventions lists what to check by hand.
+- Use `how-to-speak` to report the result to the player.
 
 ## Common errors
 
@@ -228,7 +270,8 @@ prints them. The text after each one is the fix.
 
 - `ERROR: .metadata/metadata.json: missing .metadata/metadata.json`: create the file with the
   standard fields above.
-- `metadata.json is not valid JSON` or `not a JSON object`: fix the JSON.
+- `metadata.json is not valid JSON` or `not a JSON object`: fix the JSON. The wiki example carries
+  comments, so a copy of it fails here.
 - `version '<v>' is not semver x.x or x.x.x`: use `x.x` or `x.x.x`.
 - `missing UTF-8 BOM (game ignores localization files without a BOM)`: save the file as UTF-8
   **with BOM** (`EF BB BF`).
@@ -237,24 +280,36 @@ prints them. The text after each one is the fix.
 - `line N: expected a language header 'l_<lang>:' as the first content line`: the first content line
   must be `l_<lang>:`.
 - `malformed localization line (expected '  key: "value"' or '  key:0 "value"')`: write
-  `  key: "value"` with a closing double quote on the same line.
+  ` key: "value"` with a closing double quote on the same line.
 - `unbalanced braces: extra '}'` (ERROR) or `unbalanced '"' (unterminated string)` (ERROR): fix the
   balance. An unclosed `{` at end of file is only a **WARN** (`unbalanced braces: N '{' never closed`),
   because vanilla itself ships such files in `common/dna_data/`.
 - `ERROR: ... is nested (depth N) and has no effect`: the keyword is not at the file top level. Move
   the whole object up. A nested keyword is a silent no-op in Victoria 3, which is why it is an error,
-  and a container folder such as `common/genes/` can be replaced only as a whole.
+  and a container directory such as `common/genes/` can be replaced only as a whole.
+- `WARN: semantic: ... names no top-level object in common/<dir>`: the keyword target is absent. Check
+  the spelling against `game-scripts/vanilla/game/common/<dir>/`, or use `TRY_`/`_OR_CREATE` when the
+  target can be absent.
+- `WARN: semantic: ... is not a known effect, trigger, or modifier name. Did you mean '<name>'?`: a
+  near miss inside an effect or trigger block. Take the suggestion or fix the name.
 
-## Entry mechanisms and data kinds (what to add, and where it lives)
+## Data kinds (what to add, and where it lives)
 
-Pick the entry mechanism from the table in `docs/victoria3-modding-conventions.md` section 7, then open the
-folder it names and read one of the examples there. Send the intent to `entry-scout` first and read
-the candidate it returns, in two cases: when you are unsure which mechanism fits, and when you must
-survey the mechanisms that the game already has for a feature.
+Pick the entry mechanism from the table in `docs/victoria3-modding-conventions.md` section 7, then
+open the directory it names and read one of the examples there. Send the intent to `entry-scout`
+first and read the candidate it returns, in two cases: when you are unsure which mechanism fits, and
+when you must survey the mechanisms that the game already has for a feature.
 
-A mod can also add its own content to one of the game's own data folders. The common ones are:
+The game holds **135 directories and one file** (`achievement_groups.txt`) under
+`game-scripts/vanilla/game/common/`. Count them before you trust the number:
 
-| Kind | Folder | One real example |
+```bash
+ls -p game-scripts/vanilla/game/common | grep -c /
+```
+
+A mod can add its own content to one of those directories. The common ones are:
+
+| Kind | Directory | One real example |
 | --- | --- | --- |
 | scripted effects | `common/scripted_effects/` | (see the vanilla files) |
 | scripted triggers | `common/scripted_triggers/` | (see the vanilla files) |
@@ -265,14 +320,14 @@ A mod can also add its own content to one of the game's own data folders. The co
 | production methods | `common/production_methods/` (with `common/production_method_groups/`) | (see the vanilla files) |
 | buildings | `common/buildings/` (with `common/building_groups/`) | (see the vanilla files) |
 | goods | `common/goods/` | (see the vanilla files) |
-| technologies | `common/technology/technologies/` (a container folder; `eras/` sits beside it) | (see the vanilla files) |
+| technologies | `common/technology/technologies/` (a container directory, and `eras/` sits beside it) | (see the vanilla files) |
 | institutions | `common/institutions/` | (see the vanilla files) |
 | ideologies | `common/ideologies/` | (see the vanilla files) |
 | interest groups | `common/interest_groups/` | (see the vanilla files) |
 | modifier type definitions | `common/modifier_type_definitions/` | (see the vanilla files) |
 
-A few of these folders ship a `readme.md` that lists the fields (`common/laws/` does). Victoria 3
-ships far fewer of them than you might expect: read one vanilla file in the folder instead. When a
+A few of those directories ship a `readme.md` that lists the fields (`common/laws/` does). Victoria 3
+ships far fewer of them than you might expect: read one vanilla file in the directory instead. When a
 task only changes values inside an existing block, there is no new definition to place.
 
 ## Semantic lookup path
@@ -280,12 +335,13 @@ task only changes values inside an existing block, there is no new definition to
 For the question "does X exist, and what is the vanilla value?", follow the lookup hierarchy in
 `docs/INDEX.md`. It is the single authoritative map of which source to use.
 
-- Exact vanilla object definitions, field values, INJECT targets, and loc keys: `game-scripts/game/game/`,
-  which `sync_game_scripts` generates (it mirrors the install root, so the game's own `game/` lands
-  one level deeper). Grep that mirror, not the game directory.
-- Mechanics concepts and the mod API: `docs/mod-wiki/` (a 69-page snapshot of the wiki; start at its
-  `INDEX.md`), or the live wiki `vic3.paradoxwikis.com` when you need the newest wording. The modding
-  conventions and the reason behind them: `docs/victoria3-modding-conventions.md`.
+- **Does the name exist?** Read the dumps in `docs/script_docs/`. `docs/script_docs/SOURCE.md`
+  records the game version, the counts, and the command that regenerates them.
+- **What does the object hold?** Read `game-scripts/vanilla/game/`, which `sync_game_scripts` writes.
+  Grep that tree, not the game directory, and not `game-scripts/workshop/`.
+- Mechanics concepts and the mod API: `docs/mod-wiki/` (the wiki snapshot; start at its `INDEX.md`),
+  or the live wiki `vic3.paradoxwikis.com` when you need the newest wording. The modding conventions
+  and the reason behind them: `docs/victoria3-modding-conventions.md`.
 
 For a survey, `entry-scout` runs this search and returns candidates as `file:line`.
 Give it the intent and the planned change list. Its answer is a candidate list, not a decision: read

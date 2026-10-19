@@ -41,6 +41,8 @@ This page describes the game mechanics only.
   Windows only.
 - **Localization YAML must be UTF-8 with BOM.** Without a BOM, the game ignores the file silently,
   and that failure is fatal.
-- **The vanilla scripts are the source of truth.** `game-scripts/` (from `sync_game_scripts`) holds
-  the vanilla `game/` scripts; grep it for exact values. The official wiki (vic3.paradoxwikis.com)
-  holds the same data as prose, and can lag one patch behind.
+- **The dumps and the vanilla scripts are the two evidence layers.** The dumps in `docs/script_docs/`
+  prove that a name exists. The vanilla scripts at `game-scripts/vanilla/game/`, which
+  `sync_game_scripts` writes, prove an object definition, a field value, an `INJECT:` target, and a
+  loc key. Read the dumps for a name, and grep the vanilla scripts for a definition. The official
+  wiki (vic3.paradoxwikis.com) holds the same data as prose, and it can lag one patch behind.

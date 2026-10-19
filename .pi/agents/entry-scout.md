@@ -31,22 +31,26 @@ When the change list is empty, you propose the list as part of your answer.
 
 Use the layers in this order. Stop when the first layer answers the question.
 
-1. `game-scripts/game/game/` — the vanilla scripts. This is the strongest evidence for a concrete object,
-   an INJECT target, a field value, or a localization key, because the engine already accepts these
-   files. v1 has no game dumps, so this is the only authoritative layer for exact names.
-2. `docs/mod-wiki/` — the wiki snapshot (69 pages). It answers what a folder's rules are, what an
-   effect or trigger does, and how a system fits together. Start at its `INDEX.md`. A page can lag a
-   patch behind, so prefer layer 1 when the two disagree.
-3. `reference/` — the pattern mods (only `example_mod/` in v1).
-4. The session records of this workspace. They live in the product data directory, in
+1. `docs/script_docs/` — the game's own name dumps. They are authoritative for "does this effect,
+   trigger, modifier, event target, or on-action name exist", and for the `Supported Scopes` line of
+   an effect or a trigger. Start here when the question is about a name.
+2. `game-scripts/vanilla/game/` — the vanilla scripts. This is the strongest evidence for a concrete
+   object, an INJECT target, a field value, or a localization key, because the engine already accepts
+   these files. Never search `game-scripts/workshop/`: that part holds other authors' mods, and one of
+   them is not evidence about vanilla.
+3. `docs/mod-wiki/` — the wiki snapshot. It answers what a directory's rules are, what an effect or
+   trigger does, and how a system fits together. Start at its `INDEX.md`. A page can lag a patch
+   behind, so prefer layer 1 or 2 when the two disagree.
+4. `reference/` — the pattern mods (only `example_mod/` in v1).
+5. The session records of this workspace. They live in the product data directory, in
    `~/.gamer-agent-pi/sessions/<encoded workspace path>/`, as `.jsonl` files. The directory name
    encodes the workspace path: replace each `:` and each path separator with `-`, and wrap the whole
    string in `--`. Match the name in the directory listing, and do not build the path yourself. One
    line is one message. Search them for the same kind of change.
-5. Nothing else. Do not use `your_mods/`. The caller owns that directory.
+6. Nothing else. Do not use `your_mods/`. The caller owns that directory.
 
-A hit in layer 4 is weak evidence. It records what an earlier session did, not what the engine
-accepts. Label it as weak, and prefer layer 1 or 2 whenever they disagree.
+A hit in layer 5 is weak evidence. It records what an earlier session did, not what the engine
+accepts. Label it as weak, and prefer layer 1, 2, or 3 whenever they disagree.
 
 ## How to answer
 
@@ -58,7 +62,7 @@ Return a short list of candidates, best first. Each candidate carries:
 - Mechanism family — the wording from `docs/victoria3-modding-conventions.md` section 7.
 - Evidence — the line or the block that supports the candidate.
 - Confidence — high, medium, or low.
-- Layer — 1, 2, 3, or 4.
+- Layer — 1, 2, 3, 4, or 5.
 
 After the list, add these three lines:
 

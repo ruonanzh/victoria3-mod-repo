@@ -41,37 +41,35 @@ a controlled search for that one gap beats wandering through the whole catalogue
 
 | You need | Source |
 |---|---|
-| Whether a name exists in this game version | The `script_docs` dump, when the player has produced one (see the note below) |
-| Exact vanilla object definitions, field values, INJECT targets, and loc keys | `game-scripts/` (the script mirror that `sync_game_scripts` generates) |
-| How to call something, what scope it needs, what the pitfalls are | [`mod-wiki/`](mod-wiki/) (a snapshot of the wiki, 69 pages), or the live wiki `vic3.paradoxwikis.com` |
+| Whether a name exists in this game version | The dumps in [`script_docs/`](script_docs/SOURCE.md). They ship with this repository, and `validate_mod` reads them. |
+| Exact vanilla object definitions, field values, INJECT targets, and loc keys | The vanilla scripts at `game-scripts/vanilla/game/`, which `sync_game_scripts` writes. The `game-scripts/workshop/` part holds other authors' mods, so it is not evidence. |
+| How to call something, what scope it needs, what the pitfalls are | [`mod-wiki/`](mod-wiki/) (a snapshot of the wiki), or the live wiki `vic3.paradoxwikis.com` |
 | The modding conventions and the reason behind them | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) |
 
-> **The wiki covers a minority of names.** Measured against a dump of 1.13.11, the vendored pages
-> name 584 of 3,152 effects (19%) and 956 of 1,816 triggers (53%). So the wiki answers "how do I call
-> this", and it cannot answer "does this exist": a name missing from the wiki is usually just
-> undocumented. For existence, grep the dump or `game-scripts/`.
+> **The wiki covers a minority of names.** The wiki snapshot answers "how do I call this", and it
+> cannot answer "does this exist": a name missing from the wiki is usually just undocumented. For
+> existence, read the dumps. [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records the measured
+> share of the dump names that the snapshot mentions, together with the command that measures it.
 >
-> **The dump is produced by the player, not by this repository.** Start a game with debug mode on,
-> load a campaign, and run `script_docs` in the console. The game writes the logs to
-> `<Documents>/Paradox Interactive/Victoria 3/docs/`: `effects.log`, `triggers.log`,
-> `modifiers.log`, `event_targets.log`, `on_actions.log`, and `custom_localization.log`. It writes
-> them there and nowhere else; nothing in this workspace copies them. Ask the player for the path, or
-> read it from `<Documents>`, which `try_set_game_dir` already recorded. Until a dump exists, for exact
-> names and values grep `game-scripts/` after you run `sync_game_scripts`; for concepts, read
-> [`mod-wiki/`](mod-wiki/).
+> **The dumps ship with this repository.** [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records
+> the game version, the `script_docs` command, and how to regenerate the six files. A maintainer
+> regenerates them after a game patch. The agent reads them and does not copy anything from the
+> player's machine.
 
 - **Start here:** [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md). This cheat-sheet
   covers override and `INJECT` semantics, ASCII load order, localization, and metadata. It answers
   most modding questions on its own.
-- **Exact names and values: grep `game-scripts/`.** It holds the vanilla `game/` scripts and the
-  Workshop scripts. Grep it for exact object definitions, field values, `INJECT:`/`REPLACE:` targets,
-  and loc keys.
+- **Exact names and values: read the dumps for a name, and grep `game-scripts/vanilla/game/` for a
+  definition.** The mirror also holds `game-scripts/workshop/`, which is another author's mod. Do not
+  treat anything there as vanilla.
 - **Concepts and how-to method: the live wiki.** `vic3.paradoxwikis.com` explains how the systems
   work and the mod API concepts. It can lag a patch behind the vanilla scripts.
 
-> `validate_mod` checks syntax and conventions only in v1: it does not check whether an effect,
-> trigger, or modifier name exists, whether an `INJECT:`/`REPLACE:` target exists, or whether a new
-> object has its localization keys. Check those against `game-scripts/` yourself.
+> `validate_mod` checks syntax, conventions, and name-level semantics. The syntax and convention
+> checks cover the metadata fields, the localization YAML, the brace and quote balance, and the
+> top-level rule for the keywords. The name-level checks cover the target of a `REPLACE:`/`INJECT:`
+> keyword, a near-miss effect or trigger name, and the localization keys of a new decision, trait, or
+> journal entry. Section 10 of the conventions lists what no tool checks, and that list is for you.
 
 ## Other pages in `docs/`
 
@@ -79,5 +77,6 @@ a controlled search for that one gap beats wandering through the whole catalogue
 |------|------------------------|
 | [`game.md`](game.md) | The game overview, the game systems, and the mod loading mechanics. |
 | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) | The reason behind the override, load-order, localization, and metadata rules. |
-| The writing standard | Not shipped in this repository. § Writing rule in [`AGENTS.md`](../AGENTS.md) holds the four rules that apply to the text here. The full file, with the term list and the measured values, is `docs/eu5-harness/v3-writing-standard.md` in the design repository. |
-| [`mod-wiki/INDEX.md`](mod-wiki/INDEX.md) | The mod API reference: 69 wiki pages. Start there for a mechanism, an effect, a trigger, or a folder's rules. Its [`SOURCE.md`](mod-wiki/SOURCE.md) records the snapshot and the CC BY-SA license. |
+| The writing rule | The four rules are in § Writing rule of [`AGENTS.md`](../AGENTS.md). Every English string that reaches an agent follows them. |
+| [`script_docs/SOURCE.md`](script_docs/SOURCE.md) | The provenance of the six name dumps, the regeneration command, and the counts. |
+| [`mod-wiki/INDEX.md`](mod-wiki/INDEX.md) | The mod API reference. Start there for a mechanism, an effect, a trigger, or a folder's rules. Its [`SOURCE.md`](mod-wiki/SOURCE.md) records the snapshot and the CC BY-SA license. |

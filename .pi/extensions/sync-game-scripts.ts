@@ -1,14 +1,27 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
-import { existsSync, mkdirSync, copyFileSync, statSync, readdirSync, unlinkSync, rmdirSync } from "node:fs";
-import { join, relative, resolve, dirname, sep } from "node:path";
-import { checkGameDir, checkWorkshopDir, readModRepoConfig, readState } from "../lib/game-paths";
+import { existsSync, mkdirSync, copyFileSync, statSync, readdirSync, lstatSync, rmSync } from "node:fs";
+import { join, relative, dirname, sep } from "node:path";
+import {
+  LEGACY_VANILLA_MIRROR_DIRNAME,
+  MIRROR_DIRNAME,
+  NO_WORKSHOP_MARKER,
+  VANILLA_MIRROR_DIRNAME,
+  checkGameDir,
+  checkWorkshopDir,
+  mirrorDir,
+  readModRepoConfig,
+  readState,
+  vanillaMirrorDir,
+  workshopMirrorDir,
+} from "../lib/game-paths";
 
 /**
- * sync_game_scripts - it mirrors the text and definition scripts from game/ and workshop/ into the
- * workspace's game-scripts/. That directory is the modding context you must load before you write a
- * mod. PDXScript has no self-describing API, so without these scripts you do not know which vanilla
- * objects to override or INJECT. You also cannot find a localization key.
+ * sync_game_scripts - it mirrors the text and definition scripts from the install root and the
+ * Workshop into `<mirror>/vanilla/` and `<mirror>/workshop/`. That mirror is the modding context you
+ * must load before you write a mod. PDXScript has no self-describing API, so without these scripts
+ * you do not know which vanilla objects to override or INJECT. You also cannot find a localization
+ * key.
  *
  * It copies text and definition suffixes only, from the KEEP_SUFFIXES allowlist. That list matches
  * the sync tool in cursor main. It never copies a binary, so textures, meshes, and audio stay out.
@@ -16,8 +29,8 @@ import { checkGameDir, checkWorkshopDir, readModRepoConfig, readState } from "..
  * workshopDir).
  *
  * It is idempotent. Every run walks the source again. It copies only the new or changed files, by
- * size and mtime, and it deletes the stale files that the source no longer has. git ignores
- * game-scripts/.
+ * size and mtime, and it deletes the stale files that the source no longer has. git ignores the
+ * mirror.
  */
 
 const KEEP_SUFFIXES = new Set([
@@ -76,6 +89,16 @@ function fileDiffers(src: string, dst: string): boolean {
   }
 }
 
+/** Removes one file, with retries: Windows reports EPERM while another program reads it. */
+function removeFile(p: string): boolean {
+  try {
+    rmSync(p, { force: true, maxRetries: 3, retryDelay: 100 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function removeEmptyDirsUnder(root: string): void {
   const walkUp = (dir: string): void => {
     let entries;
@@ -94,7 +117,7 @@ function removeEmptyDirsUnder(root: string): void {
     }
     if (dir !== root) {
       try {
-        if (readdirSync(dir).length === 0) rmdirSync(dir);
+        if (readdirSync(dir).length === 0) rmSync(dir, { force: true, maxRetries: 3, retryDelay: 100 });
       } catch {
         /* ignore */
       }
@@ -125,12 +148,7 @@ function syncTree(srcRoot: string, dstRoot: string): { copied: number; staleRemo
   if (existsSync(dstRoot)) {
     for (const { abs, rel } of walkFiles(dstRoot)) {
       if (!srcRels.has(rel)) {
-        try {
-          unlinkSync(abs);
-          staleRemoved += 1;
-        } catch {
-          /* ignore */
-        }
+        if (removeFile(abs)) staleRemoved += 1;
       }
     }
     removeEmptyDirsUnder(dstRoot);
@@ -146,30 +164,55 @@ function pruneTree(dstRoot: string): { copied: number; staleRemoved: number } {
   let removed = 0;
   if (existsSync(dstRoot)) {
     for (const { abs } of walkFiles(dstRoot)) {
-      try {
-        unlinkSync(abs);
-        removed += 1;
-      } catch {
-        /* ignore */
-      }
+      if (removeFile(abs)) removed += 1;
     }
     removeEmptyDirsUnder(dstRoot);
   }
   return { copied: 0, staleRemoved: removed };
 }
 
-const NO_WORKSHOP_MARKER = ".no-workshop";
+/**
+ * Removes the vanilla mirror name that this repository used before `vanilla`. It runs after the new
+ * copy is written, so a failed run never leaves the workspace with no mirror at all.
+ * A symbolic link is left in place: it can point at the install directory, so deleting it would not
+ * delete a copy.
+ */
+function removeLegacyVanillaRoot(repoRoot: string): { removed: boolean; note: string | null } {
+  const legacy = join(mirrorDir(repoRoot), LEGACY_VANILLA_MIRROR_DIRNAME);
+  const shown = `${toPosix(relative(repoRoot, legacy))}/`;
+  const st = lstatSync(legacy, { throwIfNoEntry: false });
+  if (!st) return { removed: false, note: null };
+  if (st.isSymbolicLink())
+    return {
+      removed: false,
+      note: `NOTE: the old mirror root ${shown} is a symbolic link, so it was left in place. Check where it points, and remove it yourself.`,
+    };
+  const removedFiles = st.isDirectory() ? pruneTree(legacy).staleRemoved : 0;
+  try {
+    rmSync(legacy, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  } catch {
+    return {
+      removed: false,
+      note: `NOTE: the old mirror root ${shown} could not be removed (Windows reports EPERM while a file is in use). Close the program that holds it, then run sync_game_scripts again.`,
+    };
+  }
+  return {
+    removed: true,
+    note: `NOTE: removed the old mirror root ${shown} (${removedFiles} file(s)). The vanilla part is now ${VANILLA_MIRROR_DIRNAME}/.`,
+  };
+}
 
 export default function (pi: ExtensionAPI) {
   pi.registerTool({
     name: "sync_game_scripts",
     label: "Sync Game Scripts",
     description:
-      "Copies the game and Workshop script files into game-scripts/, which is the modding context you need before you write a mod. It copies text and definition files only, and it never copies a binary. PDXScript has no self-describing API, so you cannot write correct PDXScript without these scripts. The vanilla objects, effects, triggers, and keys all live there. Requires try_set_game_dir to have recorded the game directory first.",
+      "Copies the game and Workshop script files into game-scripts/vanilla/ and game-scripts/workshop/, which is the modding context you need before you write a mod. It copies text and definition files only, and it never copies a binary. PDXScript has no self-describing API, so you cannot write correct PDXScript without these scripts. The vanilla objects, effects, triggers, and keys all live there. Requires try_set_game_dir to have recorded the game directory first.",
     promptSnippet: "Load the game scripts into game-scripts/ (modding context)",
     promptGuidelines: [
-      "Run sync_game_scripts before you write a mod, so the scripts are in game-scripts/. You cannot write correct PDXScript without those scripts.",
+      "Run sync_game_scripts before you write a mod, so the scripts are in game-scripts/vanilla/. You cannot write correct PDXScript without those scripts.",
       "Run try_set_game_dir with no arguments first. When the game directory is unknown, sync_game_scripts fails, and its NEXT line points at try_set_game_dir.",
+      "Read a vanilla script under game-scripts/vanilla/game/. Do not treat anything under game-scripts/workshop/ as vanilla: that part holds other authors' mods.",
     ],
     parameters: Type.Object({}),
     async execute(_toolCallId, _params, _signal, _onUpdate, ctx) {
@@ -199,15 +242,18 @@ export default function (pi: ExtensionAPI) {
         /* The config is unreadable. The workshop shape check below therefore fails, so treat it as a rejection. */
       }
 
-      const destRoot = join(repoRoot, "game-scripts");
-      const g = syncTree(gameDir, join(destRoot, "game"));
+      const destRoot = mirrorDir(repoRoot);
+      const g = syncTree(gameDir, vanillaMirrorDir(repoRoot));
+      // The vanilla part was called `game/` before it was renamed. Remove that copy after the new one
+      // exists, so the workspace never keeps two copies that disagree.
+      const legacy = removeLegacyVanillaRoot(repoRoot);
       // The harness denies the Workshop content to the agent under test, so that it cannot read the
       // mods of another player. An earlier mirror is cleared too, because a copy on disk stays
       // readable. The harness creates the marker file with a shell command, and the agent under test
       // has no reason to look for it. A tool parameter would show this switch in the tool schema,
       // which the agent reads, so there is none.
       const skipWorkshop = existsSync(join(destRoot, NO_WORKSHOP_MARKER));
-      const workshopMirror = join(destRoot, "workshop");
+      const workshopMirror = workshopMirrorDir(repoRoot);
       let clearedForSkip = 0;
       let w = { copied: 0, staleRemoved: 0 };
       let workshopGone = false;
@@ -239,25 +285,26 @@ export default function (pi: ExtensionAPI) {
       const mirrorTotal = walkFiles(destRoot).length;
 
       const lines = [
-        `PASS: mirrored ${g.copied + w.copied} script file(s) into ${toPosix(relative(repoRoot, destRoot))}/ (game: ${g.copied}, workshop: ${w.copied})`,
+        `PASS: mirrored ${g.copied + w.copied} script file(s) into ${toPosix(relative(repoRoot, destRoot))}/ (vanilla: ${g.copied}, workshop: ${w.copied})`,
         `mirror now holds ${mirrorTotal} file(s).`,
       ];
+      if (legacy.note) lines.push(legacy.note);
       if (g.staleRemoved + w.staleRemoved > 0) {
         lines.push(`deleted ${g.staleRemoved + w.staleRemoved} stale file(s) that the source no longer has.`);
       }
       if (workshopDir && wsRejected && !workshopGone) {
         lines.push(
-          `NOTE: the workshop directory was rejected (${wsRejectReason}). The existing mirror under game-scripts/workshop was left untouched.`,
+          `NOTE: the workshop directory was rejected (${wsRejectReason}). The existing mirror under ${MIRROR_DIRNAME}/${WORKSHOP_MIRROR_DIRNAME} was left untouched.`,
         );
       }
       if (workshopGone) {
         lines.push(
-          `NOTE: the workshop source is gone (unsubscribed or deleted). Its mirrored copy under game-scripts/workshop was cleared (${w.staleRemoved} file(s)) instead of being left behind.`,
+          `NOTE: the workshop source is gone (unsubscribed or deleted). Its mirrored copy under ${MIRROR_DIRNAME}/${WORKSHOP_MIRROR_DIRNAME} was cleared (${w.staleRemoved} file(s)) instead of being left behind.`,
         );
       }
       return {
         content: [{ type: "text", text: lines.join("\n") }],
-        details: { ok: true, copied: g.copied + w.copied, staleRemoved: g.staleRemoved + w.staleRemoved, workshopSourceMissing: workshopGone, workshopSkipped: skipWorkshop, workshopCleared: clearedForSkip },
+        details: { ok: true, copied: g.copied + w.copied, staleRemoved: g.staleRemoved + w.staleRemoved, workshopSourceMissing: workshopGone, workshopSkipped: skipWorkshop, workshopCleared: clearedForSkip, legacyRemoved: legacy.removed },
       };
     },
   });

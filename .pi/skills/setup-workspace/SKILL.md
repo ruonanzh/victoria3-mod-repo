@@ -1,6 +1,6 @@
 ---
 name: setup-workspace
-description: Prepare the Victoria 3 (pdx-script) environment and the paths. Locate the game directory, the mod install directory, and the Steam Workshop directory. Mirror the vanilla `game/` scripts and the `workshop/` scripts into `game-scripts/` as the modding context. Read it when a path is unknown or wrong, when the player gives a path to check, or on a new machine. Victoria 3 has no runtime and no compilation.
+description: Prepare the Victoria 3 (pdx-script) environment and the paths. Locate the game directory, the mod install directory, and the Steam Workshop directory. Mirror the vanilla `game/` scripts and the `workshop/` scripts into `game-scripts/vanilla/` and `game-scripts/workshop/` as the modding context. Read it when a path is unknown or wrong, when the player gives a path to check, or on a new machine. Victoria 3 has no runtime and no compilation.
 ---
 
 # Environment and paths (Victoria 3)
@@ -52,7 +52,7 @@ Do not mix these tools up. They share one implementation in `.pi/lib/game-paths.
 | `set_game_dir` | **Record one concrete game directory**, either from the player or one you found. It checks the path first, then records it. | Writes path state. |
 | `check_game_paths` | **Check only.** Read-only. It checks the paths you give or the remembered ones, and it records nothing. | None. |
 | `check_runtime` | **Report the runtime prerequisites only.** Victoria 3 has none, so it always passes. It does **not** locate the game, and it does not touch the paths. | None. |
-| `sync_game_scripts` | **Mirror the vanilla and Workshop scripts into `game-scripts/`.** This is the context you need before you write mods. | Writes `game-scripts/`. |
+| `sync_game_scripts` | **Mirror the vanilla and Workshop scripts into `game-scripts/`.** It writes `game-scripts/vanilla/` and `game-scripts/workshop/`. This is the context you need before you write mods. | Writes `game-scripts/`. |
 
 ## How to use
 
@@ -74,11 +74,13 @@ Do not mix these tools up. They share one implementation in `.pi/lib/game-paths.
 - **Before you write any mod, you must run `sync_game_scripts`** to mirror the game and Workshop
   scripts into `game-scripts/`. PDXScript has no self-describing API, so you cannot write correct
   PDXScript without this context. This step is **required**, and it is not a "find it when needed"
-  step.
-  For exact effect, trigger, and modifier names, grep `game-scripts/`. A full list exists only as a
-  game dump: the player runs `script_docs` (the wiki also spells the second one `DumpDataTypes`) in a
-  loaded game with debug mode on, and the game writes it to
-  `<Documents>/Paradox Interactive/Victoria 3/docs/`.
+  step. The vanilla part is `game-scripts/vanilla/`, and the game's own scripts read as
+  `game-scripts/vanilla/game/...`.
+  For an object definition, a field value, or a loc key, grep `game-scripts/vanilla/`. The
+  `game-scripts/workshop/` part holds other authors' mods, so it is not vanilla.
+  For a name, read the dumps in `docs/script_docs/`. They ship with this repository, and
+  `docs/script_docs/SOURCE.md` records the game version and how to regenerate them. The player does
+  not have to dump anything.
 - **Failures.** Follow the `NEXT` line the tool gives. When the same failure repeats, resolve the
   precondition instead of retrying.
 

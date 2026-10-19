@@ -18,25 +18,25 @@ applies every change.
 
 ## What the mechanical checks already cover
 
-`validate_mod` checks the brace and quote balance of script files, the localization BOM and filename,
-and the metadata fields. It states
-its own limit: `syntax and conventions only. Scope, type, values, and names are not checked.` Do not
-repeat those checks. Read the receipt the caller passed you, and add only what it does not cover.
+`validate_mod` checks the metadata fields, the localization BOM and filename, the brace and quote
+balance, and the top-level rule for `INJECT:`/`REPLACE:`. It also runs three name-level classes: that
+a keyword target exists, that an effect or trigger name is not a near miss against the dumps in
+`docs/script_docs/`, and that a new decision, character trait, or journal entry has its localization
+keys. Do not repeat any of those. Read the receipt the caller passed you, and add only what it does
+not cover.
 
 ## What you check
 
-Read `docs/victoria3-modding-conventions.md`, and start with its last section,
-`Going deeper (what the linter does not check)`. Then work through the classes below.
+Read `docs/victoria3-modding-conventions.md`, and start with section 10, `What no tool in this
+repository checks`. Then work through the classes below.
 
-**Version limit (v1).** This repository ships no game dumps, so the name-level classes cannot be
-answered from data. Do **not** attempt them, and do not guess:
+Two classes need data that no tool here reads. Do **not** guess them. Name them as unchecked instead:
 
-- Skip the **scope and type** class (below). The scope of a modifier, effect, or trigger needs the
-  game dumps.
-- Skip the **value domain and units** class. The category of a modifier name needs the game dumps.
-
-Answer only what `game-scripts/` can prove. When one of the skipped classes matters to the change,
-say so in one line and mark it as unchecked, instead of inventing a verdict.
+- The **scope** of an effect, trigger, or modifier. The dumps in `docs/script_docs/` carry a
+  `Supported Scopes` line for each name, and `validate_mod` does not compare it with the script. You
+  may read that line yourself when the change is small.
+- The **value domain, the units, and the category** of a field. No file in this repository states
+  them.
 
 The classes you can still answer:
 
@@ -46,12 +46,13 @@ The classes you can still answer:
 2. **Override form.** The choice between a full-file override, `INJECT:`, and `REPLACE:` must match
    the intent. Example: a block-level change written as a full-file override, so keys are lost. When
    the change overwrites a whole file, name the entries that the current vanilla file defines and
-   the copy does not repeat. Also check the target exists: `grep` it in `game-scripts/`.
+   the copy does not repeat. Also check the target exists: `grep` it in `game-scripts/vanilla/`.
 3. **Encoding and file name, where `validate_mod` does not look.** It reads the BOM only for
    localization files, so check the BOM and the extension of a script file yourself, along with the
    override directory and the load-order prefix. Example: `00_cmf_widgets.txt` has no UTF-8 BOM.
-4. **Not statically decidable.** Mark the question instead of answering it. Example: the resolution
-   order of two GUI blocks with the same name. The caller must check it in the game.
+4. **The outcome that only the game can settle.** Mark the question instead of answering it. Example:
+   the resolution order of two GUI blocks with the same name, or whether a `REPLACE:` survives
+   another mod that loads later. The caller must check them in the game.
 
 ## How to answer
 
