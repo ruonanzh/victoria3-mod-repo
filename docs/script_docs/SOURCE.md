@@ -11,8 +11,20 @@ checks, and this page records where they came from, so the next maintainer can r
 4. The game writes the files to `<Documents>/Paradox Interactive/Victoria 3/docs/`.
 5. Copy the six `.log` files here, and update the table below.
 
-Victoria 3 writes these six files, and no `data_types` dump. The wiki spells a second command
-`DumpDataTypes`, and this game version produces nothing for it. Do not add a page for it.
+## The GUI data types dump
+
+The game has a second dump. It holds the GUI data binding types, not the script names.
+
+- **Command:** `dump_data_types` in the console, with debug mode on. The wiki lists it as "dumps the
+  registered data types" (`Console commands.md`), and `Modding.md` names the GUI form `DumpDataTypes`,
+  which is the button in the data types explorer.
+- **Output:** the game prints `Data types dumped into '<path>'`. Read that line for the exact path.
+  The files follow `data_types_<category>.txt`, and the binary names the `data_types/data_types_`
+  prefix, so the directory is a `data_types/` subdirectory under the same `docs` directory that holds
+  the six script dumps.
+- **State in this repository:** **not dumped yet.** The directory is not part of this repository, so
+  no page here is based on it.
+- **Do not confuse the two commands.** `data_types` and `data_type` on their own are not commands.
 
 ## Provenance
 

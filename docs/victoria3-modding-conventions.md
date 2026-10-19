@@ -351,8 +351,9 @@ Use one word for one thing. The right column is the only spelling this repositor
 ## 9. The dumps and the name-level checks
 
 `docs/script_docs/` holds six files, and [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records how to
-regenerate them and how many names each one holds. This game version (1.13.11) writes those six and no
-`data_types` dump. Do not repeat a count in a second file: read it from that page.
+regenerate them and how many names each one holds. The game writes a second, separate dump of its GUI
+data types, from the `dump_data_types` console command, and that page records its state. Do not repeat a
+count in a second file: read it from that page.
 
 `validate_mod` runs three name-level classes. Each one is a WARN or a NOTE, never a FAIL, because a
 name-level conclusion is not proof.
