@@ -79,8 +79,8 @@ Do not mix these tools up. They share one implementation in `.pi/lib/game-paths.
   For an object definition, a field value, or a loc key, grep `game-scripts/vanilla/`. The
   `game-scripts/workshop/` part holds other authors' mods, so it is not vanilla.
   For a name, read the dumps in `docs/script_docs/`. They ship with this repository, and
-  `docs/script_docs/SOURCE.md` records the game version and how to regenerate them. The player does
-  not have to dump anything.
+  `docs/script_docs/SOURCE.md` records the game version and how to regenerate them. A GUI data model
+  name is in `docs/data_types/`. The player does not have to dump anything.
 - **Failures.** Follow the `NEXT` line the tool gives. When the same failure repeats, resolve the
   precondition instead of retrying.
 

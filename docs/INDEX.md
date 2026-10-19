@@ -44,6 +44,7 @@ a controlled search for that one gap beats wandering through the whole catalogue
 | Whether a name exists in this game version | The dumps in [`script_docs/`](script_docs/SOURCE.md). They ship with this repository, and `validate_mod` reads them. |
 | Exact vanilla object definitions, field values, INJECT targets, and loc keys | The vanilla scripts at `game-scripts/vanilla/game/`, which `sync_game_scripts` writes. The `game-scripts/workshop/` part holds other authors' mods, so it is not evidence. |
 | How to call something, what scope it needs, what the pitfalls are | [`mod-wiki/`](mod-wiki/) (a snapshot of the wiki), or the live wiki `vic3.paradoxwikis.com` |
+| The exact name of a GUI data model entry | [`data_types/`](data_types/) (the `dump_data_types` dump; [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records it) |
 | The modding conventions and the reason behind them | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) |
 
 > **The wiki covers a minority of names.** The wiki snapshot answers "how do I call this", and it
@@ -78,5 +79,5 @@ a controlled search for that one gap beats wandering through the whole catalogue
 | [`game.md`](game.md) | The game overview, the game systems, and the mod loading mechanics. |
 | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) | The reason behind the override, load-order, localization, and metadata rules. |
 | The writing rule | The four rules are in § Writing rule of [`AGENTS.md`](../AGENTS.md). Every English string that reaches an agent follows them. |
-| [`script_docs/SOURCE.md`](script_docs/SOURCE.md) | The provenance of the six name dumps, the regeneration command, and the counts. |
+| [`script_docs/SOURCE.md`](script_docs/SOURCE.md) | The provenance of the six name dumps and the GUI data types dump, the regeneration commands, and the counts. |
 | [`mod-wiki/INDEX.md`](mod-wiki/INDEX.md) | The mod API reference. Start there for a mechanism, an effect, a trigger, or a folder's rules. Its [`SOURCE.md`](mod-wiki/SOURCE.md) records the snapshot and the CC BY-SA license. |

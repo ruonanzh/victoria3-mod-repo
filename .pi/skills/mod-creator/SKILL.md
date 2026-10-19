@@ -338,6 +338,8 @@ For the question "does X exist, and what is the vanilla value?", follow the look
 
 - **Does the name exist?** Read the dumps in `docs/script_docs/`. `docs/script_docs/SOURCE.md`
   records the game version, the counts, and the command that regenerates them.
+- **Is this a GUI data model name?** Read `docs/data_types/`. It lists the GUI data binding names and
+  their return types, such as `StatusWidget.ToggleLoginWindow`.
 - **What does the object hold?** Read `game-scripts/vanilla/game/`, which `sync_game_scripts` writes.
   Grep that tree, not the game directory, and not `game-scripts/workshop/`.
 - Mechanics concepts and the mod API: `docs/mod-wiki/` (the wiki snapshot; start at its `INDEX.md`),

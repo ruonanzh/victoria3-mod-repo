@@ -377,6 +377,12 @@ name-level conclusion is not proof.
 The semantic layer reads `docs/script_docs/` and `game-scripts/vanilla/`. When the mirror is absent,
 C1 and C3 report a NOTE and check nothing. When the dumps are absent, C2 reports a NOTE.
 
+The third file group is [`data_types/`](data_types/). It holds the GUI data binding names, such as
+`StatusWidget.ToggleLoginWindow`, with the return type of each one. The game produces it with
+`dump_data_types`, and [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records the counts. **No check
+reads it.** Read it when a `.gui` file uses a name you cannot place, or when the wiki page for GUI
+functions is silent.
+
 ## 10. What no tool in this repository checks
 
 Read the `WARN:` and `NOTE:` lines of `validate_mod` before you call a mod done. Then check these by
@@ -384,6 +390,8 @@ hand, and say which ones you checked:
 
 - **The scope of an effect or a trigger.** The dumps list `Supported Scopes` for each name, and no
   tool compares that line with the scope the script uses.
+- **A GUI data model name.** `docs/data_types/` lists every one that the game registers, and no tool
+  compares a `.gui` expression with that list.
 - **The type and the value domain of a field.** The dumps do not carry them, so the tool cannot.
 - **Whether the gated list is complete.** The list is community-maintained and version-sensitive. A
   keyword in a directory that is not on the list is a silent no-op. `validate_mod` warns for `events/`

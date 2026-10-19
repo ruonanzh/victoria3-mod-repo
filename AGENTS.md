@@ -24,7 +24,8 @@ These are fixed facts about this machine and this workspace. They prevent wasted
 - **The name dumps ship with this repository**, in `docs/script_docs/`. They are the game's own name
   lists, and `validate_mod` reads them. `docs/script_docs/SOURCE.md` records the game version and how
   to regenerate them. Read a dump to settle "does this name exist". Read the vanilla scripts to settle
-  "what fields does this object have".
+  "what fields does this object have". The GUI data types dump is separate, in `docs/data_types/`, and
+  no tool reads it.
 - **`supported_game_version`: write a patch-level wildcard** (e.g. `1.13.*`). An exact
   version such as `1.0.4` goes stale. This game updates its minor version often, and the game flags
   an exact version as outdated. Do not take the easy way out with a loose `1.*` — `validate_mod` WARNs on it.
@@ -64,7 +65,8 @@ text that points at them instead, or refresh the snapshot as `docs/mod-wiki/SOUR
   load order, localization, and metadata. [`docs/mod-wiki/`](docs/mod-wiki/INDEX.md) is the wiki
   snapshot; read it for a mechanism, an effect, or a directory's rules, and use it only on demand. It is
   CC BY-SA 3.0; see its `SOURCE.md`. [`docs/script_docs/`](docs/script_docs/SOURCE.md) holds the game's
-  name dumps, which `validate_mod` reads.
+  name dumps, which `validate_mod` reads. [`docs/data_types/`](docs/script_docs/SOURCE.md) holds the GUI
+  data types dump, which no tool reads.
 - `game-scripts/` — the mirror that `sync_game_scripts` writes, and git ignores it. It has two parts.
   `vanilla/` is a copy of the install root, so the game's own scripts read as
   `game-scripts/vanilla/game/...`. `workshop/` holds one directory per mirrored Workshop mod. This is

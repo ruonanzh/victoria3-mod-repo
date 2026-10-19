@@ -11,27 +11,54 @@ checks, and this page records where they came from, so the next maintainer can r
 4. The game writes the files to `<Documents>/Paradox Interactive/Victoria 3/docs/`.
 5. Copy the six `.log` files here, and update the table below.
 
+For the GUI data types dump, run `dump_data_types` in the same session. It writes to
+`<Documents>/Paradox Interactive/Victoria 3/logs/data_types/`, which is a different directory.
+
 ## The GUI data types dump
 
-The game has a second dump. It holds the GUI data binding types, not the script names.
+The game has a second, separate dump. It holds the GUI data binding types, not the script names. The
+files are in [`../data_types/`](../data_types/), and they come from the same debug session.
 
 - **Command:** `dump_data_types` in the console, with debug mode on. The wiki lists it as "dumps the
   registered data types" (`Console commands.md`), and `Modding.md` names the GUI form `DumpDataTypes`,
   which is the button in the data types explorer.
-- **Output:** the game prints `Data types dumped into '<path>'`. Read that line for the exact path.
-  The files follow `data_types_<category>.txt`, and the binary names the `data_types/data_types_`
-  prefix, so the directory is a `data_types/` subdirectory under the same `docs` directory that holds
-  the six script dumps.
-- **State in this repository:** **not dumped yet.** The directory is not part of this repository, so
-  no page here is based on it.
-- **Do not confuse the two commands.** `data_types` and `data_type` on their own are not commands.
+- **Output:** the game prints `Data types dumped into '<path>'`. The path is a `data_types/` directory
+  under the **`logs`** directory, not under `docs`. In this repository the files are copied to
+  [`../data_types/`](../data_types/).
+- **Do not confuse the two commands.** `data_types` and `data_type` on their own are not commands. The
+  console command list is in `docs/mod-wiki/Console commands.md`.
+
+| File | Entries | Unique names |
+| --- | --- | --- |
+| `data_types_common.txt` | 335 | 334 |
+| `data_types_gui.txt` | 929 | 914 |
+| `data_types_internalclausewitzgui.txt` | 2891 | 2866 |
+| `data_types_script.txt` | 473 | 357 |
+| `data_types_uncategorized.txt` | 14232 | 13158 |
+
+An entry is one block, and its first line is the name, with or without its argument list. Re-measure
+with:
+
+```bash
+node -e '
+const fs=require("fs"),d="docs/data_types";
+for(const f of fs.readdirSync(d).sort()){const t=fs.readFileSync(d+"/"+f,"utf8");let n=0;const s=new Set();
+for(const b of t.split(/-{10,}/)){const l=b.split(/\r?\n/).filter(x=>x.trim()!=="");if(!l.length)continue;
+const m=/^([A-Za-z_][\w.]*)\s*(?:\(|$)/.exec(l[0].trim());if(!m)continue;n++;s.add(m[1])}
+console.log(f,"entries",n,"unique",s.size)}
+'
+```
+
+No check in this repository reads these files yet. They are the evidence for a GUI data model name
+such as `StatusWidget.ToggleLoginWindow`. Read them when a `.gui` file uses a name you cannot place.
 
 ## Provenance
 
 | Field | Value |
 |---|---|
 | Game version | `1.13.11 (Matcha)` (from `launcher/launcher-settings.json`, field `rawVersion`) |
-| Dump command | `script_docs` |
+| Script dump command | `script_docs` |
+| Data types dump command | `dump_data_types` |
 | Dumped on | 2026-10-19 |
 | Source path | `<Documents>/Paradox Interactive/Victoria 3/docs/` |
 

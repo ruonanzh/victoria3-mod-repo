@@ -33,7 +33,8 @@ Use the layers in this order. Stop when the first layer answers the question.
 
 1. `docs/script_docs/` — the game's own name dumps. They are authoritative for "does this effect,
    trigger, modifier, event target, or on-action name exist", and for the `Supported Scopes` line of
-   an effect or a trigger. Start here when the question is about a name.
+   an effect or a trigger. Start here when the question is about a name. A GUI data model name is
+   not in these files: read `docs/data_types/` for it.
 2. `game-scripts/vanilla/game/` — the vanilla scripts. This is the strongest evidence for a concrete
    object, an INJECT target, a field value, or a localization key, because the engine already accepts
    these files. Never search `game-scripts/workshop/`: that part holds other authors' mods, and one of
