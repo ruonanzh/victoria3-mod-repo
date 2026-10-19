@@ -21,7 +21,7 @@
  * the install root, so its scripts read as `game-scripts/vanilla/game/...`.
  */
 import { readdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 import { checkGameDir, pathsFor, readModRepoConfig, readState, vanillaScriptsDir, workshopMirrorDir } from "../lib/game-paths";
@@ -134,9 +134,11 @@ export default function (pi: ExtensionAPI) {
       // The dumps ship with the repository. `validate_mod` reads them, so a missing dump is worth a
       // NOTE: the name-level checks then degrade to a note instead of a report.
       const dumps = loadDumpNames(join(cwd, "docs", "script_docs"));
-      const dumpValue = dumps.dir
-        ? `effects ${dumps.counts.effects}, triggers ${dumps.counts.triggers}, modifiers ${dumps.counts.modifiers}, event targets ${dumps.counts.event_targets}`
-        : "missing - see docs/script_docs/SOURCE.md";
+      const dumpValue = !dumps.dir
+        ? "missing - see docs/script_docs/SOURCE.md"
+        : dumps.missing.length > 0
+          ? `partial - missing ${dumps.missing.join(", ")}. See docs/script_docs/SOURCE.md`
+          : `effects ${dumps.counts.effects}, triggers ${dumps.counts.triggers}, modifiers ${dumps.counts.modifiers}, event targets ${dumps.counts.event_targets}`;
 
       const lines = [
         "PASS: game info",
@@ -150,7 +152,7 @@ export default function (pi: ExtensionAPI) {
             : "(none - no build tag is recorded, so the version cannot be derived)",
         ),
         row("layout", `install: ${gameDir}/game/...`),
-        row("", "vanilla:  game-scripts/vanilla/game/..."),
+        row("", `vanilla:  ${relative(cwd, vanillaScriptsDir(cwd)).split("\\").join("/")}/...`),
         row("mirror", mirrorValue),
         row("dumps", dumpValue),
         row("entry points", "see docs/victoria3-modding-conventions.md section 7"),

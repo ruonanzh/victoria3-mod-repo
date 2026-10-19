@@ -23,9 +23,10 @@
  * Contract: read only, with no third-party dependency. Every text field is ASCII or English. An
  * item is a warning or a note, never a failure, because a name-level conclusion is not proof.
  */
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { vanillaScriptsDir } from "./game-paths";
+import { stripLineComments } from "./pdx-text";
 
 export interface SemanticWarning {
   code: string;
@@ -70,8 +71,10 @@ export interface DumpNames {
   eventTargets: Set<string>;
   onActions: Set<string>;
   customLocalization: Set<string>;
-  /** The name count per dump file, for a report. */
+  /** The name count per dump file, for a report. It counts unique names. */
   counts: Record<DumpKind, number>;
+  /** The dump files that this directory does not hold, so a caller can report a partial set. */
+  missing: string[];
 }
 
 const dumpCache = new Map<string, DumpNames>();
@@ -93,9 +96,11 @@ function dumpNameLines(kind: DumpKind, text: string): string[] {
     }
     return out;
   }
-  // modifiers.log, on_actions.log, and custom_localization.log use a column-zero `name:` line.
+  // modifiers.log, on_actions.log, and custom_localization.log use a column-zero `name:` line. A
+  // name is a lowercase identifier, so a heading and the `Entries:` line of a custom localization
+  // entry are not names.
   for (const line of text.split(/\r?\n/)) {
-    const m = /^([A-Za-z_][\w.]*):\s*$/.exec(line);
+    const m = /^([a-z_][a-z0-9_.]*):\s*$/.exec(line);
     if (m) out.push(m[1]);
   }
   return out;
@@ -119,6 +124,7 @@ export function loadDumpNames(scriptDocsDir: string): DumpNames {
     onActions: new Set(),
     customLocalization: new Set(),
     counts: { effects: 0, triggers: 0, modifiers: 0, event_targets: 0, on_actions: 0, custom_localization: 0 },
+    missing: [],
   };
   if (!dir) {
     dumpCache.set(scriptDocsDir, names);
@@ -137,11 +143,11 @@ export function loadDumpNames(scriptDocsDir: string): DumpNames {
     try {
       text = readFileSync(join(dir, DUMP_FILES[kind]), "utf8");
     } catch {
+      names.missing.push(DUMP_FILES[kind]);
       continue;
     }
-    const list = dumpNameLines(kind, text);
-    for (const n of list) targets[kind].add(n);
-    names.counts[kind] = list.length;
+    for (const n of dumpNameLines(kind, text)) targets[kind].add(n);
+    names.counts[kind] = targets[kind].size;
   }
   dumpCache.set(scriptDocsDir, names);
   return names;
@@ -169,29 +175,23 @@ function readText(p: string): string | null {
 }
 
 /**
- * Strips a `#` line comment that sits outside a quoted string. A string can span several physical
- * lines, which a GUI file uses, so the scan carries its state across the lines.
+ * The languages that Victoria 3 ships. The engine groups a localization file by language or by a
+ * group directory, so the `_l_<lang>` filename suffix is the reliable marker, and this set is the
+ * only copy of the list. mod-lint.ts imports it.
  */
-function stripLineComments(text: string): string {
-  const out: string[] = [];
-  let inString = false;
-  for (const line of text.split(/\r?\n/)) {
-    let cut = line.length;
-    for (let i = 0; i < line.length; i += 1) {
-      const ch = line[i];
-      if (ch === '"') {
-        inString = !inString;
-        continue;
-      }
-      if (ch === "#" && !inString) {
-        cut = i;
-        break;
-      }
-    }
-    out.push(line.slice(0, cut));
-  }
-  return out.join("\n");
-}
+export const LOC_LANGUAGES = new Set([
+  "braz_por",
+  "english",
+  "french",
+  "german",
+  "japanese",
+  "korean",
+  "polish",
+  "russian",
+  "simp_chinese",
+  "spanish",
+  "turkish",
+]);
 
 const OVERRIDE_KEYWORD = "(?:TRY_)?(?:INJECT|REPLACE)(?:_OR_CREATE)?";
 const OVERRIDE_DECL_RE = new RegExp(`^[ \\t]*(${OVERRIDE_KEYWORD}):\\s*(\\w+)\\s*=`);
@@ -416,6 +416,11 @@ const STRUCTURE_FIELDS = new Set([
   "else_if",
   "scope_type",
   "scope_value",
+  "default_option",
+  "highlighted_option",
+  "exclusive_option",
+  "show_as_tooltip",
+  "cooldown",
 ]);
 
 /** The minimum length of a C2 candidate. A short name is too close to too many known names. */
@@ -526,17 +531,35 @@ const LOC_KEY_CLASSES: Array<{ category: string; suffixes: string[] }> = [
 
 const LOC_KEY_LINE_RE = /^[ \t]*([^\s:#][^:]*):\s*(?:\d+\s*)?".*/;
 
-/** The loc keys of the mod, per language. A file is `localization/<lang>/..._l_<lang>.yml`. */
+/**
+ * The loc keys of the mod, per language. A file is `localization/<lang>/..._l_<lang>.yml`, or
+ * `localization/replace/<lang>/...`, or a group directory such as `localization/events/`. The
+ * `_l_<lang>` filename suffix is the reliable marker, because a group directory does not name a
+ * language.
+ */
 function modLocKeys(modRoot: string): Map<string, Set<string>> {
   const byLang = new Map<string, Set<string>>();
   for (const { abs, rel } of walkFiles(modRoot, new Set([".yml", ".yaml"]))) {
     const parts = rel.replace(/^\/+/, "").split("/");
     if (parts[0].toLowerCase() !== "localization") continue;
-    // `localization/languages.yml` is the game's language list, not a localization file, so it does
-    // not name a language. A real language is a directory, and its name carries no suffix.
-    if (parts.length < 3) continue;
-    const lang = parts[1].toLowerCase();
-    if (lang.includes(".") || lang === "replace") continue;
+    if (parts.length < 2) continue;
+    // `localization/languages.yml` is the game's language list, not a localization file.
+    if ((parts[1] ?? "").toLowerCase() === "languages.yml") continue;
+    // The language comes from the filename suffix first, then from the directory.
+    const name = parts[parts.length - 1];
+    const stem = name.endsWith(".yml") ? name.slice(0, -4) : name.endsWith(".yaml") ? name.slice(0, -5) : name;
+    const fromName = /_l_([a-z_]+)$/.exec(stem)?.[1];
+    const lowered = parts.map((p) => p.toLowerCase());
+    const replaceAt = lowered.indexOf("replace");
+    const dirCandidates =
+      replaceAt >= 0 && lowered.length > replaceAt + 1
+        ? [lowered[replaceAt + 1], lowered[1]]
+        : [lowered[1]];
+    const lang =
+      fromName && LOC_LANGUAGES.has(fromName)
+        ? fromName
+        : dirCandidates.find((d) => d !== "replace" && LOC_LANGUAGES.has(d));
+    if (!lang) continue;
     const text = readText(abs);
     if (text === null) continue;
     let keys = byLang.get(lang);
@@ -648,46 +671,57 @@ export function analyzeSemantics(modPath: string, opts?: SemanticOptions): Seman
 
   // ---- C2 ----
   if (dumps?.dir) {
-    const known = knownNames(dumps);
-    const structureAllowed = new Set([...STRUCTURE_FIELDS, ...known]);
-    let candidates = 0;
-    const reported = new Set<string>();
-    for (const { abs, rel } of files) {
-      if (!rel.toLowerCase().endsWith(".txt")) continue;
-      const category = categoryOf(rel);
-      if (!category && !rel.toLowerCase().startsWith("/events/")) continue;
-      const text = readText(abs);
-      if (text === null) continue;
-      for (const { container, name } of containerChildren(stripLineComments(text))) {
-        const lower = name.toLowerCase();
-        // A game name is lowercase snake_case. An uppercase identifier is a constant such as a state
-        // or a good, and the game names it somewhere else, so it is not a candidate. A dotted name
-        // is a field path such as `amendment.type`, not a game name.
-        if (name !== lower || name.includes(".")) continue;
-        if (lower.length < C2_MIN_LENGTH) continue;
-        if (structureAllowed.has(lower) || structureAllowed.has(name)) continue;
-        if (modDefinedNames.has(name)) continue;
-        const guess = suggest(name, known);
-        if (!guess) continue;
-        const key = `${rel.replace(/^\/+/, "")}|${lower}|${guess}`;
-        if (reported.has(key)) continue;
-        reported.add(key);
-        candidates += 1;
-        if (candidates > C2_MAX_ITEMS) continue;
-        warnings.push({
-          code: "c2-near-miss",
-          level: "warn",
-          message: `${rel.replace(/^\/+/, "")}: '${name}' in a ${container} block is not a known effect, trigger, or modifier name. Did you mean '${guess}'? The dumps in docs/script_docs/ name ${dumps.counts.effects} effects and ${dumps.counts.triggers} triggers.`,
-        });
-      }
-    }
-    if (candidates > C2_MAX_ITEMS)
+    if (dumps.counts.effects === 0 || dumps.counts.triggers === 0) {
       warnings.push({
-        code: "c2-truncated",
+        code: "c2-partial-dumps",
         level: "note",
-        message: `${candidates - C2_MAX_ITEMS} more near-miss name(s) were not listed.`,
+        message: `docs/script_docs/ is missing ${dumps.missing.join(", ")}, so an effect or trigger name cannot be checked. See docs/script_docs/SOURCE.md.`,
       });
-    checked.push(`C2 effect and trigger names inside the effect and trigger blocks, against docs/script_docs/`);
+    } else {
+      const known = knownNames(dumps);
+      const structureAllowed = new Set([...STRUCTURE_FIELDS, ...known]);
+      let candidates = 0;
+      const reported = new Set<string>();
+      for (const { abs, rel } of files) {
+        if (!rel.toLowerCase().endsWith(".txt")) continue;
+        const category = categoryOf(rel);
+        if (!category && !rel.toLowerCase().startsWith("/events/")) continue;
+        const text = readText(abs);
+        if (text === null) continue;
+        for (const { container, name } of containerChildren(stripLineComments(text))) {
+          const lower = name.toLowerCase();
+          // A game name is lowercase snake_case. An uppercase identifier is a constant such as a
+          // state or a good, and the game names it somewhere else, so it is not a candidate. A
+          // dotted name is a field path such as `amendment.type`, not a game name.
+          if (name !== lower || name.includes(".")) continue;
+          if (lower.length < C2_MIN_LENGTH) continue;
+          if (structureAllowed.has(lower) || structureAllowed.has(name)) continue;
+          if (modDefinedNames.has(name)) continue;
+          const key = `${rel.replace(/^\/+/, "")}|${lower}`;
+          if (reported.has(key)) continue;
+          if (candidates >= C2_MAX_ITEMS) {
+            candidates += 1;
+            continue;
+          }
+          const guess = suggest(name, known);
+          if (!guess) continue;
+          reported.add(key);
+          candidates += 1;
+          warnings.push({
+            code: "c2-near-miss",
+            level: "warn",
+            message: `${rel.replace(/^\/+/, "")}: '${name}' in a ${container} block is not a known effect, trigger, or modifier name. Did you mean '${guess}'? The dumps in docs/script_docs/ name ${dumps.counts.effects} effects and ${dumps.counts.triggers} triggers.`,
+          });
+        }
+      }
+      if (candidates > C2_MAX_ITEMS)
+        warnings.push({
+          code: "c2-truncated",
+          level: "note",
+          message: `${candidates - C2_MAX_ITEMS} more near-miss name(s) were not listed.`,
+        });
+      checked.push(`C2 effect and trigger names inside the effect and trigger blocks, against docs/script_docs/`);
+    }
   } else {
     warnings.push({
       code: "c2-no-dumps",
@@ -741,5 +775,3 @@ export function analyzeSemantics(modPath: string, opts?: SemanticOptions): Seman
   return { checked, warnings };
 }
 
-/** The display name of a mod directory, for a caller that reports the path. */
-export const modDirName = (p: string): string => basename(p);

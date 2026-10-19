@@ -21,11 +21,19 @@ const names = (file) => {
   return new Set((text.match(/^## \S+/gm) ?? []).map((line) => line.replace(/^#+\s*/, "")));
 };
 
-let wikiText = "";
-for (const page of readdirSync(wikiDir)) {
-  if (!page.endsWith(".md")) continue;
-  wikiText += `${readFileSync(join(wikiDir, page), "utf8")}\n`;
+/** Every `.md` page under the snapshot, at any depth: the index can add a subdirectory later. */
+function wikiPages(dir) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...wikiPages(p));
+    else if (entry.name.endsWith(".md")) out.push(p);
+  }
+  return out;
 }
+
+let wikiText = "";
+for (const page of wikiPages(wikiDir)) wikiText += `${readFileSync(page, "utf8")}\n`;
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const mentioned = (set) => {
@@ -41,6 +49,10 @@ for (const [label, file] of [
   ["triggers", "triggers.log"],
 ]) {
   const all = names(file);
+  if (all.size === 0) {
+    console.log(`${label}: the dump holds no name`);
+    continue;
+  }
   const hit = mentioned(all);
   console.log(`${label}: ${hit} of ${all.size} (${((100 * hit) / all.size).toFixed(0)}%)`);
 }

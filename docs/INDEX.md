@@ -32,7 +32,7 @@ and the **vanilla folders** to search.
 | Add a diplomatic action | [`Diplomacy modding.md`](mod-wiki/Diplomacy modding.md) | — | `common/diplomatic_actions` | new object |
 | Add a war goal | [`War goal modding.md`](mod-wiki/War goal modding.md) | — | `common/war_goal_types` | new object |
 | Change AI behaviour | [`AI modding.md`](mod-wiki/AI modding.md) | [`Defines.md`](mod-wiki/Defines.md) | `common/ai_strategies` | `REPLACE:` |
-| Change only a value inside an existing block | — (nothing to read) | — | the block's own folder | `REPLACE:`, no new object |
+| Change only a value inside an existing block | — (nothing to read) | — | the block's own directory | `REPLACE:` (gated) or implicit replace |
 
 If no row fits, or a row needs a fourth page, say so and report it. The table is incomplete then, and
 a controlled search for that one gap beats wandering through the whole catalogue.

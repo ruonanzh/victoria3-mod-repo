@@ -146,8 +146,9 @@ Clear every ERROR before you end the turn. Read the `WARN:` and `NOTE:` lines be
 finished.
 The tool checks the syntax and the conventions, and then three name-level classes. It checks that a
 `REPLACE:`/`INJECT:` target exists, that an effect or trigger name inside an effect or trigger block
-is not a near miss for a known name, and that a new decision, character trait, or journal entry has
-its localization keys. It reads `docs/script_docs/` and `game-scripts/vanilla/` for those checks, so
+is not a near miss for a known name, and that a new decision, character trait, journal entry, or
+journal entry group has its localization keys. It reads `docs/script_docs/` and
+`game-scripts/vanilla/` for those checks, so
 run `sync_game_scripts` first. It is not a scope or type validator, and it cannot check a value
 domain. Section 10 of `docs/victoria3-modding-conventions.md` lists what no tool checks.
 

@@ -84,17 +84,17 @@ for (const file of files) {
   const where = relative(root, file).split("\\").join("/");
   const text = readFileSync(file, "utf8");
   const inSnapshot = file.startsWith(EXTERNAL_SNAPSHOT);
+  const naked = stripFences(text);
   if (!inSnapshot) {
-    // A: a Markdown link.
-    for (const m of text.matchAll(/\[[^\]]*\]\(([^)\s]+\.md)(#[^)]*)?\)/g)) {
+    // A: a Markdown link. A link inside a code fence is an example, not a reference.
+    for (const m of naked.matchAll(/\[[^\]]*\]\(([^)\s]+\.md)(#[^)]*)?\)/g)) {
       const target = m[1];
       if (/^(https?:|\/\/|mailto:)/.test(target)) continue;
       if (!existsSync(resolve(dirname(file), target)))
         problems.push(`A broken link: ${where} -> ${target}`);
     }
     // B: a repository-root path in backticks.
-    const naked = stripFences(text).split("\n");
-    for (const line of naked) {
+    for (const line of naked.split("\n")) {
       for (const m of line.matchAll(/`([A-Za-z0-9_./-]+\.(?:md|mjs|py|ts|json|yml|yaml|txt|png|dds|log))`/g)) {
         const p = m[1];
         if (p.includes("..")) continue;

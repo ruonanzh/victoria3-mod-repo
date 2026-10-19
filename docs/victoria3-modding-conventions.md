@@ -192,8 +192,10 @@ one of the wiki's documented failure modes.
   is optional.
 - **The value is a quoted string.** It starts at the first `"`. An inner `"`, a doubled `""`, and a
   closing `"` after several lines are all accepted by `validate_mod`, because the engine accepts the
-  vanilla files that do this, such as `""L'État, c'est moi!""`. The wiki snapshot does not describe
-  the quote parsing, so this rule is engine behaviour observed in the vanilla files.
+  vanilla files that do this. One example is
+  `game-scripts/vanilla/game/localization/english/agitators_2_l_english.yml:9`, which wraps one value
+  in `""`. The wiki snapshot does not describe the quote parsing, so this rule is engine behaviour
+  observed in the vanilla files.
 - **Overriding vanilla loc keys:** the mechanism the wiki states is a `replace` **subdirectory**,
   `<lang>/replace/overwriting_l_<lang>.yml`. Keys there overwrite identical keys elsewhere.
 - **Precedence outside `replace/` is contested in the snapshot.** `Localization.md` states that files
@@ -224,10 +226,10 @@ checks and how severe each finding is.
   `visible = "[Or( ... )]"` legitimately wraps across lines, and the closing `"` can sit several
   lines below the opening one. That is correct as long as the string closes. The wiki does not state
   it, and `validate_mod` accepts it.
-- **A file that is not game script is skipped.** The tool skips a `README.txt` at the mod root, and
-  everything under `.metadata/`, `tools/`, `licenses/`, and `documentation/`. It also skips
-  `localization/languages.yml`, which is a game definition and not a localization file. The tool
-  skips these by path, not by location.
+- **A file that is not game script is skipped.** The tool skips every file whose name starts with
+  `readme`, and everything under `.metadata/`, `tools/`, `licenses/`, and `documentation/`. It also
+  skips `localization/languages.yml`, which is a game definition and not a localization file. The
+  tool skips these by path, not by location.
 - **What the game reports.** `Troubleshooting.md` shows a missing brace as
   `Unexpected token: …, near line: 129`, and states that "hundreds of errors" then flood the error
   log. It also states that a missing brace breaks every definition below it. The game does not stay
@@ -293,8 +295,8 @@ missing file or invalid JSON as an ERROR, and a missing standard field as a WARN
 
 Victoria 3 hooks new content into the game through a small number of **entry points**. They are not
 interchangeable: a feature that reports a one-off choice is an event, a feature that keeps running is
-a journal entry, and a feature that puts a button on an existing screen is a scripted GUI. Most mods
-need one of them at most, and many need none.
+a journal entry, and a feature that puts a button on an existing UI window is a scripted GUI. Most
+mods need one of them at most, and many need none.
 
 Pick the entry **before** you write script. Read the row that matches your feature, then open the
 directory it names and read one of the examples in it.
@@ -308,7 +310,7 @@ directory it names and read one of the examples in it.
 | `on_actions` | The feature hooks a **hook that the game calls** at a specific circumstance. | `common/on_actions/` |
 | `character_interactions` | The action becomes available **after the player selects a character**. The wiki snapshot has no page for this directory, so treat the rule as unverified. | `common/character_interactions/` |
 | `objectives` | The feature is a **goal** the player works toward. The wiki snapshot has no page for this directory, so treat the rule as unverified. | `common/objectives/` |
-| Other mechanisms for existing screens and hooks | These hook into an existing screen or hook, and the entry points above do not cover them. | `gui/` (panels), `common/scripted_buttons/`, `common/scripted_progress_bars/`, `common/scripted_triggers/`, `common/scripted_effects/` |
+| Other mechanisms for an existing UI window and a hook | These hook into an existing UI window or hook, and the entry points above do not cover them. | `gui/` (panels), `common/scripted_buttons/`, `common/scripted_progress_bars/`, `common/scripted_triggers/`, `common/scripted_effects/` |
 
 A mod can also add its own content to one of the game's own data directories, such as scripted
 effects, script values, laws, or pop types. The `mod-creator` skill lists the common ones.
@@ -342,7 +344,8 @@ Use one word for one thing. The right column is the only spelling this repositor
 | dumps | The six name lists in `docs/script_docs/`, produced by the game's `script_docs` command. | logs, script docs, wiki dump |
 | gated directory | A `common/<directory>` that accepts the `INJECT:`/`REPLACE:` keywords. The wiki calls the list "folders that use these keywords". | keyword folder |
 | `validate_mod` | The tool that runs the syntax, convention, and name-level checks. | the linter, the validator |
-| UI | What the player sees and clicks. | screen, interface, window |
+| UI | What the player sees and clicks. | screen, interface |
+| UI window | One window that the game shows, and the panel inside it. | screen, page |
 | entry point | The game mechanism that surfaces a feature: a journal entry, a decision, an event, a scripted GUI, and so on. | hook, trigger |
 
 ## 9. The dumps and the name-level checks
@@ -362,7 +365,8 @@ name-level conclusion is not proof.
 - **C2, a near miss inside an effect or trigger block.** The check reads a fixed list of containers
   (`immediate`, `effect`, `hidden_effect`, `trigger`, `potential`, `visible`, `allow`, `is_valid`,
   `ai_chance`, `after`, `option`, and similar). A name of 8 characters or more that is not a known
-  name and is within two edits of one gives a WARN with a suggestion. A shorter name, a name the mod
+  name and is within two edits of one gives a WARN with a suggestion. The suggestion must also share
+  the first letter and be within two characters of the length. A shorter name, a name the mod
   defines, and a name that starts with an uppercase letter are not reported.
 - **C3, the localization keys of a new object.** The wiki documents the keys for a decision
   (`<id>` and `<id>_desc`), a character trait (`<id>` and `<id>_desc`), a journal entry (`<id>` and

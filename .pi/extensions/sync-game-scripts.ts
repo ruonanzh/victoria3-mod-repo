@@ -7,12 +7,14 @@ import {
   MIRROR_DIRNAME,
   NO_WORKSHOP_MARKER,
   VANILLA_MIRROR_DIRNAME,
+  WORKSHOP_MIRROR_DIRNAME,
   checkGameDir,
   checkWorkshopDir,
   mirrorDir,
   readModRepoConfig,
   readState,
   vanillaMirrorDir,
+  vanillaScriptsDir,
   workshopMirrorDir,
 } from "../lib/game-paths";
 
@@ -66,6 +68,8 @@ function walkFiles(root: string): Array<{ abs: string; rel: string }> {
     }
     for (const e of entries) {
       if (EXCLUDE_DIR_NAMES.has(e.name)) continue;
+      // The harness marker for the Workshop part is not game content, so it is not a mirrored file.
+      if (e.name === NO_WORKSHOP_MARKER) continue;
       const abs = join(dir, e.name);
       const rel = toPosix(relative(root, abs));
       if (shouldExclude(rel)) continue;
@@ -262,14 +266,19 @@ export default function (pi: ExtensionAPI) {
       if (skipWorkshop) {
         clearedForSkip = pruneTree(workshopMirror).staleRemoved;
       } else {
-        // The Workshop source can disappear, when the player unsubscribes or deletes the directory.
+        // The Workshop source can disappear, when the player deletes the directory or unsubscribes.
         // The tool must not silently keep the old mirror, because the agent would keep reading it as
-        // the current game content. Distinguish that from an unknown path:
-        //   - The path is known and no longer exists: the source is gone. Clear the mirror and say so.
-        //   - The path is unknown (try_set_game_dir never ran): leave the mirror alone, because it
-        //     may be a valid mirror from an earlier run.
+        // the current game content. Distinguish the three cases:
+        //   - The path is known and its parent exists, but the directory does not: the source is
+        //     gone. Clear the mirror and say so.
+        //   - The path is unknown (try_set_game_dir never ran), or the drive is not mounted: leave
+        //     the mirror alone, because the copy may still be the only current one.
+        //   - The path is a real directory: mirror it.
         const wsVerdict = checkWorkshopDir(workshopDir, steamAppId);
-        workshopGone = typeof workshopDir === "string" && !existsSync(workshopDir);
+        // A whole drive can be missing, and that is not the same as an absent directory. `existsSync`
+        // on the parent separates the two, and the tool never wipes a mirror on an unmounted drive.
+        const parentPresent = typeof workshopDir === "string" && existsSync(dirname(workshopDir));
+        workshopGone = parentPresent && !existsSync(workshopDir);
         wsRejected = !wsVerdict.ok;
         wsRejectReason = wsVerdict.reason;
         w = wsVerdict.ok
@@ -281,12 +290,14 @@ export default function (pi: ExtensionAPI) {
 
       // The `mirrored N` count above is what this run copied, so an up-to-date mirror reports 0.
       // That reads as "the mirror is empty", which is wrong: the mirror keeps every file the earlier
-      // runs copied. Count the mirror itself, after the sync, and report that total as well.
-      const mirrorTotal = walkFiles(destRoot).length;
+      // runs copied. Count the two parts with the same scopes that get_game_info reports, so the two
+      // tools never disagree about "how many files the mirror holds".
+      const vanillaFiles = walkFiles(vanillaScriptsDir(repoRoot)).length;
+      const workshopFiles = walkFiles(workshopMirror).length;
 
       const lines = [
         `PASS: mirrored ${g.copied + w.copied} script file(s) into ${toPosix(relative(repoRoot, destRoot))}/ (vanilla: ${g.copied}, workshop: ${w.copied})`,
-        `mirror now holds ${mirrorTotal} file(s).`,
+        `mirror now holds ${vanillaFiles} file(s) under ${VANILLA_MIRROR_DIRNAME}/game/ and ${workshopFiles} file(s) under ${WORKSHOP_MIRROR_DIRNAME}/.`,
       ];
       if (legacy.note) lines.push(legacy.note);
       if (g.staleRemoved + w.staleRemoved > 0) {
@@ -299,7 +310,7 @@ export default function (pi: ExtensionAPI) {
       }
       if (workshopGone) {
         lines.push(
-          `NOTE: the workshop source is gone (unsubscribed or deleted). Its mirrored copy under ${MIRROR_DIRNAME}/${WORKSHOP_MIRROR_DIRNAME} was cleared (${w.staleRemoved} file(s)) instead of being left behind.`,
+          `NOTE: the recorded workshop directory was not found, so its mirrored copy under ${MIRROR_DIRNAME}/${WORKSHOP_MIRROR_DIRNAME} was cleared (${w.staleRemoved} file(s)) instead of being left behind as current game content.`,
         );
       }
       return {

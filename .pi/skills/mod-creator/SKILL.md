@@ -32,12 +32,12 @@ surface you can mod. If a mechanism is absent from them, you cannot mod it.
 1. **If the request is about a game system, start with the wiki.** Compare the request with the
    routing table at the top of `docs/INDEX.md`. Take the pages that row names, and read them. A
    request that only changes a value skips this step.
-2. **Pick where the objects go.** When the change stays inside one existing block, skip to step 5:
-   no new object and no new entry point. A change can need an entry point, an existing data
-   directory, or both. Read section 7 of `docs/victoria3-modding-conventions.md` and pick the row that
-   matches the feature. Read one example in the directory that row names. When the change needs no
-   entry point, go to `## Data kinds` below for the directory. When the row is unclear, or no listed
-   kind matches, dispatch `entry-scout` and open its first candidate.
+2. **Pick where the objects go.** When the change stays inside one existing block, skip to step 5,
+   except when that block is in a `.gui` file: do step 4 first. A change can need an entry point, an
+   existing data directory, or both. Read section 7 of `docs/victoria3-modding-conventions.md` and
+   pick the row that matches the feature. Read one example in the directory that row names. When the
+   change needs no entry point, go to `## Data kinds` below for the directory. When the row is
+   unclear, or no listed kind matches, dispatch `entry-scout` and open its first candidate.
 3. **Research the vanilla code.** Find the objects your change touches, and how they connect. Before
    you search, write down the mechanism family and the object name you expect. Do not guess from
    names alone. Then pick one path:
@@ -255,7 +255,8 @@ Call `validate_mod` with `modDir = your_mods/<ModName>/`.
     this mod or in `game-scripts/vanilla/`;
   - that an effect or trigger name inside an effect or trigger block is not a near miss for a name in
     `docs/script_docs/`;
-  - that a new decision, character trait, or journal entry has its localization keys.
+  - that a new decision, character trait, journal entry, or journal entry group has its localization
+    keys.
 - A name-level finding is a `WARN:` or a `NOTE:`, never an ERROR. Read them. They are evidence that a
   name is wrong, not proof of a load failure.
 - The tool does not check a scope, a type, a value domain, or a GUI resolution order. Section 10 of

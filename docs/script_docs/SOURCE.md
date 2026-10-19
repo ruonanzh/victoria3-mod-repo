@@ -25,19 +25,27 @@ Victoria 3 writes these six files, and no `data_types` dump. The wiki spells a s
 
 ## What each file holds
 
-| File | Shape of a name line | Names |
+| File | Shape of a name line | Unique names |
 |---|---|---|
 | `effects.log` | `## <name>` | 3152 |
 | `triggers.log` | `## <name>` | 1816 |
 | `modifiers.log` | `<name>:` at column zero, under a `--- <section> ---` heading | 7090 |
-| `event_targets.log` | `### <name>` | 353 |
+| `event_targets.log` | `### <name>` | 336 |
 | `on_actions.log` | `<name>:` at column zero | 262 |
-| `custom_localization.log` | `<name>:` at column zero | 960 |
+| `custom_localization.log` | `<name>:` at column zero | 202 |
 
-The counts are what `get_game_info` reports, and they come from these files. Re-measure them with:
+The count is a unique name. `get_game_info` reports four of these six counts. Re-measure all six with
+the rule that the tool uses:
 
 ```bash
-node -e 'const d="docs/script_docs";const f=require("fs");for(const n of ["effects","triggers","event_targets"]){const t=f.readFileSync(d+"/"+n+".log","utf8");const re=n==="event_targets"?/^### /gm:/^## /gm;console.log(n,(t.match(re)||[]).length)}'
+node -e '
+const fs=require("fs"),d="docs/script_docs";
+const n=(f,re)=>{const t=fs.readFileSync(d+"/"+f,"utf8");const s=new Set();for(const m of t.matchAll(re))s.add(m[1]);return s.size};
+console.log("effects",n("effects.log",/^## (\S+)/gm));
+console.log("triggers",n("triggers.log",/^## (\S+)/gm));
+console.log("event_targets",n("event_targets.log",/^### (\S+)/gm));
+for(const f of ["modifiers","on_actions","custom_localization"])console.log(f,n(f+".log",/^([a-z_][a-z0-9_.]*):\s*$/gm));
+'
 ```
 
 ## Two limits

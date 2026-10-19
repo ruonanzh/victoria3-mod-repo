@@ -1,6 +1,7 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { isValidModId } from "../lib/mod-identity";
-import { analyzeSemantics } from "../lib/mod-semantics";
+import { analyzeSemantics, LOC_LANGUAGES } from "../lib/mod-semantics";
+import { stripLineComments } from "../lib/pdx-text";
 import { Type } from "typebox";
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative, resolve, sep, basename } from "node:path";
@@ -25,7 +26,8 @@ import { join, relative, resolve, sep, basename } from "node:path";
  *     item is a warning or a note, never a failure.
  *
  * The tool is read-only, and it has no third-party dependency. Its content output uses PASS or FAIL
- * with NEXT, in ASCII English, and its details hold only ok, errors, and warnings.
+ * with NEXT, in ASCII English. Its details hold ok, errors, warnings, and the semantic block, and the
+ * printed warning count adds the semantic warnings to the lint warnings.
  */
 
 const UTF8_BOM = Buffer.from([0xef, 0xbb, 0xbf]);
@@ -111,24 +113,6 @@ function isLocalizationYml(rel: string): boolean {
   return r.endsWith(".yml") && (r.startsWith("localization/") || r.includes("/localization/"));
 }
 
-// The languages Victoria 3 ships. A localization file names its language with the `_l_<lang>` filename
-// suffix (wiki Modding/Localization: "the filename must end with `_l_<language>`; any file name can
-// be used as long as this format is respected"). The engine and DLC trees group files as
-// `localization/<group>/<file>_l_<lang>.yml`, so the first directory is often a group and not a
-// language. This set is the single place to add a language.
-const LOC_LANGUAGES = new Set([
-  "braz_por",
-  "english",
-  "french",
-  "german",
-  "japanese",
-  "korean",
-  "polish",
-  "russian",
-  "simp_chinese",
-  "spanish",
-  "turkish",
-]);
 
 /** The known language named by the `_l_<lang>.yml` filename suffix, or null. */
 function filenameLanguage(rel: string): string | null {
@@ -550,27 +534,6 @@ function checkMetadata(modRoot: string): Finding[] {
 // ---- PDXScript and GUI brace and quote balance, and the INJECT: and REPLACE: top-level block ----
 
 /** Deletes a `#` line comment that is outside a quoted string. It keeps the line breaks, so line numbers still match. A string can span lines. */
-function stripLineComments(text: string): string {
-  const outLines: string[] = [];
-  let inString = false;
-  for (const raw of text.split("\n")) {
-    let buf = "";
-    for (const ch of raw) {
-      if (inString) {
-        buf += ch;
-        if (ch === '"') inString = false;
-      } else if (ch === "#") {
-        break; // A line comment. Ignore the rest of this line.
-      } else {
-        buf += ch;
-        if (ch === '"') inString = true;
-      }
-    }
-    outLines.push(buf);
-  }
-  return outLines.join("\n");
-}
-
 interface BalanceResult {
   ok: boolean;
   message?: string;
