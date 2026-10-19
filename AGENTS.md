@@ -80,7 +80,7 @@ text that points at them instead, or refresh the snapshot as `docs/mod-wiki/SOUR
   the product prompt.
 - `.pi/extensions/` — the tools. Path tools: `try_set_game_dir`, `set_game_dir`, and
   `check_game_paths`. Info tool: `get_game_info` (read-only; it reports the game version, the paths,
-  the state of the mirror, the dumps, and the entry points). Runtime tools: `check_runtime` and
+  the script layout, and whether the vanilla scripts are present). Runtime tools: `check_runtime` and
   `install_runtime` (Victoria 3 has no runtime). Mod tools: `validate_mod` and `install_mod`. Context
   tool: `sync_game_scripts`. Trust the capabilities and the side effects that each tool declares.
 - `reference/` — read-only mod samples. `reference/example_mod/` is a runnable sample that passes

@@ -73,8 +73,7 @@ such as `StatusWidget.ToggleLoginWindow`. Read them when a `.gui` file uses a na
 | `on_actions.log` | `<name>:` at column zero | 262 |
 | `custom_localization.log` | `<name>:` at column zero | 202 |
 
-The count is a unique name. `get_game_info` reports four of these six counts. Re-measure all six with
-the rule that the tool uses:
+The count is a unique name. Re-measure all six with the rule that `validate_mod` uses:
 
 ```bash
 node -e '
