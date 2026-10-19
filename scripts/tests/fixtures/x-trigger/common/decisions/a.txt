@@ -1,0 +1,3 @@
+my_dec_x = {
+	potential = { has_technology_researchedd = yes }
+}

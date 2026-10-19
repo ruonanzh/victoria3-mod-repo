@@ -1,0 +1,4 @@
+﻿# comment
+REPLACE:no_such_decision_xyz = {
+	potential = { always = yes }
+}

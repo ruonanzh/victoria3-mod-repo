@@ -1,0 +1,3 @@
+my_test_decision_xyz = {
+	potential = { always = yes }
+}

@@ -1,0 +1,3 @@
+trait_zz_thing = {
+	type = personality
+}

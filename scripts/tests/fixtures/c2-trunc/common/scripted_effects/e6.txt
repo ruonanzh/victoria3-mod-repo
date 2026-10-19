@@ -1,0 +1,5 @@
+zz_e_6 = {
+	effect = {
+		add_devastation6 = 1
+	}
+}

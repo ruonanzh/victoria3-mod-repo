@@ -1,0 +1,3 @@
+INJECT:partition_ottoman_balkans = {
+	add_prestige = 1
+}

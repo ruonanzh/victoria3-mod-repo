@@ -1,0 +1,3 @@
+# The CRLF fixture is read byte for byte: the test checks that the parsers accept \r\n.
+# Keep it out of the line-ending normalization, or a Linux checkout would test LF instead.
+scripts/tests/fixtures/x-bom-crlf/** -text
