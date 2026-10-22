@@ -16,13 +16,13 @@ Victoria 3 loads the mod files on top of the vanilla files. Three override mecha
 
 - **Direct file overwrite:** a mod file with the *same path and filename* as a base-game, DLC, or other-mod file takes precedence. The lower-in-playlist mod wins, and the losing files are treated "as if they did not exist". This is a whole-file override, so anything you omit is lost. A vanilla patch can then change a key you never repeated.
 - **Implicit replace:** in a directory that does **not** use the keyword system, two files may define the same top-level object. The **later-loaded definition** then stays in force. The wiki says those directories "generally function with an implicit replace", so it is the general rule and not a guaranteed one.
-- **`INJECT:` / `REPLACE:` keywords:** most `common/` directories (and some others) require a keyword to replace an existing object without a full file overwrite. Implicit replace does **not** work in these directories. Keywords must sit at the **top level of the file**, directly before a database entry. The wiki gives a nested example that does **not** work, an `INJECT:` inside another `INJECT:`. A container directory such as `common/genes/` (`color_genes = { hair_color = { … } }`) can therefore be replaced only as a whole container:
+- **`INJECT:` / `REPLACE:` keywords:** most `common/` directories (and some others) require a keyword to change an existing object without a full file overwrite. Implicit replace does **not** work in these directories. Keywords must sit at the **top level of the file**, directly before a database entry. The wiki gives a nested example that does **not** work, an `INJECT:` inside another `INJECT:`. A container directory such as `common/genes/` (`color_genes = { hair_color = { … } }`) can therefore be replaced only as a whole container:
 
   ```txt
   REPLACE:color_genes = { … }        # the whole container
   ```
 
-  Where the entry is a scalar, the keyword sits directly before the value. For example, a real mod replaces the block entry `amenability` with the scalar `REPLACE:amenability = 50` in `common/script_values/`. The form is legal, and `validate_mod` accepts both forms.
+  Where the entry is a scalar, the keyword sits directly before the value. Neither the wiki nor the vanilla files state this form. One published mod writes `REPLACE:amenability = 50` in `common/script_values/`. Vanilla defines `amenability` as a block at `negotiation_values.txt:152`, so that mod replaces a block with a scalar. `validate_mod` accepts both forms.
 
   | Keyword | Effect |
   | --- | --- |
@@ -167,11 +167,11 @@ The wiki does not document an individual missing field as load-fatal. `validate_
 
 Victoria 3 hooks new content into the game through a small number of **entry points**. They are not interchangeable. A feature that reports a one-off choice is an event. A feature that keeps running is a journal entry. A feature that puts a button on an existing UI window is a scripted GUI. Most mods need one of them at most, and many need none.
 
-Pick the entry **before** you write script. Read the row that matches your feature, then open each directory it names and read one of the examples in it.
+Pick the entry **before** you write script. Read the row that matches your feature. Open each directory it names, and read one of the examples there when the row gives one.
 
 | Entry point | Use it when | Defined in / read this example |
 | --- | --- | --- |
-| `journal_entries` | The feature is a **persistent state with progress**. It can end on completion, on failure, on a timeout, or as invalid. | `common/journal_entries/`, for example `00_abolish_monarchy.txt`, and its UI group in `common/journal_entry_groups/` |
+| `journal_entries` | The feature is a **persistent state with progress**. It can end on completion, on failure, on a timeout, or as invalid. | `common/journal_entries/`, for example `00_abolish_monarchy.txt`, and its UI group in `common/journal_entry_groups/`, for example `00_journal_entries.txt` |
 | `decisions` | The feature is a **player-triggered action** (a button the player presses). | `common/decisions/`, for example `000_decisions_help.txt` |
 | `events` | The feature surfaces as an **event window** (a one-off window with options). `popup = yes` only makes the window open by itself. | `events/` (top level, not under `common/`), for example `1848.txt` |
 | `scripted_guis` | The feature needs **script logic behind a button or a widget**. The layout itself lives in `gui/`. | `common/scripted_guis/`, for example `debug_sguis.txt`, plus the layout under `gui/` |
@@ -184,7 +184,7 @@ A mod can also add its own content to one of the game's own data directories. Ex
 
 The four families are a **persistent mechanic** (`journal_entries`), a **panel** (`gui/` plus `scripted_guis`), an **action** (`decisions` / `character_interactions`), and **event-driven content** (`events`).
 
-**Decide this before you write any script. Does this version need its own panel, or any new entry point at all?** If it does, open each directory that the row names. Read one of the examples there, or the readme the game ships for that directory. Then write. If it does not, skip this whole page.
+**Decide this before you write any script. Does this version need its own panel, or any new entry point at all?** If it does, open each directory that the row names. Read one of the examples there when the row gives one, or the readme the game ships for that directory. Then write. If it does not, skip this whole page.
 
 Three hard rules that the wiki states and that this table does not:
 
@@ -213,11 +213,11 @@ Use one word for one thing. The right column is the only spelling this repositor
 
 `validate_mod` runs three name-level classes. Each one is a WARN or a NOTE, never a FAIL, because a name-level conclusion is not proof.
 
-- **C1, the target of a keyword.** A target must be a top-level object in the same `common/<directory>/`, here or in the vanilla scripts. A missing target is a WARN. A `TRY_*` keyword gives a NOTE. An `*_OR_CREATE` keyword is not reported, because it creates the entry on purpose. An `INJECT:` in `common/scripted_effects` or `common/scripted_triggers` gives a WARN. The wiki states that it acts as `REPLACE:` there.
-- **C2, a near miss inside an effect or trigger block.** The check reads a closed list of containers. The list covers `immediate`, `effect`, `hidden_effect`, `trigger`, `potential`, `visible`, `allow`, `is_valid`, `ai_chance`, `after`, `option`, `if`, `while`, `limit`, `scope:<name>`, and similar. A name gives a WARN with a suggestion when it has 8 characters or more and is within two edits of a known name. The suggestion must also share the first letter and be within two characters of the length. A shorter name, a name the mod defines, and a name that starts with an uppercase letter are not reported.
+- **C1, the target of a keyword.** A target must be a top-level object in the same `common/<directory>/`, in this mod or in vanilla. A missing target is a WARN. A `TRY_*` keyword gives a NOTE. An `*_OR_CREATE` keyword is not reported, because it creates the entry on purpose. An `INJECT:` in `common/scripted_effects` or `common/scripted_triggers` gives a WARN. The wiki states that it acts as `REPLACE:` there.
+- **C2, a near miss inside an effect or trigger block.** The check reads a set list of containers. The list holds `immediate`, `effect`, `hidden_effect`, `trigger`, `potential`, `visible`, `allow`, `is_valid`, `ai_chance`, `after`, `option`, `if`, `while`, `limit`, and `scope:<name>`. A name gives a WARN with a suggestion when it has 8 characters or more and is within two edits of a known name. The suggestion must also share the first letter and be within two characters of the length. A shorter name, a name the mod defines, and a name that starts with an uppercase letter are not reported.
 
   **The dump is not complete.** The game leaves some names out of it, such as the trigger `any_princely_state`, which the vanilla files use. A name that the dump omits is not proof that the name is wrong. C2 reports only a near miss against a listed name, so a valid name that the game does not document is not reported. When a warning names a trigger or an effect that you believe is real, check its definition in `game-scripts/vanilla/`.
-- **C3, the localization keys of a new object.** A decision needs `<id>` and `<id>_desc`. A character trait needs the same two. A journal entry needs `<id>` and `<id>_reason`. A journal entry group needs `<id>`. The wiki documents those keys. A new object of those classes without the key in the base language gives a WARN.
+- **C3, the localization keys of a new object.** The wiki documents the keys for each class. A decision needs `<id>` and `<id>_desc`, and a character trait needs `<id>` and `<id>_desc`. A journal entry needs `<id>` and `<id>_reason`, and a journal entry group needs `<id>`. A new object of those classes without the key in the base language gives a WARN.
 
 The semantic layer reads `docs/script_docs/` and `game-scripts/vanilla/`. When the mirror is absent, C1 and C3 report a NOTE and check nothing. When the dumps are absent, C2 reports a NOTE.
 
@@ -243,4 +243,4 @@ Read the `WARN:` and `NOTE:` lines of `validate_mod` before you call a mod done.
 3. Do not use a semicolon. Write two sentences.
 4. Do not use an arrow, an emoji, `etc.`, or an ellipsis to end a list.
 5. One prose block is one line. Run `node scripts/check-md-lines.mjs` after you edit a document.
-6. Do not write `only` in place of a condition. Name the condition instead.
+6. Do not use `only` as a hedge. Keep it for a hard boundary, as in `write mods only here`.
