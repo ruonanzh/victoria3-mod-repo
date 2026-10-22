@@ -42,7 +42,7 @@ Work in two stages. Stage 1 settles what the player wants, backed by research. S
 A search that lists files is cheaper than one that lists every line. Long line output costs the most context.
 
 - **Cap every listing.** One `head -20` per search. A long result means the keyword is too broad, so narrow the keyword instead of raising the cap.
-- **Names and places are different questions.** A name, a scope, or a modifier category comes from `docs/script_docs/` or `docs/data_types/`. A file, a block, a field value, and a loc key come from the vanilla scripts.
+- **Names and places are different questions.** A name, a scope, or a modifier category comes from `docs/script_docs/` or `docs/data_types/`. A vanilla object, a field value, an `INJECT:` target, and a loc key come from `game-scripts/vanilla/game/`.
 - **The mod root is not the search root.** A vanilla search reads `game-scripts/vanilla/game/common/`. The mod writes to `common/` at its own root, because a mod mirrors the game's `game/` directory and adds no level of its own.
 - **Check the form.** A hit tells you where the object is, not how to edit it. Section 1 of `docs/victoria3-modding-conventions.md` has the forms.
 
@@ -134,7 +134,7 @@ A failing run starts with `FAIL: <name> has N error(s), M warning(s)`, then one 
 
 ## Data kinds (what to add, and where it lives)
 
-Read section 7 of `docs/victoria3-modding-conventions.md` for the entry mechanism, and open one example in the directory that row names. Then read the table below, which names the directory for each kind of object a mod can add.
+Read section 7 of `docs/victoria3-modding-conventions.md` for the entry mechanism, and open one example in each directory that the row names. Then read the table below, which names the directory for each kind of object a mod can add.
 
 The game holds **135 directories and one file** (`achievement_groups.txt`) under `game-scripts/vanilla/game/common/`. Count them before you trust the number:
 
