@@ -189,7 +189,7 @@ export default function (pi: ExtensionAPI) {
     name: "install_mod",
     label: "Install Mod",
     description:
-      "Copies a mod from your_mods/<id>/ into the mod install directory, which is the modInstallDir value in .gamer-agent.local.json. Re-installing the same mod updates it in place. When another mod occupies the target directory, the tool installs as <directory name>_pimod instead of overwriting it. The tool does not validate, does not compile, and does not edit mod content.",
+      "Copies a mod from your_mods/<id>/ into the mod install directory, which comes from mod-repo.json and is recorded as modInstallDir in .gamer-agent.local.json. Re-installing the same mod updates it in place. When another mod occupies the target directory, the tool installs as <directory name>_pimod instead of overwriting it. The tool does not validate, does not compile, and does not edit mod content.",
     promptSnippet: "Install mod into the mod install directory",
     promptGuidelines: [
       "Use install_mod after validate_mod passes, so the player can enable the mod in the launcher.",

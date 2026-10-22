@@ -167,7 +167,7 @@ The wiki does not document an individual missing field as load-fatal. `validate_
 
 Victoria 3 hooks new content into the game through a small number of **entry points**. They are not interchangeable. A feature that reports a one-off choice is an event. A feature that keeps running is a journal entry. A feature that puts a button on an existing UI window is a scripted GUI. Most mods need one of them at most, and many need none.
 
-Pick the entry **before** you write script. Read the row that matches your feature. Open each directory it names, and read one of the examples there when the row gives one.
+Pick the entry **before** you write script. Read the row that matches your feature. Open each directory it names, and read one of the examples there.
 
 | Entry point | Use it when | Defined in / read this example |
 | --- | --- | --- |
@@ -184,7 +184,7 @@ A mod can also add its own content to one of the game's own data directories. Ex
 
 The four families are a **persistent mechanic** (`journal_entries`), a **panel** (`gui/` plus `scripted_guis`), an **action** (`decisions` / `character_interactions`), and **event-driven content** (`events`).
 
-**Decide this before you write any script. Does this version need its own panel, or any new entry point at all?** If it does, open each directory that the row names. Read one of the examples there when the row gives one, or the readme the game ships for that directory. Then write. If it does not, skip this whole page.
+**Decide this before you write any script.** Does this version need its own panel, or any new entry point at all? If it does, open each directory that the row names, and read one of the examples there. Then write. If it does not, skip this whole page.
 
 Three hard rules that the wiki states and that this table does not:
 
@@ -214,10 +214,10 @@ Use one word for one thing. The right column is the only spelling this repositor
 `validate_mod` runs three name-level classes. Each one is a WARN or a NOTE, never a FAIL, because a name-level conclusion is not proof.
 
 - **C1, the target of a keyword.** A target must be a top-level object in the same `common/<directory>/`, in this mod or in vanilla. A missing target is a WARN. A `TRY_*` keyword gives a NOTE. An `*_OR_CREATE` keyword is not reported, because it creates the entry on purpose. An `INJECT:` in `common/scripted_effects` or `common/scripted_triggers` gives a WARN. The wiki states that it acts as `REPLACE:` there.
-- **C2, a near miss inside an effect or trigger block.** The check reads a set list of containers. The list holds `immediate`, `effect`, `hidden_effect`, `trigger`, `potential`, `visible`, `allow`, `is_valid`, `ai_chance`, `after`, `option`, `if`, `while`, `limit`, and `scope:<name>`. A name gives a WARN with a suggestion when it has 8 characters or more and is within two edits of a known name. The suggestion must also share the first letter and be within two characters of the length. A shorter name, a name the mod defines, and a name that starts with an uppercase letter are not reported.
+- **C2, a near miss inside an effect or trigger block.** The check reads 45 container names, and `.pi/lib/mod-semantics.ts:344-399` lists all of them. They include `immediate`, `effect`, `trigger`, `potential`, `visible`, `allow`, `is_valid`, `option`, `if`, `while`, `limit`, `custom_tooltip`, `when_taken`, `possible`, `complete`, `on_complete`, `on_weekly_pulse`, and `scope:<name>`. A name gives a WARN with a suggestion when it has 8 characters or more and is within two edits of a known name. The suggestion must also share the first letter and be within two characters of the length. A shorter name, a name the mod defines, and a name that starts with an uppercase letter are not reported.
 
   **The dump is not complete.** The game leaves some names out of it, such as the trigger `any_princely_state`, which the vanilla files use. A name that the dump omits is not proof that the name is wrong. C2 reports only a near miss against a listed name, so a valid name that the game does not document is not reported. When a warning names a trigger or an effect that you believe is real, check its definition in `game-scripts/vanilla/`.
-- **C3, the localization keys of a new object.** The wiki documents the keys for each class. A decision needs `<id>` and `<id>_desc`, and a character trait needs `<id>` and `<id>_desc`. A journal entry needs `<id>` and `<id>_reason`, and a journal entry group needs `<id>`. A new object of those classes without the key in the base language gives a WARN.
+- **C3, the localization keys of a new object.** The wiki documents the keys for a decision and for a journal entry. A decision needs `<id>` and `<id>_desc`, and a journal entry needs `<id>` and `<id>_reason`. A character trait needs `<id>` and `<id>_desc`, and a journal entry group needs `<id>`. The vanilla localization files show those two forms. A new object of those classes without the key in the base language gives a WARN.
 
 The semantic layer reads `docs/script_docs/` and `game-scripts/vanilla/`. When the mirror is absent, C1 and C3 report a NOTE and check nothing. When the dumps are absent, C2 reports a NOTE.
 
@@ -243,4 +243,4 @@ Read the `WARN:` and `NOTE:` lines of `validate_mod` before you call a mod done.
 3. Do not use a semicolon. Write two sentences.
 4. Do not use an arrow, an emoji, `etc.`, or an ellipsis to end a list.
 5. One prose block is one line. Run `node scripts/check-md-lines.mjs` after you edit a document.
-6. Do not use `only` as a hedge. Keep it for a hard boundary, as in `write mods only here`.
+6. Do not use `only` for emphasis. Keep it where it names the limit, as in `write mods only here`. Do not use `generally` or `usually` in place of a rule.

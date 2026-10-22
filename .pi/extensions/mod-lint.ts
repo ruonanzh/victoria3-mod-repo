@@ -600,8 +600,8 @@ function checkBraceQuoteBalance(cleaned: string): BalanceResult {
 /**
  * A keyword of the INJECT: or REPLACE: family must sit directly before a *database entry*, in the
  * form `KEYWORD:key = {`. The tool scans depth with awareness of comments and strings. A keyword
- * nested inside another block is an ERROR (the wiki allows the top level only, and 0 of 2,338 real
- * uses are nested), and a keyword not followed by `key = {`
+ * nested inside another block is an ERROR (the wiki allows the top level only, and 0 of the 2,318
+ * keyword uses that survive comment stripping are nested), and a keyword not followed by `key = {`
  * is an ERROR.
  */
 function checkOverrideKeywords(cleaned: string): Finding[] {
@@ -645,7 +645,7 @@ function checkOverrideKeywords(cleaned: string): Finding[] {
       if (hasKw && depth > 0) {
         // The wiki allows the keyword at the file top level only, and shows a nested example that
         // does not work. The corpus agrees: Victoria 3 vanilla uses the keywords 0 times, and all
-        // 2,338 uses in 10 downloaded Workshop mods sit at the top level. A nested keyword is
+        // 2,338 keyword occurrences in 10 downloaded Workshop mods, 2,318 of them outside comments, and every one sits at the top level. A nested keyword is
         // therefore a silent no-op, which is worse than an error.
         findings.push({
           severity: "error",
@@ -658,7 +658,7 @@ function checkOverrideKeywords(cleaned: string): Finding[] {
       continue;
     }
     // The match reached a bare keyword only, so `REPLACE:` is not followed by `key = {` or by a
-    // scalar value. Both forms are legal: `common/script_values/` entries may be a scalar, so a real
+    // scalar value. Both forms are accepted: `common/script_values/` entries may be a scalar, so a real
     // mod writes `REPLACE:amenability = 50` (BPM, common/script_values/zz_bpm_negotiation_values.txt).
     const kw = OVERRIDE_KEYWORD_RE.exec(cleaned.slice(i, i + 40));
     if (kw && kw.index === 0) {

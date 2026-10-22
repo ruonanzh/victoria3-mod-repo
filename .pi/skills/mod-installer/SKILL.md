@@ -5,7 +5,7 @@ description: Install a Victoria 3 mod into the Paradox mod directory with the `i
 
 # Install a mod into the game (Victoria 3)
 
-`install_mod` copies a mod into the **Paradox mod directory** (`<userDocuments>/Paradox Interactive/Victoria 3/mod`). The target comes from the `.gamer-agent.local.json` file that `try_set_game_dir` recorded. The tool does not locate the game itself. If no path is recorded, run `try_set_game_dir` with no arguments first. A missing target directory is not an error. It is the normal state on a new machine, and the tool creates it.
+`install_mod` copies a mod into the **Paradox mod directory** (`<userDocuments>/Paradox Interactive/Victoria 3/mod`). The path comes from `mod-repo.json`, and `try_set_game_dir` records the derived value. The tool does not locate the game itself. If no path is recorded, run `try_set_game_dir` with no arguments first. A missing target directory is not an error. It is the normal state on a new machine, and the tool creates it.
 
 ## Rules
 

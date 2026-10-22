@@ -51,7 +51,7 @@ If no row fits, or a row needs a fourth page, say so and report it. The table is
 - **Exact names and values:** read the dumps for a name, and grep `game-scripts/vanilla/game/` for a definition. The mirror also holds `game-scripts/workshop/`, which is another author's mod. Do not treat anything there as vanilla.
 - **Concepts and how-to method: the live wiki.** `vic3.paradoxwikis.com` explains how the systems work and the mod API concepts. It can lag a patch behind the vanilla scripts.
 
-> `validate_mod` checks syntax, conventions, and name-level semantics. The syntax and convention checks cover the metadata fields, the localization YAML, the brace and quote balance, and the top-level rule for the keywords. The name-level checks cover three things. They are the target of a `REPLACE:`/`INJECT:` keyword, and a near-miss effect or trigger name. The third is the localization keys of a new decision, a trait, or a journal entry. Section 10 of the conventions lists what no tool checks, and that list is yours.
+> `validate_mod` checks syntax, conventions, and name-level semantics. The syntax and convention checks cover the metadata fields, the localization YAML, the brace and quote balance, and the top-level rule for the keywords. The name-level checks cover three things. They are the target of a `REPLACE:`/`INJECT:` keyword, and a near-miss effect or trigger name. The third is the localization keys of a new decision, a trait, a journal entry, or a journal entry group. Section 10 of the conventions lists what no tool checks, and that list is yours.
 
 ## Other pages in `docs/`
 

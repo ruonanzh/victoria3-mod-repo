@@ -21,6 +21,4 @@ Victoria 3 (Paradox, Clausewitz/Jomini engine) is a grand-strategy game of socie
 
 The knowledge layer has its own map. See [`INDEX.md`](INDEX.md). This page describes the game mechanics only.
 
-## Key reminders
-
-The modding rules are in [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md). This page does not repeat them. The evidence layers and the measured wiki coverage are in [`script_docs/SOURCE.md`](script_docs/SOURCE.md).
+The modding rules are in [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md). This page does not repeat them. The evidence layers are in section 9 of that file. The measured wiki coverage is in [`script_docs/SOURCE.md`](script_docs/SOURCE.md).
