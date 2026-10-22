@@ -22,6 +22,8 @@ Victoria 3 loads the mod files on top of the vanilla files. Three override mecha
   REPLACE:color_genes = { … }        # the whole container
   ```
 
+  Where the entry is a scalar, the keyword sits directly before the value. For example, `REPLACE:amenability = 50` in `common/script_values/`.
+
   | Keyword | Effect |
   | --- | --- |
   | `INJECT:` | Append script to the end of an existing entry. The game errors if the entry does not exist. |
@@ -118,6 +120,8 @@ Write the files under `your_mods/<name>/localization/<lang>/...`. See `Localizat
 ## 4. Brace and quote balance (PDXScript and GUI)
 
 These are `validate_mod` rules. The wiki does not describe a parser, so the tool states what it checks and how severe each finding is.
+
+Every `.txt`, `.gui`, `.gfx`, and `.asset` file is UTF-8. Vanilla ships many of them with a BOM.
 
 - Every `.txt`, `.gui`, `.gfx`, and `.asset` file under the mod root is checked for balanced `{ }` and balanced `"`. An **extra `}`** and a **`"` that never closes** are ERRORs. A `{` that never closes is only a **WARN**, because vanilla itself ships files like that in `common/dna_data/`.
 - A `#` starts a line comment **outside** a quoted string. Inside a quoted string, a `#` belongs to the string: in a localization value it starts formatting markup such as `#italic … #!`, which `Localization.md` documents under *Formatting*.

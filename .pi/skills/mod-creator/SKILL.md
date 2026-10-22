@@ -1,6 +1,6 @@
 ---
 name: mod-creator
-description: The guide to writing a Victoria 3 (pdx-script) mod. Read it before you search or write: the order of work, the metadata fields, and `validate_mod`.
+description: The guide to writing a Victoria 3 (pdx-script) mod. Read it before you search or write. The order of work, the metadata fields, and `validate_mod`.
 ---
 
 # Writing Victoria 3 mods (pdx-script)
@@ -19,7 +19,7 @@ Work in two stages. Stage 1 settles what the player wants, backed by research. S
 
 0. **Load the modding context.** Run `sync_game_scripts`, then check that `game-scripts/vanilla/game/` exists. When it does not, the workspace is not ready: use `setup-workspace` first.
 1. **Start with the wiki.** Read the routing table at the top of `docs/INDEX.md`, then the pages its row names, before your first search. A request that only sets a value skips this step.
-2. **Pick where the objects go.** When the work stays inside one existing block, skip to step 5. The exception is a block in a `.gui` file: do steps 3 and 4 first. Otherwise read section 7 of `docs/victoria3-modding-conventions.md` and open one example in the directory that row names. When the work needs no entry point, read `## Data kinds` below for the directory.
+2. **Pick where the objects go.** When the work stays inside one existing block, skip to step 5. The exception is a block in a `.gui` file: do steps 3 and 4 first. Otherwise read section 7 of `docs/victoria3-modding-conventions.md` and open one example in each directory that the row names. When the work needs no entry point, read `## Data kinds` below for the directory.
 3. **Research the vanilla code.** Write down the mechanism family and the object name you expect. Run `grep -rln <keyword> game-scripts/vanilla/` first, and read the file list. Open the first file, then one or two more when they disagree. Search inside one file with `grep -n`. A name comes from `docs/script_docs/`. A definition, a field value, and a location key come from `game-scripts/vanilla/game/`. A building, law, good, or technology id is not in the dumps at all. Never search `game-scripts/workshop/` for evidence: that part holds other authors' mods.
 4. **Research the UI window when the edit touches one.** A UI window is one window that the game shows to the player. The work has two separate questions: which mechanism you use, and what you write inside a UI window. Step 2 answers the first, and section 7 also names the directories that attach to an existing UI window. For the second, read that window's own `.gui` file and note the `block` you can fill.
 
@@ -41,12 +41,10 @@ Work in two stages. Stage 1 settles what the player wants, backed by research. S
 
 A search that lists files is cheaper than one that lists every line. Long line output costs the most context.
 
-- **List files first.** Run `grep -rln <keyword> game-scripts/vanilla/`. Open the first file, then one or two more when they disagree. Search inside one file with `grep -n`.
 - **Cap every listing.** One `head -20` per search. A long result means the keyword is too broad, so narrow the keyword instead of raising the cap.
-- **Names and places are different questions.** A name comes from `docs/script_docs/`, and a GUI data model name comes from `docs/data_types/`. A definition, a field value, an `INJECT:` target, and a loc key come from `game-scripts/vanilla/game/`.
+- **Names and places are different questions.** A name, a scope, or a modifier category comes from `docs/script_docs/` or `docs/data_types/`. A file, a block, a field value, and a loc key come from the vanilla scripts.
 - **The mod root is not the search root.** A vanilla search reads `game-scripts/vanilla/game/common/`. The mod writes to `common/` at its own root, because a mod mirrors the game's `game/` directory and adds no level of its own.
-- **The keyword belongs at the file top level.** Victoria 3 reads `REPLACE:` and `INJECT:` there. A nested keyword is a silent no-op, and `validate_mod` reports it as an `ERROR`.
-- **Check the form.** A hit tells you where the object is, not how to modify it. Section 1 of `docs/victoria3-modding-conventions.md` has the forms.
+- **Check the form.** A hit tells you where the object is, not how to edit it. Section 1 of `docs/victoria3-modding-conventions.md` has the forms.
 
 ## Mod structure
 
@@ -69,7 +67,7 @@ A search that lists files is cheaper than one that lists every line. Long line o
 | Field | Rule |
 |---|---|
 | `name` | A non-empty string: the mod title that the player reads. |
-| `id` | A non-empty string. The wiki requires the field. It states that the value must stay stable over time. Do not include a version number. Do not touch it on a rename. **This repository suggests** lowercase snake_case that matches the `your_mods/` directory name. That is not a game rule. `install_mod` uses the `your_mods/` directory name as the install directory name, so a match helps the player. `validate_mod` does **not** report an error when the two differ. |
+| `id` | A non-empty string. The wiki requires the field. It states that the value must stay stable over time. Do not include a version number. Do not touch it on a rename. An empty `id` is a WARN, not an error. **This repository suggests** lowercase snake_case that matches the `your_mods/` directory name. That is not a game rule. `install_mod` uses the `your_mods/` directory name as the install directory name, so a match helps the player. `validate_mod` does **not** report an error when the two differ. |
 | `version` | `x.x` or `x.x.x`, two or three parts. The wiki example is `1.1`, and it states that the launcher understands semantic versioning. |
 | `supported_game_version` | A patch-level wildcard, for example `1.13.*`. An exact version such as `1.0.4` goes stale: this game updates its minor version often, and the game then flags the mod outdated. A loose `1.*` is a WARN. The wiki also states that `+` means "or higher". |
 | `short_description` | A one-line summary. The field is **`short_description`**, not `description`. |
@@ -167,7 +165,7 @@ A few of those directories ship a `readme.md` that lists the fields (`common/law
 
 ## Reference
 
-- A runnable sample, which must pass `validate_mod`: `reference/example_mod/`. `reference/` holds only that one in v1.
+- A runnable sample, which must pass `validate_mod`: `reference/example_mod/`. `reference/` holds only that one in v1. The real-world pattern mods are not ported yet.
 - Knowledge-layer navigation, and what to load when: `docs/INDEX.md`. Its lookup hierarchy names the authoritative source for each question.
 - The game overview: `docs/game.md`.
 - The modding conventions, the single source of truth: `docs/victoria3-modding-conventions.md`.
