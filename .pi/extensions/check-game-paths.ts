@@ -172,7 +172,7 @@ export default function (pi: ExtensionAPI) {
           lines.push(
             key === "gameDir"
               ? "  NEXT: run try_set_game_dir with no arguments to locate the game and record it. See the 'setup-workspace' skill for the search steps if it fails."
-              : "  NEXT: run try_set_game_dir (no arguments) - the mod install target is derived from the game directory.",
+              : "  NEXT: run try_set_game_dir (no arguments). It records the game directory and the other two paths.",
           );
           failed.push(key);
         }

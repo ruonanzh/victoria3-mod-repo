@@ -600,7 +600,7 @@ function checkBraceQuoteBalance(cleaned: string): BalanceResult {
 /**
  * A keyword of the INJECT: or REPLACE: family must sit directly before a *database entry*, in the
  * form `KEYWORD:key = {`. The tool scans depth with awareness of comments and strings. A keyword
- * nested inside another block is an ERROR (the wiki allows the top level only, and 0 of 2,318 real
+ * nested inside another block is an ERROR (the wiki allows the top level only, and 0 of 2,338 real
  * uses are nested), and a keyword not followed by `key = {`
  * is an ERROR.
  */
@@ -645,7 +645,7 @@ function checkOverrideKeywords(cleaned: string): Finding[] {
       if (hasKw && depth > 0) {
         // The wiki allows the keyword at the file top level only, and shows a nested example that
         // does not work. The corpus agrees: Victoria 3 vanilla uses the keywords 0 times, and all
-        // 2,318 uses in 10 downloaded Workshop mods sit at the top level. A nested keyword is
+        // 2,338 uses in 10 downloaded Workshop mods sit at the top level. A nested keyword is
         // therefore a silent no-op, which is worse than an error.
         findings.push({
           severity: "error",

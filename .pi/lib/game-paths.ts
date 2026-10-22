@@ -18,7 +18,7 @@
  *                    directory, and it is then not `<home>/Documents`, so the tool reads the real
  *                    directory from the registry. See userDocumentsDir.
  *   - The search     The tool must scan Steam: the registry and libraryfolders.vdf in each
- *                    library. It does not use installDirHint.
+ *                    library. It uses installDirHint first, then the Steam libraries.
  */
 import { createReadStream, existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
