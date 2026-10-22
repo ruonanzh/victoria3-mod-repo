@@ -4,9 +4,9 @@ A curated map of the knowledge layer under `docs/`. **Load selectively.** Read t
 
 ## Route a request (start here)
 
-Find the row that matches what the player asked for. It gives three things: the **primary page** to read whole, the **supporting pages** to grep for a name (never read whole: some run 400 KB to 840 KB), and the **vanilla folders** to search.
+Find the row that matches what the player asked for. It gives three things: the **primary page** to read whole, the **supporting pages** to grep for a name, and the **vanilla directories** to search. Never read a supporting page whole, because some run 400 KB to 840 KB.
 
-| The player asks for | Primary page (read whole) | Supporting pages (grep a name) | Vanilla folders | Entry form |
+| The player asks for | Primary page (read whole) | Supporting pages (grep a name) | Vanilla directories | Entry form |
 |---|---|---|---|---|
 | Change a building's output or cost | [`Building modding.md`](mod-wiki/Building modding.md) | [`List of buildings.md`](mod-wiki/List of buildings.md), [`Modifier types.md`](mod-wiki/Modifier types.md) | `common/buildings`, `common/building_groups` | `REPLACE:` (gated) |
 | Add a good, or change one | [`Goods modding.md`](mod-wiki/Goods modding.md) | [`Goods.md`](mod-wiki/Goods.md) | `common/goods` | new object |
@@ -36,22 +36,22 @@ If no row fits, or a row needs a fourth page, say so and report it. The table is
 
 | You need | Source |
 |---|---|
-| Whether an effect, trigger, modifier, event target, or on-action name exists | The dumps in [`script_docs/`](script_docs/SOURCE.md). They ship with this repository, and `validate_mod` reads them. A hit proves the name exists. A miss is not proof, because the game leaves some names out of the dump: check their definition in `game-scripts/vanilla/game/`. |
+| Whether an effect, trigger, modifier, event target, or on-action name exists | The dumps in [`script_docs/`](script_docs/SOURCE.md). They ship with this repository, and `validate_mod` reads them. A hit proves that the name exists. A miss is not proof: see section 9 of the conventions. |
 | Whether a building, law, good, technology, or another game object exists | Its definition under `game-scripts/vanilla/game/common/`. These object ids are not in the dumps. |
 | Exact vanilla object definitions, field values, INJECT targets, and loc keys | The vanilla scripts at `game-scripts/vanilla/game/`, which `sync_game_scripts` writes. The `game-scripts/workshop/` part holds other authors' mods, so it is not evidence. |
 | How to call something, what scope it needs, what the pitfalls are | [`mod-wiki/`](mod-wiki/) (a snapshot of the wiki), or the live wiki `vic3.paradoxwikis.com` |
-| The exact name of a GUI data model entry | [`data_types/`](data_types/) (the `dump_data_types` dump; [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records it) |
+| The exact name of a GUI data model entry | [`data_types/`](data_types/), the `dump_data_types` dump. [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records it. |
 | The modding conventions and the reason behind them | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) |
 
-> **The wiki covers a minority of names.** The wiki snapshot answers "how do I call this", and it cannot answer "does this exist": a name missing from the wiki is usually just undocumented. For existence, read the dumps. [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records the measured share of the dump names that the snapshot mentions, together with the command that measures it.
+> **The wiki covers a minority of names.** The wiki snapshot answers "how do I call this". It cannot answer "does this exist", because a name that is missing from the wiki is usually just undocumented. For existence, read the dumps. [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records the measured share of the dump names that the snapshot mentions, together with the command that measures it.
 >
 > **The dumps ship with this repository.** [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records the game version, the `script_docs` command, and how to regenerate the six files. A maintainer regenerates them after a game patch. The agent reads them and does not copy anything from the player's machine.
 
 - **Start here:** [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md). This cheat-sheet covers override and `INJECT` semantics, ASCII load order, localization, and metadata. It answers most modding questions on its own.
-- **Exact names and values: read the dumps for a name, and grep `game-scripts/vanilla/game/` for a definition.** The mirror also holds `game-scripts/workshop/`, which is another author's mod. Do not treat anything there as vanilla.
+- **Exact names and values:** read the dumps for a name, and grep `game-scripts/vanilla/game/` for a definition. The mirror also holds `game-scripts/workshop/`, which is another author's mod. Do not treat anything there as vanilla.
 - **Concepts and how-to method: the live wiki.** `vic3.paradoxwikis.com` explains how the systems work and the mod API concepts. It can lag a patch behind the vanilla scripts.
 
-> `validate_mod` checks syntax, conventions, and name-level semantics. The syntax and convention checks cover the metadata fields, the localization YAML, the brace and quote balance, and the top-level rule for the keywords. The name-level checks cover the target of a `REPLACE:`/`INJECT:` keyword, a near-miss effect or trigger name, and the localization keys of a new decision, trait, or journal entry. Section 10 of the conventions lists what no tool checks, and that list is for you.
+> `validate_mod` checks syntax, conventions, and name-level semantics. The syntax and convention checks cover the metadata fields, the localization YAML, the brace and quote balance, and the top-level rule for the keywords. The name-level checks cover three things. They are the target of a `REPLACE:`/`INJECT:` keyword, and a near-miss effect or trigger name. The third is the localization keys of a new decision, a trait, or a journal entry. Section 10 of the conventions lists what no tool checks, and that list is yours.
 
 ## Other pages in `docs/`
 
@@ -61,4 +61,4 @@ If no row fits, or a row needs a fourth page, say so and report it. The table is
 | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) | The reason behind the override, load-order, localization, and metadata rules. |
 | The writing rule | The four rules are in § Writing rule of [`AGENTS.md`](../AGENTS.md). Every English string that reaches an agent follows them. |
 | [`script_docs/SOURCE.md`](script_docs/SOURCE.md) | The provenance of the six name dumps and the GUI data types dump, the regeneration commands, and the counts. |
-| [`mod-wiki/INDEX.md`](mod-wiki/INDEX.md) | The mod API reference. Start there for a mechanism, an effect, a trigger, or a folder's rules. Its [`SOURCE.md`](mod-wiki/SOURCE.md) records the snapshot and the CC BY-SA license. |
+| [`mod-wiki/INDEX.md`](mod-wiki/INDEX.md) | The mod API reference. Start there for a mechanism, an effect, a trigger, or a directory's rules. Its [`SOURCE.md`](mod-wiki/SOURCE.md) records the snapshot and the CC BY-SA license. |

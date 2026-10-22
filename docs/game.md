@@ -6,15 +6,15 @@ Victoria 3 (Paradox, Clausewitz/Jomini engine) is a grand-strategy game of socie
 
 - A mod is a directory under the Paradox user-documents directory. The path is `<the player's Documents directory>\Paradox Interactive\Victoria 3\mod\<name>\`. The player can move the Documents directory, so the tools read it from the system registry. The Paradox launcher loads the mod from there.
 - The mod directory is **flat** and mirrors the game's own `game/` directory: `.metadata/metadata.json` (required), plus `common/`, `events/`, `gui/`, `gfx/`, `localization/`, `map_data/`, and so on. There is no `in_game/`+`main_menu/` split.
-- At load time, the game layers the mod files on top of the vanilla files. A file with the same name overwrites the vanilla file. A top-level object with the same name replaces the vanilla object, per the directory's keyword rules (`INJECT:` and `REPLACE:`, which are folder-gated). Files load in ASCII order by filename, and a subdirectory loads after its parent.
+- At load time, the game layers the mod files on top of the vanilla files. A file with the same name overwrites the vanilla file. A top-level object with the same name replaces the vanilla object, per the directory's keyword rules. Those rules are `INJECT:` and `REPLACE:`, and a directory gates them. Files load in ASCII order by filename, and a subdirectory loads after its parent.
 
 ## What the game systems are
 
 - **Pops** are the people, split by culture, religion, and profession, grouped into **interest groups** that push political demands.
-- **Buildings** and **production methods** turn goods and labor into output; **goods** flow through markets, and **trade** moves them between markets.
+- **Buildings** and **production methods** turn goods and labor into output. **Goods** flow through markets, and **trade** moves them between markets.
 - **Laws**, **institutions**, and **government types** shape what the state can do.
 - **Technology** advances unlock new production methods and units.
-- **Diplomacy** is driven by **diplomatic plays** that can escalate into war; **power blocs** organize great powers.
+- **Diplomacy** is driven by **diplomatic plays** that can escalate into war. **Power blocs** organize great powers.
 - **Journal entries** and **events** drive the narrative content.
 
 ## Where to find the reference
@@ -23,6 +23,4 @@ The knowledge layer has its own map. See [`INDEX.md`](INDEX.md). This page descr
 
 ## Key reminders
 
-- **Cross-platform.** The game has Windows, macOS, and Linux builds; v1 of this repo locates it on Windows only.
-- **Localization YAML must be UTF-8 with BOM.** Without a BOM, the game ignores the file silently, and that failure is fatal.
-- **The dumps and the vanilla scripts are the two evidence layers.** The dumps in `docs/script_docs/` list the effect, trigger, modifier, event target, and on-action names. A hit proves that the name exists. A miss is not proof of absence, because the game leaves some names out: check the definition in `game-scripts/vanilla/game/` too. A building, law, good, or technology id is not in the dump at all, and its definition is the evidence. The official wiki (vic3.paradoxwikis.com) explains the concepts, and it covers only a minority of the names: `docs/INDEX.md` gives the measured share. Read the wiki for a method, and read the dump or the vanilla scripts for a name.
+The modding rules are in [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md). This page does not repeat them. The evidence layers and the measured wiki coverage are in [`script_docs/SOURCE.md`](script_docs/SOURCE.md).
