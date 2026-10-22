@@ -9,6 +9,7 @@
 #                                         mirror and dump paths, and the Workshop smoke test. The
 #                                         fixtures read the committed dumps and tests/vanilla/, so
 #                                         only the smoke test needs sync_game_scripts first.
+#   - node scripts/check-md-lines.mjs     no hard wrapping in agent-facing Markdown.
 #   - node scripts/test-tools.mjs         all nine tools, under a temporary workspace.
 #   - validate_mod                        the mod checks; open the repository in pi and call the tool
 #                                         on reference/example_mod/.

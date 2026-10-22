@@ -81,9 +81,9 @@ text that points at them instead, or refresh the snapshot as `docs/mod-wiki/SOUR
 - `scripts/` — maintainer scripts. `check-doc-refs.mjs` checks that every Markdown link resolves,
   that every repository-root path in backticks exists, and that no agent-facing file points outside
   this repository. Run it after you edit a document. `test-semantics.mjs` and `test-tools.mjs` are the
-  regression suites for the name-level checks and for the nine tools. `measure-wiki-coverage.mjs`
-  re-measures the share
-  of dump names that the wiki snapshot mentions.
+  regression suites for the name-level checks and for the nine tools. `check-md-lines.mjs` checks that
+  every prose block is one line. `measure-wiki-coverage.mjs` re-measures the share of dump names that
+  the wiki snapshot mentions.
 - `mod-repo.json` — the machine-readable game and environment declaration. `workshop.supported`
   declares whether this game has a Steam Workshop. `workshopDir` is a read-only reference and is
   not used for installing. The rule is in the `setup-workspace` skill.
