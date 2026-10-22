@@ -59,6 +59,6 @@ If no row fits, or a row needs a fourth page, say so and report it. The table is
 |------|------------------------|
 | [`game.md`](game.md) | The game overview, the game systems, and the mod loading mechanics. |
 | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) | The reason behind the override, load-order, localization, and metadata rules. |
-| The writing rule | The four rules are in § Writing rule of [`AGENTS.md`](../AGENTS.md). Every English string that reaches an agent follows them. |
+| The writing rule | The rules are in section 11 of [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md). Every English string that reaches an agent follows them. |
 | [`script_docs/SOURCE.md`](script_docs/SOURCE.md) | The provenance of the six name dumps and the GUI data types dump, the regeneration commands, and the counts. |
 | [`mod-wiki/INDEX.md`](mod-wiki/INDEX.md) | The mod API reference. Start there for a mechanism, an effect, a trigger, or a directory's rules. Its [`SOURCE.md`](mod-wiki/SOURCE.md) records the snapshot and the CC BY-SA license. |

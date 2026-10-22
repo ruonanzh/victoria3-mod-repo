@@ -10,4 +10,4 @@ If you reuse these pages, keep this attribution and the same license. This follo
 
 ## What this license does not cover
 
-Everything else in this repository: the tools under `.pi/extensions/`, the skills under `.pi/skills/`, the agents, and the documents written by this repository (`AGENTS.md`, `docs/INDEX.md`, `docs/game.md`, `docs/victoria3-modding-conventions.md`, and the plans).
+Everything else in this repository is not covered. That includes the tools under `.pi/extensions/`, the skills under `.pi/skills/`, the agents, and the documents written by this repository. Those documents are `AGENTS.md`, `docs/INDEX.md`, `docs/game.md`, `docs/victoria3-modding-conventions.md`, and the plans.

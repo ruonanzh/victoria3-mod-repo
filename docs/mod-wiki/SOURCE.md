@@ -10,7 +10,7 @@ The pages in this directory are **not written by this repository**. They are the
 | Snapshot repository | <https://github.com/Zinc-30/Victoria3_wiki> |
 | Snapshot commit | `c8d7206` (the repository's only commit, 2026-05-18) |
 | Crawl method | The snapshot's own `crawl_wiki.py`: Playwright to pass the wiki's JS challenge, then the MediaWiki API |
-| Pages taken | 69: `Modding`, every `* modding` page, the scripting reference, the pages those link to, and six reference lists (buildings, production methods, state regions, culture modifier types, example script values, GUI script functions) |
+| Pages taken | 69: `Modding`, every `* modding` page, the scripting reference, and the pages those link to. It also holds six reference lists: buildings, production methods, state regions, culture modifier types, example script values, and GUI script functions |
 | Pages left out | 537: country, state, flag, and other game-content pages that a modder does not need |
 
 ## License
@@ -23,11 +23,11 @@ This arrangement follows the CK3 precedent, `jesec/ck3-modding-wiki`, which publ
 
 Each page states its own status, and the crawl kept that line. Most modding pages say "verified for the current version (1.13)", which matches the installed game (`1.13.11 (Matcha)`). A page that says it needs verification may lag a patch behind.
 
-**The vanilla scripts win a conflict.** When a page and `game-scripts/` disagree about a name or a value, `game-scripts/` is right: it is the installed game's own text.
+**The vanilla scripts win a conflict.** When a page and `game-scripts/` disagree about a name or a value, `game-scripts/` is right. It is the installed game's own text.
 
 ## Link rewriting
 
-Inside the set, the crawler's relative links are kept. Links to pages outside the set were rewritten to point at `https://vic3.paradoxwikis.com/<page>`, so no link in this directory is dead in a way the reader cannot follow. 2,687 links were rewritten this way.
+Inside the set, the crawler's relative links are kept. Links to pages outside the set were rewritten to point at `https://vic3.paradoxwikis.com/<page>`. No link in this directory is therefore dead in a way the reader cannot follow. 2,687 links were rewritten this way.
 
 ## How to refresh
 

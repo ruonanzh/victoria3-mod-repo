@@ -7,7 +7,7 @@ description: Prepare the Victoria 3 (pdx-script) environment and the paths. Loca
 
 Get the facts straight, then record them: where the game is, what the three paths are, and whether the modding context is ready. **This step produces facts only.** It does not produce a mod. Loading this skill does not grant write permission. In a Q&A session you can explain the method without recording anything.
 
-Victoria 3 mods are **pure PDXScript text**. There is no compilation, no runtime SDK, and **no runtime to install**. The game is cross-platform (Windows, macOS, Linux); v1 locates it on **Windows only** (macOS/Linux path discovery is TODO).
+Victoria 3 mods are **pure PDXScript text**. There is no compilation, no runtime SDK, and **no runtime to install**. The game is cross-platform (Windows, macOS, Linux). v1 locates it on **Windows only** (macOS/Linux path discovery is TODO).
 
 ## What is in `.gamer-agent.local.json`
 
@@ -15,7 +15,7 @@ Victoria 3 mods are **pure PDXScript text**. There is no compilation, no runtime
 
 | Key | Meaning | Source | Used by |
 |---|---|---|---|
-| `gameDir` | The game directory (`steamapps/common/Victoria 3`) | The player, or `try_set_game_dir` when it locates the game | `sync_game_scripts` mirrors the vanilla scripts from it. `install_mod` derives the install target from it. |
+| `gameDir` | The game directory (`steamapps/common/Victoria 3`) | The player, or `try_set_game_dir` when it locates the game | `sync_game_scripts` mirrors the vanilla scripts from it. The `install_mod` target comes from `mod-repo.json`, not from this key. |
 | `workshopDir` | The Steam Workshop directory (`steamapps/workshop/content/529340`) | **Derived from `gameDir`**. There is no separate setter. | **Read-only reference.** Read the existing Workshop mods. It is **not involved in installing**. |
 | `modInstallDir` | The Paradox launcher mod directory (`<userDocuments>/Paradox Interactive/Victoria 3/mod`) | **Computed from `mod-repo.json`'s `modInstall.path`**, independent of `gameDir` | `install_mod` copies the mod there. |
 

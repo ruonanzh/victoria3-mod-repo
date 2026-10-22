@@ -1,10 +1,7 @@
 ---
 name: mod-page
-description: >
-  Write a page the player reads: one HTML file under `.preview/`. Use it for a mod change, or for
-  game mechanics and game content too large for a reply. The player comments on the page, and you
-  revise from the comments. Read it before you answer with options, a scope, a value to agree on, or
-  game mechanics to explain.
+description: >-
+  Write a page the player reads: one HTML file under `.preview/`. Use it for a mod change, or for game mechanics and game content too large for a reply. The player comments on the page, and you revise from the comments. Read it before you answer with options, a scope, a value to agree on, or game mechanics to explain.
 ---
 
 # The page (Victoria 3 mod workspace)
@@ -53,7 +50,7 @@ A page can answer a game question instead of describing a mod: how game mechanic
 
 The page styles come from the game's own interface. Use the same styles on every page. The styles do not follow the app theme.
 
-The values below are Victoria 3's own interface colors, read from the game's `gui/frontend/shared/colors.gui` and `gui/textformatting.gui` (the RGB triples there, converted to hex). The names marked "authoritative" come from those files; the names marked "inferred" are derived by lightening or darkening an authoritative color.
+The values below are Victoria 3's own interface colors, read from the game's `gui/frontend/shared/colors.gui` and `gui/textformatting.gui` (the RGB triples there, converted to hex). The names marked "authoritative" come from those files. The names marked "inferred" come from lightening or darkening an authoritative color.
 
 | Token | Value | Use |
 |---|---|---|
@@ -74,7 +71,7 @@ Put the values in `:root`, and use the tokens everywhere. Do not write a color t
 
 ### Type
 
-The game's own interface fonts are `Open Sans` (body), and the Victorian serif display faces `Playfair Display` and `EB Garamond`. `Open Sans`, `Playfair Display`, and `EB Garamond` carry the SIL Open Font License. The game's proprietary display face `ParadoxVictorian` cannot be embedded.
+The game's own interface fonts are `Open Sans` (body), and the Victorian serif faces `Playfair Display` and `EB Garamond`. `Open Sans`, `Playfair Display`, and `EB Garamond` carry the SIL Open Font License. The game's proprietary face `ParadoxVictorian` cannot be embedded.
 
 1. Use this heading stack for a heading, and for a number that stands alone: `"Playfair Display", "EB Garamond", "Noto Serif SC", "Noto Serif", system-ui, serif`.
 2. The first two families draw Latin letters. The next two draw Chinese, so a Chinese heading never falls to `SimSun`.
@@ -129,7 +126,7 @@ The test for the styles: if another game's name replaced this game's name, and t
 
 ## How the comments reach you
 
-The player comments on the page in the app panel. The panel writes the comments into the page itself, in a block with the id `pi-page-feedback` at the end of the file, and then sends the `/page-annotated` prompt.
+The player comments on the page in the app panel. The panel writes the comments into the page itself, in a block with the id `pi-page-feedback` at the end of the file. It then sends the `/page-annotated` prompt.
 
 - When that prompt arrives, or when the player says the page has comments, **read that block first**, and only then change the mod. Do not work from memory.
 - The block also carries the page's form values, so a ticked box reaches you the same way a comment does.

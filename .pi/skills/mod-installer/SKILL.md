@@ -11,8 +11,8 @@ description: Install a Victoria 3 mod into the Paradox mod directory with the `i
 
 - **The installed directory name equals the `your_mods/` directory name.** This repository suggests that the name matches `metadata.id`. The name is therefore always a single path segment, so the tool cannot write outside the game directory. The player sees the same directory name in the launcher as in the workspace.
 - **A re-install updates in place.** The tool identifies its own previous install through the workspace-side record `your_mods/<mod name>/.pi-mod.json`, which holds `name` and `installedDir`.
-- **Another mod owns the target directory.** The tool does not overwrite it. It installs as `<directory name>_pimod` and adds a marker. It does not modify that copy's `metadata.json`. Tell the player the directory name that the tool used. The in-game title `name` and the `id` stay the same.
-- **The replace is transactional.** The tool moves the old copy aside instead of deleting it, and it deletes that copy only after the new copy lands. If the new copy fails, the old version is still there.
+- **Another mod owns the target directory.** The tool does not overwrite it. It installs as `<directory name>_pimod`. The installed copy keeps its own `metadata.json`. Tell the player the directory name that the tool used. The in-game title `name` and the `id` stay the same.
+- **The replace is transactional.** The tool moves the old copy aside instead of deleting it. It deletes that copy after the new copy lands. If the new copy fails, the old version is still there.
 
 ## Review before the install
 
@@ -33,7 +33,7 @@ An `install_mod` success does not mean the game loaded or enabled the mod. Repor
 3. Find the mod by the name in its `metadata.json`, and tick it on.
 4. Press **Play** from the launcher. The game restarts, and the mod loads from that playlist.
 
-Steam does not enable it. A mod in the mod folder is only a candidate; the playlist is what the game reads.
+Steam does not enable it. A mod in the mod folder is only a candidate. The playlist is what the game reads.
 
 ## Related skills
 

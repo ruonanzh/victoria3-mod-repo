@@ -9,7 +9,7 @@ node scripts/test-tools.mjs
 
 Both print one `ok` or `not ok` line per case, then a count. A failed case sets the exit code to 1. Neither writes outside the OS temporary directory, and neither reads the player's Documents directory or the real game install.
 
-Node 22.18+ or Node 24 runs the TypeScript sources in `.pi/` by type stripping. `tests/hooks.mjs` adds the two resolutions that the sources need: the bare `typebox` import maps to a local stub, and a relative import without an extension resolves to the `.ts` file.
+Node 22.18+ or Node 24 runs the TypeScript sources in `.pi/` by type stripping. `tests/hooks.mjs` adds the two resolutions that the sources need. The bare `typebox` import maps to a local stub, and a relative import without an extension resolves to the `.ts` file.
 
 ## What each file covers
 
@@ -18,7 +18,7 @@ Node 22.18+ or Node 24 runs the TypeScript sources in `.pi/` by type stripping. 
 | `scripts/test-semantics.mjs` | Every committed error case under `tests/fixtures/`, the missing-mirror and missing-dump paths, `reference/example_mod/`, and a smoke run over `game-scripts/workshop/` when that mirror exists. The fixtures use the committed dumps and `tests/vanilla/`, so they need no mirror. |
 | `scripts/test-tools.mjs` | All nine tools: registration, the no-state errors, `set_game_dir`, `try_set_game_dir`, `check_game_paths`, `get_game_info`, `sync_game_scripts`, `validate_mod`, `install_mod`, `check_runtime`, and `install_runtime`. |
 | `tests/expectations.mjs` | The exact warnings that each fixture must produce. A new warning, a missing warning, or a silently skipped check fails the case. |
-| `tests/fixtures/` | The error cases: C1 missing target, `TRY_`, `_OR_CREATE`, `INJECT:` on a scripted effect, C2 near misses (including a scope path, an `if`/`custom_tooltip` body, a `when_taken` body, and a top-level scripted effect body), C3 missing localization keys, the C2 output cap, BOM, CRLF, tabs, and localization filename shapes. |
+| `tests/fixtures/` | The error cases. One group covers C1 missing target, `TRY_`, `_OR_CREATE`, `INJECT:` on a scripted effect, and C3 missing localization keys. Another covers C2 near misses, the C2 output cap, BOM, CRLF, tabs, and localization filename shapes. The C2 cases cover a scope path, an `if` or `custom_tooltip` body, a `when_taken` body, and a top-level scripted effect body. |
 | `tests/helpers.mjs` | Module loading, tool invocation, assertions, and the small suite runner. |
 | `tests/vanilla/` | The minimal vanilla mirror that the fixtures read: one empty directory for each `common/<class>` a fixture uses, and one scripted effect that the `INJECT:` case targets. The fixtures copy the committed dumps and this mirror into a temporary repository, so **`game-scripts/` is not needed** and a fresh clone passes. |
 
