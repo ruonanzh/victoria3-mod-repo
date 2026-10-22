@@ -22,7 +22,7 @@ Run `validate_mod` first, and clear every ERROR. Then dispatch `mod-reviewer` wi
 - `WARN`: tell the player the risk, then install.
 - `FAIL`: correct the mod and run `validate_mod` again. The verdict does not block the install, so install only when the player agrees.
 
-Skip this step when you write no script file. When the `subagent` tool is not available, work through the last section of `docs/victoria3-modding-conventions.md` by hand.
+Skip this step when you write no script file. When the `subagent` tool is not available, work through section 10, `What no tool in this repository checks`, of `docs/victoria3-modding-conventions.md` by hand.
 
 ## After the install
 

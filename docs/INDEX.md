@@ -9,7 +9,7 @@ Find the row that matches what the player asked for. It gives three things: the 
 | The player asks for | Primary page (read whole) | Supporting pages (grep a name) | Vanilla directories | Entry form |
 |---|---|---|---|---|
 | Change a building's output or cost | [`Building modding.md`](mod-wiki/Building modding.md) | [`List of buildings.md`](mod-wiki/List of buildings.md), [`Modifier types.md`](mod-wiki/Modifier types.md) | `common/buildings`, `common/building_groups` | `REPLACE:` (gated) |
-| Add a good, or change one | [`Goods modding.md`](mod-wiki/Goods modding.md) | [`Goods.md`](mod-wiki/Goods.md) | `common/goods` | new object |
+| Add a good, or change one | [`Goods modding.md`](mod-wiki/Goods modding.md) | [`Goods.md`](mod-wiki/Goods.md) | `common/goods` | new object, or `REPLACE:` |
 | Add or change a production method | [`Building modding.md`](mod-wiki/Building modding.md) | [`List of production methods.md`](mod-wiki/List of production methods.md) | `common/production_methods`, `common/production_method_groups` | new object or `REPLACE:` |
 | Add an event | [`Event modding.md`](mod-wiki/Event modding.md) | [`Effect.md`](mod-wiki/Effect.md), [`Trigger.md`](mod-wiki/Trigger.md) | `events/` | event (first loaded wins) |
 | Add a journal entry | [`Journal modding.md`](mod-wiki/Journal modding.md) | [`Effect.md`](mod-wiki/Effect.md), [`Trigger.md`](mod-wiki/Trigger.md) | `common/journal_entries`, `common/journal_entry_groups` | new object |
@@ -22,7 +22,7 @@ Find the row that matches what the player asked for. It gives three things: the 
 | Add a modifier | [`Modifier modding.md`](mod-wiki/Modifier modding.md) | [`Modifier types.md`](mod-wiki/Modifier types.md), [`List of culture modifier types.md`](mod-wiki/List of culture modifier types.md) | `common/static_modifiers`, `common/scripted_modifiers` | new object, or reference one |
 | Add a character or DNA | [`Character modding.md`](mod-wiki/Character modding.md) | [`Trait modding.md`](mod-wiki/Trait modding.md) | `common/dna_data`, `common/character_traits` | whole-file overwrite for `dna_data` |
 | Change the UI, or add a panel | [`GUI script.md`](mod-wiki/GUI script.md) | [`Scripted gui.md`](mod-wiki/Scripted gui.md), [`List of GUI script functions.md`](mod-wiki/List of GUI script functions.md) | `gui/`, `common/scripted_guis` | panel (`type` is first loaded wins) |
-| Change the map, or add a state | [`Map modding.md`](mod-wiki/Map modding.md), [`State modding.md`](mod-wiki/State modding.md) | [`List of state regions.md`](mod-wiki/List of state regions.md) | `map_data/`, `common/state_traits` | whole file or `REPLACE:` |
+| Change the map, or add a state | [`Map modding.md`](mod-wiki/Map modding.md), [`State modding.md`](mod-wiki/State modding.md) | [`List of state regions.md`](mod-wiki/List of state regions.md) | `map_data/`, `common/state_traits` | whole file for `map_data/`, `REPLACE:` for `common/state_traits` |
 | Add art, a texture, or an icon | [`Graphical asset modding.md`](mod-wiki/Graphical asset modding.md) | — | `gfx/` | new object |
 | Add text, or translate the mod | [`Localization.md`](mod-wiki/Localization.md) | — | `localization/<lang>/` | `replace/` for a single key |
 | Add a diplomatic action | [`Diplomacy modding.md`](mod-wiki/Diplomacy modding.md) | — | `common/diplomatic_actions` | new object |
@@ -30,7 +30,7 @@ Find the row that matches what the player asked for. It gives three things: the 
 | Change AI behaviour | [`AI modding.md`](mod-wiki/AI modding.md) | [`Defines.md`](mod-wiki/Defines.md) | `common/ai_strategies` | `REPLACE:` |
 | Change only a value inside an existing block | — (nothing to read) | — | the block's own directory | `REPLACE:` (gated) or implicit replace |
 
-If no row fits, or a row needs a fourth page, say so and report it. The table is incomplete then, and a controlled search for that one gap beats wandering through the whole catalogue.
+If no row fits, or a row needs a fourth page, say so and report it. Open [`mod-wiki/INDEX.md`](mod-wiki/INDEX.md) and search its page list for the mechanism name. A missing row is a reportable gap, not a dead end.
 
 ## Lookup hierarchy (which source is authoritative for what)
 

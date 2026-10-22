@@ -24,7 +24,7 @@ Node 22.18+ or Node 24 runs the TypeScript sources in `.pi/` by type stripping. 
 
 ## What needs the real mirror
 
-Only the Workshop smoke test reads `game-scripts/workshop/`, which `sync_game_scripts` writes and git ignores. That test is skipped when the mirror is absent, so a fresh clone passes 26 of 26 cases with the smoke test skipped. Run `sync_game_scripts` first when you want the smoke test.
+Only the Workshop smoke test reads `game-scripts/workshop/`, which `sync_game_scripts` writes and git ignores. That test is skipped when the mirror is absent, so a fresh clone passes 28 of 28 cases with the smoke test skipped. Run `sync_game_scripts` first when you want the smoke test.
 
 ## The Workshop smoke test
 

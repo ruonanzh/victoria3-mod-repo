@@ -32,7 +32,7 @@ The classes you can still answer:
 
 1. **Reference closure.** Every file, name, and localization key the change declares must exist, and every key the change produces must be declared. Example: `metadata.json` declares `thumbnail: thumbnail.png` while the file is absent.
 2. **Override form.** The choice between a full-file override, `INJECT:`, and `REPLACE:` must match the intent. Example: a block-level change written as a full-file override, so keys are lost. When the change overwrites a whole file, name the entries that the current vanilla file defines and the copy does not repeat. Also check the target exists: `grep` it in `game-scripts/vanilla/`.
-3. **Encoding and file name, where `validate_mod` does not look.** It reads the BOM only for localization files. For a script file, check the BOM and the extension yourself. Check the override directory and the load-order prefix too. Example: `00_cmf_widgets.txt` has no UTF-8 BOM.
+3. **Encoding and file name, where `validate_mod` does not look.** It reads the BOM only for localization files. Check the BOM of an event file yourself. Do not require one on a `.gui` file.
 4. **The outcome that only the game can settle.** Mark the question instead of answering it. Example: the resolution order of two GUI blocks with the same name, or whether a `REPLACE:` survives another mod that loads later. The caller must check them in the game.
 
 ## How to answer

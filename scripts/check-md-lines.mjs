@@ -15,7 +15,7 @@
  *
  * Applies to hand-written markdown that an agent reads: `AGENTS.md`, `README.md`, `docs/*.md`, the
  * skills, the agents, `.pi/prompts/*.md`, `scripts/tests/README.md`, and the hand-written files in
- * `docs/mod-wiki/`.
+ * `docs/mod-wiki/`, `docs/script_docs/`, and `reference/`.
  *
  * Not applied to: fenced code, the YAML header, tables, headings, and html blocks. A blockquote is
  * one block, so a `>` paragraph counts the same as any other paragraph.
@@ -41,7 +41,7 @@ const SKIP_DIRS = [
   "your_mods",
 ];
 /** Hand-written files inside a vendored snapshot still follow this rule. */
-const KEEP = new Set(["docs/mod-wiki/INDEX.md", "docs/mod-wiki/SOURCE.md", "docs/mod-wiki/LICENSE.md"]);
+const KEEP = new Set(["docs/mod-wiki/INDEX.md", "docs/mod-wiki/SOURCE.md", "docs/mod-wiki/LICENSE.md", "docs/script_docs/SOURCE.md", "reference/README.md"]);
 const KEEP_LOWER = new Set([...KEEP].map((rel) => rel.toLowerCase()));
 
 const isBlank = (line) => line.trim() === "";

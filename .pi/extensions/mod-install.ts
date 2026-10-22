@@ -407,8 +407,8 @@ export default function (pi: ExtensionAPI) {
       const note = renamed
         ? `\nNOTE: ${modName} was already in use, by ${occupiedBy ? `another mod (${occupiedBy})` : "content this tool did not install"}. ` +
           `The tool installed as ${basename(installDir)} instead. That directory was left untouched, and the mod's own files, including its metadata id, were not modified.` +
-          `\nNEXT: tell the player it installs as ${basename(installDir)}, then let them enable it in the launcher.`
-        : `\nNEXT: ask the player to enable the mod in the Paradox launcher (and restart the game if it was running).`;
+          `\nTell the player it installs as ${basename(installDir)}, then let them enable it in the launcher.`
+        : `\nAsk the player to enable the mod in the Paradox launcher, and restart the game if it was running.`;
       const noteWithExtras = `${extraNotes}${note}`;
 
       return {

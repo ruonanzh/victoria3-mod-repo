@@ -138,12 +138,12 @@ Per `Mod structure.md`, section *Metadata*: every mod needs a `metadata.json` in
 | Field | What holds |
 | --- | --- |
 | `name` | The mod title that the player reads. |
-| `id` | A unique identifier. The wiki states that it must stay stable over time: "Do not include version numbers or change if you rename your mod." |
+| `id` | A unique identifier that stays stable over time. The wiki states "Do not include version numbers or change if you rename your mod." An empty `id` is a WARN, not an error. This repository suggests lowercase snake_case that matches the `your_mods/` directory name, because `install_mod` uses that directory name. `validate_mod` does not report an error when the two differ. |
 | `version` | `1.1` in the wiki example, and `validate_mod` accepts two or three numeric parts. The wiki states that the launcher "will typically understand semantic versioning", so treat the exact form as a tool rule. |
-| `supported_game_version` | A patch-level wildcard such as `1.13.*`. The wiki states that `*` works and that `+` means "or higher". |
+| `supported_game_version` | A patch-level wildcard such as `1.13.*`. The wiki states that `*` works and that `+` means "or higher". An exact version goes stale. A loose `1.*` is a WARN. |
 | `short_description` | The one-line summary. The field is **`short_description`**, not `description`. |
 | `tags` | An array of strings. The wiki states a maximum of 5, and that the tags affect the local listing only. |
-| `game_id` | `"victoria3"`. The wiki calls it a "safety catch" that keeps the launcher from loading a mod built for another game. |
+| `game_id` | `"victoria3"`. The wiki calls it a "safety catch" that keeps the launcher from loading a mod built for another game. An empty or absent value is a WARN. |
 | `game_custom_data` | `{"multiplayer_synchronized": true}` normally. |
 | `relationships` | `[]` when the mod has none. The wiki states that `resource_type` is `"mod"`. It states that `rel_type` is one of `dependency`, `incompatible_with`, `load_before`, and `load_after`. It also notes that the latter three are still being tested in launcher `2023.10-rc`. |
 | `thumbnail` | `"thumbnail.png"`, optional. The wiki's metadata block does not list it. This is therefore a `validate_mod` rule. The tool warns when the entry is missing, or when it names no file in the mod root or in `.metadata/`. |
@@ -189,7 +189,7 @@ The four families are a **persistent mechanic** (`journal_entries`), a **panel**
 Three hard rules that the wiki states and that this table does not:
 
 - **An event file needs a `namespace`**, or "your events will not work". The same page states that an event file must be UTF-8 BOM encoded.
-- **Only a new `on_actions` block may be added** to an existing on-action. Adding any other block "causes errors".
+- **`on_actions` accepts appended hooks only.** A mod may append `on_actions`, `events`, and `random_events`. A `trigger` or an `effect` block needs a whole-file overwrite, and the wiki shows the error that a partial replace produces.
 - **The directory name is exact.** `common/decisions/…` works and `decisions/…` does not. Directory names are plural, with `common/technology` as the exception. `common/history/` and `events/` accept arbitrary subdirectories.
 
 ## 8. Glossary
@@ -230,7 +230,8 @@ Read the `WARN:` and `NOTE:` lines of `validate_mod` before you call a mod done.
 - **The scope of an effect or a trigger.** The dumps list `Supported Scopes` for each name. No tool compares that line with the scope the script uses.
 - **A GUI data model name.** `docs/data_types/` lists every one that the game registers, and no tool compares a `.gui` expression with that list.
 - **The type and the value domain of a field.** The dumps do not carry them, so the tool cannot.
-- **Whether the gated list is complete.** The list is community-maintained and version-sensitive. A keyword in a directory that is not on the list is a silent no-op. `validate_mod` warns for `events/` and `localization/` only.
+- **The BOM of an event file.** The wiki requires one, and `validate_mod` reads the BOM only for localization files. Check it yourself when the mod ships an event file.
+- **Whether the gated list is complete.** The list is community-maintained and version-sensitive. A keyword in a directory that is not on the list does nothing. `validate_mod` warns for `events/` and `localization/` only.
 - **The resolution order of two GUI blocks with the same name.** It depends on the mod playlist, so only the game can settle it.
 - **Whether a `REPLACE:` survives another mod.** The last loaded mod wins.
 - **The text quality of a localization value.** Placeholder balance such as `[Scope.GetName]`, the meaning, and the tone are for a human.

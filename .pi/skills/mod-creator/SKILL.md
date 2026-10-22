@@ -5,7 +5,7 @@ description: The guide to writing a Victoria 3 (pdx-script) mod. Read it before 
 
 # Writing Victoria 3 mods (pdx-script)
 
-A Victoria 3 mod is a directory of **pure PDXScript text files**: `.txt`, `.gui`, `.gfx`, `.asset`, and `.yml`. There is no compilation and no runtime SDK. Write the mod under `your_mods/<ModName>/`, then check the result with the `validate_mod` tool. All paths below are relative to the workspace root, not to the skill directory.
+A Victoria 3 mod is a directory of **pure PDXScript text files**: `.txt`, `.gui`, `.asset`, and `.yml`. There is no compilation and no runtime SDK. Write the mod under `your_mods/<ModName>/`, then check the result with the `validate_mod` tool. All paths below are relative to the workspace root, not to the skill directory.
 
 This skill provides domain method only, and it **grants no permissions**. Reading it does not allow you to create directories, to check or install runtimes, or to modify source files. The session role and its bound directory gate those actions.
 
@@ -62,20 +62,7 @@ A search that lists files is cheaper than one that lists every line. Long line o
 
 ## metadata.json
 
-`.metadata/metadata.json` holds one valid JSON object. Standard fields:
-
-| Field | Rule |
-|---|---|
-| `name` | A non-empty string: the mod title that the player reads. |
-| `id` | A non-empty string. The wiki requires the field. It states that the value must stay stable over time. Do not include a version number. Do not touch it on a rename. An empty `id` is a WARN, not an error. **This repository suggests** lowercase snake_case that matches the `your_mods/` directory name. That is not a game rule. `install_mod` uses the `your_mods/` directory name as the install directory name, so a match helps the player. `validate_mod` does **not** report an error when the two differ. |
-| `version` | `x.x` or `x.x.x`, two or three parts. The wiki example is `1.1`, and it states that the launcher understands semantic versioning. |
-| `supported_game_version` | A patch-level wildcard, for example `1.13.*`. An exact version such as `1.0.4` goes stale: this game updates its minor version often, and the game then flags the mod outdated. A loose `1.*` is a WARN. The wiki also states that `+` means "or higher". |
-| `short_description` | A one-line summary. The field is **`short_description`**, not `description`. |
-| `game_id` | `"victoria3"`. The launcher uses it to refuse a mod built for another game. An empty or absent value is a WARN. |
-| `tags` | An array of strings. The wiki documents a maximum of 5, and states that the tags affect the local listing only. |
-| `thumbnail` | `"thumbnail.png"`, optional. The field is **`thumbnail`**, not `picture`. |
-| `relationships` | `[]`, optional. `rel_type` is one of `dependency`, `incompatible_with`, `load_before`, and `load_after`, and `resource_type` is `"mod"`. |
-| `game_custom_data` | `{"multiplayer_synchronized": true}` normally. |
+`.metadata/metadata.json` holds one valid JSON object. The fields, the wiki rules, and the three `validate_mod` warnings are in `docs/victoria3-modding-conventions.md` section 5. The shape is:
 
 ```json
 {
@@ -118,7 +105,7 @@ Call `validate_mod` with `modDir = your_mods/<ModName>/`.
 
 ## Common errors
 
-A failing run starts with `FAIL: <name> has N error(s), M warning(s)`, then one `ERROR: <file>: <message>` line per error, then the `WARN:` lines. The messages below are the common ones, quoted as the tool prints them. The text after each one is the fix.
+A failing run starts with `FAIL: <name> has N error(s), M warning(s)`, then one `ERROR: <file>: <message>` line per error, then the `WARN:` lines. The messages below are the common ones, mostly quoted as the tool prints them and shortened where they are long. The text after each one is the fix.
 
 - `ERROR: .metadata/metadata.json: missing .metadata/metadata.json`: create the file with the standard fields above.
 - `invalid JSON (<parser message>)` or `metadata.json top-level value must be an object`: fix the JSON. The wiki example carries comments, so a copy of it fails here.
@@ -128,7 +115,7 @@ A failing run starts with `FAIL: <name> has N error(s), M warning(s)`, then one 
 - `line N: expected a language header 'l_<lang>:' as the first content line`: the first content line must be `l_<lang>:`.
 - `malformed localization line (expected '  key: "value"' or '  key:0 "value"')`: write ` key: "value"` with a closing double quote on the same line.
 - `unbalanced braces: extra '}'` (ERROR) or `unbalanced '"' (unterminated string)` (ERROR): fix the balance. An unclosed `{` at end of file is a **WARN**, not an ERROR (`unbalanced braces: N '{' never closed`). Vanilla itself ships such files in `common/dna_data/`.
-- `ERROR: ... is nested (depth N) and has no effect`: the keyword is not at the file top level. Move the whole object up. A nested keyword is a silent no-op in Victoria 3, which is why it is an error. A container directory such as `common/genes/` can be replaced only as a whole.
+- `ERROR: ... is nested (depth N) and has no effect`: the keyword is not at the file top level. Move the whole object up. A nested keyword does nothing in Victoria 3, which is why it is an error. A container directory such as `common/genes/` can be replaced only as a whole.
 - `WARN: semantic: ... names no top-level object in common/<dir>`: the keyword target is absent. Check the spelling against `game-scripts/vanilla/game/common/<dir>/`, or use `TRY_`/`_OR_CREATE` when the target can be absent.
 - `WARN: semantic: ... is not a known effect, trigger, or modifier name. Did you mean '<name>'?`: a near miss inside an effect or trigger block. Take the suggestion or fix the name.
 

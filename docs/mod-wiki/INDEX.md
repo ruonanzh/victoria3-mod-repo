@@ -61,7 +61,7 @@ Every page is the wiki text as crawled, converted to Markdown. Links inside the 
 | [`Geographic region modding.md`](Geographic region modding.md) | Geographic regions. |
 | [`Goods.md`](Goods.md) | Goods, and what consumes them. |
 | [`Goods modding.md`](Goods modding.md) | Adding and changing goods. |
-| [`Graphical asset modding.md`](Graphical asset modding.md) | Textures and `.gfx` assets. |
+| [`Graphical asset modding.md`](Graphical asset modding.md) | Textures (`.dds`) and 3-D assets (`.asset`). |
 | [`History modding.md`](History modding.md) | Starting history: countries, states, pops, diplomacy. |
 | [`Institution modding.md`](Institution modding.md) | Institutions. |
 | [`Interest group modding.md`](Interest group modding.md) | Interest groups and their traits. |

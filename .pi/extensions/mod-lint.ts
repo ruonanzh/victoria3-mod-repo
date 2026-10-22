@@ -19,7 +19,7 @@ import { join, relative, resolve, sep, basename } from "node:path";
  *     The tool checks the UTF-8 encoding, the `{` and `}` balance, and the `"` balance, with
  *     awareness of `#` comments and multiline strings. It also checks that the INJECT: and REPLACE:
  *     family sits at the file top level (the wiki allows no other level, and no real mod nests one),
- *     and that the folder is gated for the keyword at all.
+ *     and that the keyword does not sit in `events/` or `localization/`, which are not gated.
  *   - Semantics (name level, in ../lib/mod-semantics): the target of a REPLACE:/INJECT: keyword, a
  *     near-miss effect or trigger name, and the localization keys of a new object. That layer reads
  *     the dumps in docs/script_docs/ and the vanilla mirror in game-scripts/vanilla/. A semantic

@@ -1,6 +1,6 @@
 # Victoria 3 game mechanics
 
-Victoria 3 (Paradox, Clausewitz/Jomini engine) is a grand-strategy game of society-building in the Victorian age. A mod is a set of pure PDXScript text files: `.txt`, `.gui`, `.gfx`, `.asset`, and `.yml`. A mod needs no compilation and no runtime SDK.
+Victoria 3 (Paradox, Clausewitz/Jomini engine) is a grand-strategy game of society-building in the Victorian age. A mod is a set of pure PDXScript text files: `.txt`, `.gui`, `.asset`, and `.yml`. A mod needs no compilation and no runtime SDK.
 
 ## How the game loads mods
 
