@@ -32,16 +32,7 @@ These are fixed facts about this machine and this workspace. They prevent wasted
   version such as `1.0.4` goes stale. This game updates its minor version often, and the game flags
   an exact version as outdated. Do not take the easy way out with a loose `1.*` — `validate_mod` WARNs on it.
   Read it from `get_game_info`, as section 5 of `docs/victoria3-modding-conventions.md` explains.
-- **Two read-only subagents ship with this repository.** `.pi/settings.json` declares the vendored
-  `pi-subagents` package at `.pi/vendor/pi-subagents/`, so the `subagent` tool is available in a
-  trusted project. `entry-scout` and your own grep are peers, and `entry-scout` is the default: it
-  runs in parallel, one per question, and its searches stay in the child session, so your context
-  holds answers, not greps. Read its first candidate yourself. For a lookup of a name you already
-  hold, `grep -rln <keyword> game-scripts/vanilla/` settles it in one or two calls.
-  `mod-reviewer` checks the soft rules that `validate_mod`
-  cannot see, before you install. Neither writes, so you apply every change. When you cannot
-  dispatch, run the search yourself, and work through section 10 of
-  `docs/victoria3-modding-conventions.md` by hand.
+- **One read-only subagent ships here:** `mod-reviewer`, under `.pi/agents/`. It does not write, so you apply every change. `mod-creator` says when to dispatch it.
 
 ## Writing rule
 
@@ -122,9 +113,6 @@ The session sets one of two roles. The agent does not choose the role.
   whether writing is allowed and which mod directory is writable. This file does not decide that. The
   path tools write `.gamer-agent.local.json`, and `sync_game_scripts` writes `game-scripts/`. Those
   writes prepare the workspace, and they are not a mod edit.
-- **The subagents never write.** `entry-scout` and `mod-reviewer` hold `read` and `grep` only.
-  Their results are advice. They are not session roles. Any session may
-  dispatch them.
 
 The repository owner maintains everything else (`docs/`, `.pi/`, `reference/`, `mod-repo.json`).
 Do not write there.

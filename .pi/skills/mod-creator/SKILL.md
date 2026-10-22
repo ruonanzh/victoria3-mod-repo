@@ -36,17 +36,10 @@ surface you can mod. If a mechanism is absent from them, you cannot mod it.
    except when that block is in a `.gui` file: do steps 3 and 4 first. A change can need an entry
    point, an existing data directory, or both. Read section 7 of
    `docs/victoria3-modding-conventions.md` and pick the row that matches the feature. Read one example
-   in the directory that row names. When the change needs no entry point, go to `## Data kinds` below
-   for the directory. When the row is unclear, or no listed kind matches, dispatch `entry-scout` and
-   open its first candidate.
+   in the directory that row names. When the change needs no entry point, go to `## Data kinds` below for the directory. When the row is unclear, or no listed kind matches, run the search in `## Searching the vanilla scripts` and open its first file.
 3. **Research the vanilla code.** Find the objects your change touches, and how they connect. Before
    you search, write down the mechanism family and the object name you expect. Do not guess from
-   names alone. Then pick one path:
-   - Three or more searches, or no name yet: dispatch `entry-scout` with the intent, the files you
-     plan to write, and the questions already closed. Its searches stay in the child session, so your
-     context holds the answers, not the greps. Open its first candidate yourself.
-   - One name you already know: grep it yourself,
-     `grep -rln <keyword> game-scripts/vanilla/`.
+   names alone. Then run `grep -rln <keyword> game-scripts/vanilla/` and open the first file. `## Searching the vanilla scripts` gives the procedure.
    A name that the dumps in `docs/script_docs/` list exists. A name that they omit is not proof of
    absence, because the game leaves some names out, so check its definition in
    `game-scripts/vanilla/game/`. An object definition, a field value, an `INJECT:` target, or a loc key
@@ -90,29 +83,24 @@ surface you can mod. If a mechanism is absent from them, you cannot mod it.
    filter, or a panel? Add what is missing. Reuse an existing in-game icon or asset when one fits,
    because you do not have to create new art. Do not wait for the player to ask about the icon.
 
+   When you cannot dispatch, work through section 10 of `docs/victoria3-modding-conventions.md` by hand.
+
 - **Directory name** (this repository's rule, enforced by `create_mod_folder`). The name is
   `lower_snake_case`: it starts with a lowercase letter, then holds only lowercase letters, digits,
   and underscores, at most 40 characters. Do **not** use hyphens: `fix_trade_companies`, not
   `fix-trade-companies`. It must not be a Windows reserved device name: `con`, `prn`, `aux`,
   `nul`, `com1` to `com9`, and `lpt1` to `lpt9`.
 
-## Survey or lookup
+## Searching the vanilla scripts
 
-Both questions are research, and both have the same two ways to run: `entry-scout`, or your own
-grep. They are peers. **`entry-scout` is the default**, for two reasons:
+A search that lists files is cheaper than one that lists every line. Long line output costs the most context.
 
-- It runs while you keep working, so a request with three independent parts fans out at once.
-- Its greps stay in the child session, so your context holds the answers instead of the search output.
-
-Grep yourself when you already hold the exact name. One or two calls settle it, and a child agent
-costs more than that.
-
-A survey asks "what does vanilla already have for this feature?". A lookup asks "where is this name
-defined?". Route both through the same choice.
-
-An answer is a candidate list, not a decision: read the first candidate yourself before you write.
-
-Skip this step when the task only changes values inside an existing block.
+- **List files first.** Run `grep -rln <keyword> game-scripts/vanilla/`. Open the first file, then one or two more when they disagree. Search inside one file with `grep -n`.
+- **Cap every listing.** One `head -20` per search. A long result means the keyword is too broad, so narrow the keyword instead of raising the cap.
+- **Names and places are different questions.** A name comes from `docs/script_docs/`, and a GUI data model name comes from `docs/data_types/`. A definition, a field value, an `INJECT:` target, and a loc key come from `game-scripts/vanilla/game/`.
+- **The mod root is not the search root.** A vanilla search reads `game-scripts/vanilla/game/common/`. The mod writes to `common/` at its own root, because a mod mirrors the game's `game/` directory and adds no level of its own.
+- **The keyword belongs at the file top level.** Victoria 3 reads `REPLACE:` and `INJECT:` there. A nested keyword is a silent no-op, and `validate_mod` reports it as an `ERROR`.
+- **Check the form.** A hit tells you where the object is, not how to modify it. Section 1 of `docs/victoria3-modding-conventions.md` has the forms.
 
 ## Mod structure
 
@@ -300,10 +288,7 @@ prints them. The text after each one is the fix.
 
 ## Data kinds (what to add, and where it lives)
 
-Pick the entry mechanism from the table in `docs/victoria3-modding-conventions.md` section 7, then
-open the directory it names and read one of the examples there. Send the intent to `entry-scout`
-first and read the candidate it returns, in two cases: when you are unsure which mechanism fits, and
-when you must survey the mechanisms that the game already has for a feature.
+Read section 7 of `docs/victoria3-modding-conventions.md` for the entry mechanism, and open one example in the directory that row names. Then read the table below, which names the directory for each kind of object a mod can add.
 
 The game holds **135 directories and one file** (`achievement_groups.txt`) under
 `game-scripts/vanilla/game/common/`. Count them before you trust the number:
@@ -337,23 +322,7 @@ task only changes values inside an existing block, there is no new definition to
 
 ## Semantic lookup path
 
-For the question "does X exist, and what is the vanilla value?", follow the lookup hierarchy in
-`docs/INDEX.md`. It is the single authoritative map of which source to use.
-
-- **Does the name exist?** Read the dumps in `docs/script_docs/`. `docs/script_docs/SOURCE.md`
-  records the game version, the counts, and the command that regenerates them.
-- **Is this a GUI data model name?** Read `docs/data_types/`. It lists the GUI data binding names and
-  their return types, such as `StatusWidget.ToggleLoginWindow`.
-- **What does the object hold?** Read `game-scripts/vanilla/game/`, which `sync_game_scripts` writes.
-  Grep that tree, not the game directory, and not `game-scripts/workshop/`.
-- Mechanics concepts and the mod API: `docs/mod-wiki/` (the wiki snapshot; start at its `INDEX.md`),
-  or the live wiki `vic3.paradoxwikis.com` when you need the newest wording. The modding conventions
-  and the reason behind them: `docs/victoria3-modding-conventions.md`.
-
-For a survey, `entry-scout` runs this search and returns candidates as `file:line`.
-Give it the intent and the planned change list. Its answer is a candidate list, not a decision: read
-its first candidate yourself before you write.
-When you cannot dispatch, run the search yourself along the same path.
+The lookup hierarchy, which names the authoritative source for each question, is in `docs/INDEX.md`.
 
 ## Reference
 

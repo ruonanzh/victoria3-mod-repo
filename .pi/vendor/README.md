@@ -196,7 +196,7 @@ The probe profile lives in a scratch `.pi/agents/` directory outside this reposi
 carry a value that the calling prompt does not contain, so an echo cannot pass as a spawn.
 
 **In the product.** Open a session in this repository, and check three things: the `subagent` tool
-appears, `entry-scout` and `mod-reviewer` both appear as spawnable profiles, and one dispatch
+appears, `mod-reviewer` appears as a spawnable profile, and one dispatch
 succeeds.
 
 ## The host package root
