@@ -226,7 +226,7 @@ export default function (pi: ExtensionAPI) {
           content: [
             {
               type: "text",
-              text: "FAIL: mod install directory unknown (no usable modInstallDir in .gamer-agent.local.json).\nNEXT: run try_set_game_dir with no arguments to locate the mod install directory, then run install_mod again.",
+              text: "FAIL: mod install directory unknown (no usable modInstallDir in .gamer-agent.local.json, and mod-repo.json declares no mod install path).\nNEXT: run try_set_game_dir with no arguments. It records the mod install directory, then run install_mod again.",
             },
           ],
           details: { ok: false, reason: "TARGET_NOT_FOUND" },

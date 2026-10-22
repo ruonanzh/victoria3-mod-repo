@@ -645,7 +645,8 @@ function checkOverrideKeywords(cleaned: string): Finding[] {
       if (hasKw && depth > 0) {
         // The wiki allows the keyword at the file top level only, and shows a nested example that
         // does not work. The corpus agrees: Victoria 3 vanilla uses the keywords 0 times, and all
-        // 2,338 keyword occurrences in 10 downloaded Workshop mods, 2,318 of them outside comments, and every one sits at the top level. A nested keyword is
+        // 2,338 occurrences in 355 files across 10 downloaded Workshop mods. 2,318 of them survive
+        // comment stripping, and every one sits at the top level. A nested keyword is
         // therefore a silent no-op, which is worse than an error.
         findings.push({
           severity: "error",

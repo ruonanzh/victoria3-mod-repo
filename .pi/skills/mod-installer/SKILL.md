@@ -33,7 +33,7 @@ An `install_mod` success does not mean the game loaded or enabled the mod. Repor
 3. Find the mod by the name in its `metadata.json`, and tick it on.
 4. Press **Play** from the launcher. The game restarts, and the mod loads from that playlist.
 
-Steam does not enable it. A mod in the mod folder is only a candidate. The playlist is what the game reads.
+Steam does not enable it. A mod in the mod folder is a candidate, and nothing more. The playlist is what the game reads.
 
 ## Related skills
 

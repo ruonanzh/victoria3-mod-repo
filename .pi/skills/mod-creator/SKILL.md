@@ -127,7 +127,7 @@ A failing run starts with `FAIL: <name> has N error(s), M warning(s)`, then one 
 - `filename must end with '_l_<language>.yml'`: rename the file, and make the suffix match its language directory.
 - `line N: expected a language header 'l_<lang>:' as the first content line`: the first content line must be `l_<lang>:`.
 - `malformed localization line (expected '  key: "value"' or '  key:0 "value"')`: write ` key: "value"` with a closing double quote on the same line.
-- `unbalanced braces: extra '}'` (ERROR) or `unbalanced '"' (unterminated string)` (ERROR): fix the balance. An unclosed `{` at end of file is only a **WARN** (`unbalanced braces: N '{' never closed`). Vanilla itself ships such files in `common/dna_data/`.
+- `unbalanced braces: extra '}'` (ERROR) or `unbalanced '"' (unterminated string)` (ERROR): fix the balance. An unclosed `{` at end of file is a **WARN**, not an ERROR (`unbalanced braces: N '{' never closed`). Vanilla itself ships such files in `common/dna_data/`.
 - `ERROR: ... is nested (depth N) and has no effect`: the keyword is not at the file top level. Move the whole object up. A nested keyword is a silent no-op in Victoria 3, which is why it is an error. A container directory such as `common/genes/` can be replaced only as a whole.
 - `WARN: semantic: ... names no top-level object in common/<dir>`: the keyword target is absent. Check the spelling against `game-scripts/vanilla/game/common/<dir>/`, or use `TRY_`/`_OR_CREATE` when the target can be absent.
 - `WARN: semantic: ... is not a known effect, trigger, or modifier name. Did you mean '<name>'?`: a near miss inside an effect or trigger block. Take the suggestion or fix the name.
