@@ -44,8 +44,7 @@ reader cannot follow. 2,687 links were rewritten this way.
 This directory is a snapshot, not a mirror. To refresh it:
 
 1. Clone the snapshot repository: `git clone --depth 1 https://github.com/Zinc-30/Victoria3_wiki`.
-2. Copy the same 69 page names from `wiki_clean/` into this directory. **Do not delete
-   `INDEX.md`, `SOURCE.md`, or this file**; they are hand-written.
+2. Copy the same 69 page names from `wiki_clean/` into this directory. **Do not delete `INDEX.md`, `SOURCE.md`, or `LICENSE.md`.** Those three are hand-written.
 3. Re-run the link rewrite: any relative link to `Page.md` whose target is not in the directory
    becomes `https://vic3.paradoxwikis.com/Page`.
 4. Update the snapshot commit and date in the table above.

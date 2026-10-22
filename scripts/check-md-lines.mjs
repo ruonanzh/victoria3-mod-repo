@@ -14,7 +14,8 @@
  *   node scripts/check-md-lines.mjs FILE...    check only these files
  *
  * Applies to hand-written markdown that an agent reads: `AGENTS.md`, `README.md`, `docs/*.md`, the
- * skills, the agents, `.pi/prompts/*.md`, `scripts/tests/README.md`, and `docs/mod-wiki/INDEX.md`.
+ * skills, the agents, `.pi/prompts/*.md`, `scripts/tests/README.md`, and the hand-written files in
+ * `docs/mod-wiki/`.
  *
  * Not applied to: fenced code, the YAML header, tables, headings, and html blocks. A blockquote is
  * one block, so a `>` paragraph counts the same as any other paragraph.
@@ -40,7 +41,8 @@ const SKIP_DIRS = [
   "your_mods",
 ];
 /** Hand-written files inside a vendored snapshot still follow this rule. */
-const KEEP = new Set(["docs/mod-wiki/INDEX.md", "docs/mod-wiki/SOURCE.md"]);
+const KEEP = new Set(["docs/mod-wiki/INDEX.md", "docs/mod-wiki/SOURCE.md", "docs/mod-wiki/LICENSE.md"]);
+const KEEP_LOWER = new Set([...KEEP].map((rel) => rel.toLowerCase()));
 
 const isBlank = (line) => line.trim() === "";
 const isFence = (line) => /^\s*(```|~~~)/.test(line);
@@ -52,11 +54,21 @@ const isQuote = (line) => /^\s*>/.test(line);
 /** A `>` with no text ends one quoted paragraph and starts another. */
 const isQuoteBlank = (line) => /^\s*>\s*$/.test(line);
 const QUOTE_PREFIX = /^\s*>\s?/;
+/** Text inside a quote that must keep its own lines: a nested quote, a list, a table, a heading. */
+const isQuoteStructural = (line) => {
+  const body = line.replace(QUOTE_PREFIX, "");
+  return isListStart(body) || isSpecial(body) || isQuote(body) || body.trim() === "";
+};
 const isListStart = (line) => LIST_ITEM.test(line);
 const isSpecial = (line) => isFence(line) || isTable(line) || isHeading(line) || isHr(line) || isHtml(line);
 
 function isSkipped(rel) {
-  return SKIP_DIRS.some((skip) => rel === skip || rel.startsWith(`${skip}/`));
+  const key = rel.toLowerCase();
+  return SKIP_DIRS.some((skip) => key === skip || key.startsWith(`${skip}/`));
+}
+
+function isKept(rel) {
+  return KEEP_LOWER.has(rel.toLowerCase());
 }
 
 function collectFiles(dir, out) {
@@ -65,10 +77,10 @@ function collectFiles(dir, out) {
     const rel = path.relative(ROOT, full).split(path.sep).join("/");
     if (entry.isDirectory()) {
       const skipped = isSkipped(rel);
-      if (skipped && ![...KEEP].some((keep) => keep.startsWith(`${rel}/`))) continue;
+      if (skipped && ![...KEEP_LOWER].some((keep) => keep.startsWith(`${rel.toLowerCase()}/`))) continue;
       collectFiles(full, out);
     } else if (entry.isFile() && entry.name.endsWith(".md")) {
-      if (isSkipped(rel) && !KEEP.has(rel)) continue;
+      if (isSkipped(rel) && !isKept(rel)) continue;
       out.push(rel);
     }
   }
@@ -114,13 +126,25 @@ function analyse(lines) {
       continue;
     }
     if (isQuote(line)) {
-      // Consecutive `>` lines are one quoted paragraph.
+      // Consecutive `>` lines are one quoted paragraph. A structural line inside a
+      // quote keeps its own line, and this rule does not merge across it.
+      if (isQuoteStructural(line)) {
+        extended = false;
+        inQuote = false;
+        continue;
+      }
       if (extended && inQuote) {
         violations.push({ line: i + 1, text: line.trim(), reason: "continues the line above" });
       }
       extended = true;
       inQuote = true;
       continue;
+    }
+    // A quote ends at the first line without `>`. Markdown allows a lazy
+    // continuation there, and this rule does not merge one.
+    if (inQuote) {
+      extended = false;
+      inQuote = false;
     }
     // A list item starts a new block. Any other non-blank line continues the block above it.
     if (isListStart(line)) extended = false;
@@ -186,6 +210,12 @@ function rewrite(text) {
       continue;
     }
     if (isQuote(line)) {
+      if (isQuoteStructural(line)) {
+        flush();
+        quoted = false;
+        out.push(line);
+        continue;
+      }
       if (!quoted) flush();
       quoted = true;
       block = block ? [...block, line] : [line];
@@ -217,7 +247,7 @@ if (only.length > 0) {
   for (const file of only) {
     const rel = path.relative(ROOT, path.resolve(file)).split(path.sep).join("/");
     // An explicit argument must not rewrite a vendored snapshot either.
-    if (isSkipped(rel) && !KEEP.has(rel)) {
+    if (isSkipped(rel) && !isKept(rel)) {
       console.log(`skipped ${rel}: a vendored snapshot, not hand-written`);
       continue;
     }
@@ -262,6 +292,10 @@ for (const rel of files) {
 if (fix) {
   console.log(`\n${changed} file(s) rewritten, ${total} violation(s) left.`);
   process.exit(total === 0 ? 0 : 1);
+}
+if (files.length === 0) {
+  console.log(`no checkable file: every argument names a vendored snapshot, which this rule does not cover.`);
+  process.exit(0);
 }
 if (total === 0) console.log(`OK: ${files.length} markdown file(s), one block per line.`);
 else console.log(`\n${total} violation(s) in ${files.length} markdown file(s).`);
