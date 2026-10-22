@@ -65,6 +65,8 @@ grep -rhoE '(TRY_)?(INJECT|REPLACE)(_OR_CREATE)?:' --include=*.txt game-scripts/
 
 The first command prints 0, and the second prints 2338. The Workshop part of the mirror is another author's mod, so it is never the evidence that a target exists.
 
+**One page conflicts with this list.** `Technology modding.md` says a copied `common/technology` entry overwrites vanilla by ASCII order. The gated list names `common/technology`, so treat that page's claim as unconfirmed. Use `REPLACE:` there.
+
 **The wiki's `Exceptions` section.** These six are quoted from `Mod compatibility.md`:
 
 - **GUI `type`/`template`**: the **first** loaded definition wins, so a later mod cannot overwrite one. The `types` container is not unique and has no overriding logic at all, so its blocks merge.

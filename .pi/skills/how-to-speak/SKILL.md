@@ -45,7 +45,7 @@ A number, a path, or a file name is allowed if the player must type it, click it
 
 ## Honesty: what you may and may not claim
 
-- **"No errors" is not "it works".** The checks cover syntax, conventions, and three name-level classes. The classes are that a keyword target exists, and that an effect or trigger name is not a near miss. The third is that a new decision, a trait, or a journal entry has its localization keys. The checks do not cover a scope, a type, a value domain, or intent, balance, or numbers. A mod can pass every check and still be wrong in the game. Say what was checked and what was not.
+- **"No errors" is not "it works".** The checks compare names and syntax against the game's data. They do not read intent, balance, or numbers. A mod can pass every check and still be wrong in the game. Say what was checked and what was not.
 - **Never report a result you did not produce.** "The mod is installed" after the install action reports success, and not before. "The game starts with it" after it was started, and not before.
 - **Separate the tool's failure from the work's failure.** "The tool could not run" and "your mod has a problem" are different sentences. Say which one happened.
 - **Say what you did not check.** "I have not checked this in the game" is a complete and acceptable sentence.

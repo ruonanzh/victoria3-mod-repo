@@ -17,7 +17,7 @@ You review one change and report what the mechanical checks cannot see. You do n
 
 ## What the mechanical checks already cover
 
-`validate_mod` checks the metadata fields, the localization BOM and filename, the brace and quote balance, and the top-level rule for `INJECT:`/`REPLACE:`. It also runs three name-level classes. They are that a keyword target exists, and that an effect or trigger name is not a near miss against the dumps in `docs/script_docs/`. The third is that a new decision, character trait, journal entry, or journal entry group has its localization keys. Do not repeat any of those. Read the receipt the caller passed you, and add only what it does not cover.
+`validate_mod` checks the metadata fields, the localization BOM and filename, the brace and quote balance, and the top-level rule for `INJECT:`/`REPLACE:`. It also runs name-level semantics. Its PASS line states the limit: `Scope, type, and value domains are not checked.` Do not repeat any of those. Read the receipt the caller passed you, and add only what it does not cover.
 
 ## What you check
 

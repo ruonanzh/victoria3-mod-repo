@@ -23,6 +23,7 @@ Find the row that matches what the player asked for. It gives three things: the 
 | Add a character or DNA | [`Character modding.md`](mod-wiki/Character modding.md) | [`Trait modding.md`](mod-wiki/Trait modding.md) | `common/dna_data`, `common/character_traits` | whole-file overwrite for `dna_data` |
 | Change the UI, or add a panel | [`GUI script.md`](mod-wiki/GUI script.md) | [`Scripted gui.md`](mod-wiki/Scripted gui.md), [`List of GUI script functions.md`](mod-wiki/List of GUI script functions.md) | `gui/`, `common/scripted_guis` | panel (`type` is first loaded wins) |
 | Change the map, or add a state | [`Map modding.md`](mod-wiki/Map modding.md), [`State modding.md`](mod-wiki/State modding.md) | [`List of state regions.md`](mod-wiki/List of state regions.md) | `map_data/`, `common/state_traits` | whole file for `map_data/`, `REPLACE:` for `common/state_traits` |
+| Add or change a geographic region | [`Geographic region modding.md`](mod-wiki/Geographic region modding.md) | [`Map modding.md`](mod-wiki/Map modding.md) | `common/geographic_regions` | `REPLACE:` (gated) |
 | Add art, a texture, or an icon | [`Graphical asset modding.md`](mod-wiki/Graphical asset modding.md) | — | `gfx/` | new object |
 | Add text, or translate the mod | [`Localization.md`](mod-wiki/Localization.md) | — | `localization/<lang>/` | `replace/` for a single key |
 | Add a diplomatic action | [`Diplomacy modding.md`](mod-wiki/Diplomacy modding.md) | — | `common/diplomatic_actions` | new object |
@@ -51,7 +52,7 @@ If no row fits, or a row needs a fourth page, say so and report it. Open [`mod-w
 - **Exact names and values:** read the dumps for a name, and grep `game-scripts/vanilla/game/` for a definition. The mirror also holds `game-scripts/workshop/`, which is another author's mod. Do not treat anything there as vanilla.
 - **Concepts and how-to method: the live wiki.** `vic3.paradoxwikis.com` explains how the systems work and the mod API concepts. It can lag a patch behind the vanilla scripts.
 
-> `validate_mod` checks syntax, conventions, and name-level semantics. The syntax and convention checks cover the metadata fields, the localization YAML, the brace and quote balance, and the top-level rule for the keywords. The name-level checks cover three things. They are the target of a `REPLACE:`/`INJECT:` keyword, and a near-miss effect or trigger name. The third is the localization keys of a new decision, a trait, a journal entry, or a journal entry group. Section 10 of the conventions lists what no tool checks, and that list is yours.
+> `validate_mod` checks the syntax, the conventions, and name-level semantics. Its PASS line names the limit: scope, type, and value domains are not checked. Section 9 of the conventions lists the name-level classes, and section 10 lists what no tool checks.
 
 ## Other pages in `docs/`
 

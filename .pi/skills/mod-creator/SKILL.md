@@ -95,10 +95,7 @@ Call `validate_mod` with `modDir = your_mods/<ModName>/`.
 
 - `PASS: <name> is valid - syntax, conventions, and the name-level checks listed below. Scope, type, and value domains are not checked.` means the static checks passed. A run with warnings adds ` (N warning(s))` to that line. It does not mean the mod ran in the game.
 - On failure the first line is `FAIL: <name> has N error(s), M warning(s)`. Each `ERROR:` line after it names the file and the field. Read those lines instead of looking for a path in `NEXT:`. Fix every ERROR, and do not modify another mod.
-- The tool checks the syntax and the conventions, and then three name-level classes:
-  - that the target of a `REPLACE:`/`INJECT:` keyword exists in the same `common/<directory>/`, in this mod or in `game-scripts/vanilla/`.
-  - that an effect or trigger name inside an effect or trigger block is not a near miss for a name in `docs/script_docs/`.
-  - that a new decision, character trait, journal entry, or journal entry group has its localization keys.
+- The tool checks the syntax and the conventions, and then name-level semantics. Section 9 of `docs/victoria3-modding-conventions.md` lists the three name-level classes.
 - A name-level finding is a `WARN:` or a `NOTE:`, never an ERROR. Read them. They are evidence that a name is wrong, not proof of a load failure.
 - The tool does not check a scope, a type, a value domain, or a GUI resolution order. Section 10 of the conventions lists what to check by hand.
 - Use `how-to-speak` to report the result to the player.

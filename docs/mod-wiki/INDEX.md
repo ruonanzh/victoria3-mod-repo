@@ -15,7 +15,7 @@ Every page is the wiki text as crawled, converted to Markdown. Links inside the 
 | [`Modding.md`](Modding.md) | First read for any modding question. The hub page. |
 | [`Mod structure.md`](Mod structure.md) | The mod folder layout, the `.metadata/metadata.json` shape, and where local mods live. |
 | [`Mod compatibility.md`](Mod compatibility.md) | Override rules: file overwrites, `INJECT:`/`REPLACE:`, the gated folder list, and the exceptions. |
-| [`Mod.md`](Mod.md) | The launcher and Workshop side: playlists, uploads, checksums. |
+| [`Mod.md`](Mod.md) | Installing a mod, the mod directory, and mod lists. |
 | [`Troubleshooting.md`](Troubleshooting.md) | The mod does not load, or the game ignores it. |
 
 ## Scripting reference
