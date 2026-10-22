@@ -16,9 +16,11 @@
  * Applies to hand-written markdown that an agent reads: `AGENTS.md`, `README.md`, `docs/*.md`, the
  * skills, the agents, `.pi/prompts/*.md`, `scripts/tests/README.md`, and `docs/mod-wiki/INDEX.md`.
  *
- * Not applied to: fenced code, the YAML header, tables, headings, html blocks, and blockquotes.
+ * Not applied to: fenced code, the YAML header, tables, headings, and html blocks. A blockquote is
+ * one block, so a `>` paragraph counts the same as any other paragraph.
  * Vendored snapshots (docs/mod-wiki, docs/script_docs, docs/data_types, reference, .pi/vendor) are
- * never rewritten. The hand-written files inside `docs/mod-wiki/` are the exception.
+ * never rewritten, and an explicit file argument does not get around that. The hand-written files
+ * inside `docs/mod-wiki/` are the exception.
  */
 
 import fs from "node:fs";
@@ -38,7 +40,7 @@ const SKIP_DIRS = [
   "your_mods",
 ];
 /** Hand-written files inside a vendored snapshot still follow this rule. */
-const KEEP = new Set(["docs/mod-wiki/INDEX.md"]);
+const KEEP = new Set(["docs/mod-wiki/INDEX.md", "docs/mod-wiki/SOURCE.md"]);
 
 const isBlank = (line) => line.trim() === "";
 const isFence = (line) => /^\s*(```|~~~)/.test(line);
@@ -47,9 +49,11 @@ const isHeading = (line) => /^\s*#{1,6}\s/.test(line);
 const isHr = (line) => /^\s*([-*_])\1{2,}\s*$/.test(line);
 const isHtml = (line) => /^\s*</.test(line);
 const isQuote = (line) => /^\s*>/.test(line);
+/** A `>` with no text ends one quoted paragraph and starts another. */
+const isQuoteBlank = (line) => /^\s*>\s*$/.test(line);
+const QUOTE_PREFIX = /^\s*>\s?/;
 const isListStart = (line) => LIST_ITEM.test(line);
-const isSpecial = (line) =>
-  isFence(line) || isTable(line) || isHeading(line) || isHr(line) || isHtml(line) || isQuote(line);
+const isSpecial = (line) => isFence(line) || isTable(line) || isHeading(line) || isHr(line) || isHtml(line);
 
 function isSkipped(rel) {
   return SKIP_DIRS.some((skip) => rel === skip || rel.startsWith(`${skip}/`));
@@ -84,6 +88,7 @@ function analyse(lines) {
   let inFence = false;
   let inHeader = lines[0]?.trim() === "---";
   let extended = false;
+  let inQuote = false;
 
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
@@ -94,24 +99,36 @@ function analyse(lines) {
     if (isFence(line)) {
       inFence = !inFence;
       extended = false;
+      inQuote = false;
       continue;
     }
     if (inFence) continue;
-    if (isBlank(line)) {
+    if (isBlank(line) || isQuoteBlank(line)) {
       extended = false;
+      inQuote = false;
       continue;
     }
     if (isSpecial(line)) {
       extended = false;
+      inQuote = false;
+      continue;
+    }
+    if (isQuote(line)) {
+      // Consecutive `>` lines are one quoted paragraph.
+      if (extended && inQuote) {
+        violations.push({ line: i + 1, text: line.trim(), reason: "continues the line above" });
+      }
+      extended = true;
+      inQuote = true;
       continue;
     }
     // A list item starts a new block. Any other non-blank line continues the block above it.
-    const startsBlock = isListStart(line);
-    if (startsBlock) extended = false;
+    if (isListStart(line)) extended = false;
     if (extended) {
       violations.push({ line: i + 1, text: line.trim(), reason: "continues the line above" });
     }
     extended = true;
+    inQuote = false;
   }
   return violations;
 }
@@ -122,9 +139,18 @@ function rewrite(text) {
   let inFence = false;
   let inHeader = lines[0]?.trim() === "---";
   let block = null;
+  let quoted = false;
 
   const flush = () => {
     if (!block) return;
+    if (quoted) {
+      const indent = /^\s*/.exec(block[0])[0];
+      let joined = block[0].replace(QUOTE_PREFIX, "");
+      for (const line of block.slice(1)) joined = joinLines(joined, line.replace(QUOTE_PREFIX, ""));
+      out.push(`${indent}> ${joined}`.trimEnd());
+      block = null;
+      return;
+    }
     const first = block[0];
     const marker = LIST_ITEM.exec(first);
     // Prefix of the first line: the list marker, or the leading indentation.
@@ -153,15 +179,27 @@ function rewrite(text) {
       out.push(line);
       continue;
     }
-    if (isBlank(line) || isSpecial(line)) {
+    if (isBlank(line) || isQuoteBlank(line) || isSpecial(line)) {
       flush();
+      quoted = false;
       out.push(line);
+      continue;
+    }
+    if (isQuote(line)) {
+      if (!quoted) flush();
+      quoted = true;
+      block = block ? [...block, line] : [line];
       continue;
     }
     if (isListStart(line)) {
       flush();
+      quoted = false;
       block = [line];
       continue;
+    }
+    if (quoted) {
+      flush();
+      quoted = false;
     }
     block = block ? [...block, line] : [line];
   }
@@ -175,8 +213,17 @@ const list = args.includes("--list");
 const only = args.filter((arg) => !arg.startsWith("--"));
 
 const files = [];
-if (only.length > 0) files.push(...only.map((file) => path.relative(ROOT, path.resolve(file)).split(path.sep).join("/")));
-else collectFiles(ROOT, files);
+if (only.length > 0) {
+  for (const file of only) {
+    const rel = path.relative(ROOT, path.resolve(file)).split(path.sep).join("/");
+    // An explicit argument must not rewrite a vendored snapshot either.
+    if (isSkipped(rel) && !KEEP.has(rel)) {
+      console.log(`skipped ${rel}: a vendored snapshot, not hand-written`);
+      continue;
+    }
+    files.push(rel);
+  }
+} else collectFiles(ROOT, files);
 files.sort();
 
 let total = 0;
