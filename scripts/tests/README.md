@@ -7,13 +7,9 @@ node scripts/test-semantics.mjs
 node scripts/test-tools.mjs
 ```
 
-Both print one `ok` or `not ok` line per case, then a count. A failed case sets the exit code to 1.
-Neither writes outside the OS temporary directory, and neither reads the player's Documents
-directory or the real game install.
+Both print one `ok` or `not ok` line per case, then a count. A failed case sets the exit code to 1. Neither writes outside the OS temporary directory, and neither reads the player's Documents directory or the real game install.
 
-Node 22.18+ or Node 24 runs the TypeScript sources in `.pi/` by type stripping. `tests/hooks.mjs`
-adds the two resolutions that the sources need: the bare `typebox` import maps to a local stub, and
-a relative import without an extension resolves to the `.ts` file.
+Node 22.18+ or Node 24 runs the TypeScript sources in `.pi/` by type stripping. `tests/hooks.mjs` adds the two resolutions that the sources need: the bare `typebox` import maps to a local stub, and a relative import without an extension resolves to the `.ts` file.
 
 ## What each file covers
 
@@ -28,30 +24,22 @@ a relative import without an extension resolves to the `.ts` file.
 
 ## What needs the real mirror
 
-Only the Workshop smoke test reads `game-scripts/workshop/`, which `sync_game_scripts` writes and git
-ignores. That test is skipped when the mirror is absent, so a fresh clone passes 26 of 26 cases with
-the smoke test skipped. Run `sync_game_scripts` first when you want the smoke test.
+Only the Workshop smoke test reads `game-scripts/workshop/`, which `sync_game_scripts` writes and git ignores. That test is skipped when the mirror is absent, so a fresh clone passes 26 of 26 cases with the smoke test skipped. Run `sync_game_scripts` first when you want the smoke test.
 
 ## The Workshop smoke test
 
-`scripts/test-semantics.mjs` reads every directory under `game-scripts/workshop/`, which
-`sync_game_scripts` writes and git ignores. The test is skipped when that mirror is absent. On the
-ten mirrored mods, it requires the two known true positives:
+`scripts/test-semantics.mjs` reads every directory under `game-scripts/workshop/`, which `sync_game_scripts` writes and git ignores. The test is skipped when that mirror is absent. On the ten mirrored mods, it requires the two known true positives:
 
 - `make_indepedent` in `2988303719` (the real effect is `make_independent`).
 - `INJECT:pmg_train_automation_building_hydroponic` in `3472248460` (no such target exists).
 
-Any other warning fails the test. Notes are allowed, because a name-level note is informational.
-When a new true positive is found, add it to `KNOWN_WORKSHOP_WARNINGS` in the test.
+Any other warning fails the test. Notes are allowed, because a name-level note is informational. When a new true positive is found, add it to `KNOWN_WORKSHOP_WARNINGS` in the test.
 
 ## Two cases that guard a fixed defect
 
 Two defects of the C2 scan have their own fixture, so they cannot come back:
 
-- `c2-scope-path`: `scope:<name> = { … }` is a scope path, not a game name. The fixture proves that
-  the path is not reported, and that the body of the scope block is still scanned.
+- `c2-scope-path`: `scope:<name> = { … }` is a scope path, not a game name. The fixture proves that the path is not reported, and that the body of the scope block is still scanned.
 - `c2-if-block`: an effect inside `if`, and one inside `custom_tooltip`, are scanned.
 
-The boolean operators `not`, `or`, `and`, `nor`, and `nand` are **not** containers on purpose. A real
-Workshop mod writes `AND = { … }` as a country-definition block, so scanning that body reports the
-fields of the definition as near misses.
+The boolean operators `not`, `or`, `and`, `nor`, and `nand` are **not** containers on purpose. A real Workshop mod writes `AND = { … }` as a country-definition block, so scanning that body reports the fields of the definition as near misses.

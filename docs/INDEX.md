@@ -1,14 +1,10 @@
 # Victoria 3 modding docs index
 
-A curated map of the knowledge layer under `docs/`.
-**Load selectively.** Read this index first. Then open only the one or two pages that the current
-task needs, instead of pulling the whole `docs/` directory into context.
+A curated map of the knowledge layer under `docs/`. **Load selectively.** Read this index first. Then open only the one or two pages that the current task needs, instead of pulling the whole `docs/` directory into context.
 
 ## Route a request (start here)
 
-Find the row that matches what the player asked for. It gives three things: the **primary page** to
-read whole, the **supporting pages** to grep for a name (never read whole: some run 400 KB to 840 KB),
-and the **vanilla folders** to search.
+Find the row that matches what the player asked for. It gives three things: the **primary page** to read whole, the **supporting pages** to grep for a name (never read whole: some run 400 KB to 840 KB), and the **vanilla folders** to search.
 
 | The player asks for | Primary page (read whole) | Supporting pages (grep a name) | Vanilla folders | Entry form |
 |---|---|---|---|---|
@@ -34,8 +30,7 @@ and the **vanilla folders** to search.
 | Change AI behaviour | [`AI modding.md`](mod-wiki/AI modding.md) | [`Defines.md`](mod-wiki/Defines.md) | `common/ai_strategies` | `REPLACE:` |
 | Change only a value inside an existing block | — (nothing to read) | — | the block's own directory | `REPLACE:` (gated) or implicit replace |
 
-If no row fits, or a row needs a fourth page, say so and report it. The table is incomplete then, and
-a controlled search for that one gap beats wandering through the whole catalogue.
+If no row fits, or a row needs a fourth page, say so and report it. The table is incomplete then, and a controlled search for that one gap beats wandering through the whole catalogue.
 
 ## Lookup hierarchy (which source is authoritative for what)
 
@@ -48,30 +43,15 @@ a controlled search for that one gap beats wandering through the whole catalogue
 | The exact name of a GUI data model entry | [`data_types/`](data_types/) (the `dump_data_types` dump; [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records it) |
 | The modding conventions and the reason behind them | [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md) |
 
-> **The wiki covers a minority of names.** The wiki snapshot answers "how do I call this", and it
-> cannot answer "does this exist": a name missing from the wiki is usually just undocumented. For
-> existence, read the dumps. [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records the measured
-> share of the dump names that the snapshot mentions, together with the command that measures it.
+> **The wiki covers a minority of names.** The wiki snapshot answers "how do I call this", and it cannot answer "does this exist": a name missing from the wiki is usually just undocumented. For existence, read the dumps. [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records the measured share of the dump names that the snapshot mentions, together with the command that measures it.
 >
-> **The dumps ship with this repository.** [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records
-> the game version, the `script_docs` command, and how to regenerate the six files. A maintainer
-> regenerates them after a game patch. The agent reads them and does not copy anything from the
-> player's machine.
+> **The dumps ship with this repository.** [`script_docs/SOURCE.md`](script_docs/SOURCE.md) records the game version, the `script_docs` command, and how to regenerate the six files. A maintainer regenerates them after a game patch. The agent reads them and does not copy anything from the player's machine.
 
-- **Start here:** [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md). This cheat-sheet
-  covers override and `INJECT` semantics, ASCII load order, localization, and metadata. It answers
-  most modding questions on its own.
-- **Exact names and values: read the dumps for a name, and grep `game-scripts/vanilla/game/` for a
-  definition.** The mirror also holds `game-scripts/workshop/`, which is another author's mod. Do not
-  treat anything there as vanilla.
-- **Concepts and how-to method: the live wiki.** `vic3.paradoxwikis.com` explains how the systems
-  work and the mod API concepts. It can lag a patch behind the vanilla scripts.
+- **Start here:** [`victoria3-modding-conventions.md`](victoria3-modding-conventions.md). This cheat-sheet covers override and `INJECT` semantics, ASCII load order, localization, and metadata. It answers most modding questions on its own.
+- **Exact names and values: read the dumps for a name, and grep `game-scripts/vanilla/game/` for a definition.** The mirror also holds `game-scripts/workshop/`, which is another author's mod. Do not treat anything there as vanilla.
+- **Concepts and how-to method: the live wiki.** `vic3.paradoxwikis.com` explains how the systems work and the mod API concepts. It can lag a patch behind the vanilla scripts.
 
-> `validate_mod` checks syntax, conventions, and name-level semantics. The syntax and convention
-> checks cover the metadata fields, the localization YAML, the brace and quote balance, and the
-> top-level rule for the keywords. The name-level checks cover the target of a `REPLACE:`/`INJECT:`
-> keyword, a near-miss effect or trigger name, and the localization keys of a new decision, trait, or
-> journal entry. Section 10 of the conventions lists what no tool checks, and that list is for you.
+> `validate_mod` checks syntax, conventions, and name-level semantics. The syntax and convention checks cover the metadata fields, the localization YAML, the brace and quote balance, and the top-level rule for the keywords. The name-level checks cover the target of a `REPLACE:`/`INJECT:` keyword, a near-miss effect or trigger name, and the localization keys of a new decision, trait, or journal entry. Section 10 of the conventions lists what no tool checks, and that list is for you.
 
 ## Other pages in `docs/`
 

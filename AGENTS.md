@@ -1,37 +1,15 @@
 # Victoria 3 mod workspace
 
-**Victoria 3** (Paradox, Clausewitz/Jomini engine) modding environment.
-Mods are pure PDXScript text files. There is no compilation and no runtime SDK.
-The game is cross-platform (Windows, macOS, Linux); v1 locates it on **Windows only** (macOS/Linux path discovery is TODO).
+**Victoria 3** (Paradox, Clausewitz/Jomini engine) modding environment. Mods are pure PDXScript text files. There is no compilation and no runtime SDK. The game is cross-platform (Windows, macOS, Linux); v1 locates it on **Windows only** (macOS/Linux path discovery is TODO).
 
 ## Environment facts
 
 These are fixed facts about this machine and this workspace. They prevent wasted turns.
 
-- **Prefer `node` for scripts.** The product ships its own node, so every player machine has it.
-  On this machine `python` is a Microsoft Store stub: it exits with `exit 49`
-  and is a silent no-op. If python is truly needed, run `command -v py` first. If `py`
-  is missing, fall back to `node` / `awk`.
-- **When you develop, read scripts only from the vanilla scripts at `game-scripts/vanilla/`** (this
-  does not affect mod runtime). `sync_game_scripts` mirrors the install root into
-  `game-scripts/vanilla/`, so the game's own `game/` content reads as `game-scripts/vanilla/game/...`.
-  The other part of the mirror, `game-scripts/workshop/`, holds other authors' mods, so it is not
-  vanilla and it is never the evidence that a name exists. Victoria 3 mods are **flat**: a mod mirrors
-  the game's `game/` directory directly (`common/`, `events/`, `gui/`, `localization/`, …), with no
-  `in_game/`+`main_menu/` split. Do not `cat` / `grep` the real install directory while developing.
-  Installing a mod is a third place: `install_mod` writes to the Paradox launcher mod directory,
-  `<user documents>/Paradox Interactive/Victoria 3/mod/`.
-- **The name dumps ship with this repository**, in `docs/script_docs/`. They are the game's own name
-  lists, and `validate_mod` reads them. `docs/script_docs/SOURCE.md` records the game version and how
-  to regenerate them. A name that the dump lists exists. A name that it omits is **not** proof that the
-  name is absent, because the game leaves some of them out, so check the definition in the vanilla
-  scripts too. Read the vanilla scripts to settle "what fields does this object have". A building, law,
-  good, or technology id is not in the dump at all: read `game-scripts/vanilla/game/common/`. The GUI
-  data types dump is separate, in [`docs/data_types/`](docs/data_types/), and no tool reads it.
-- **`supported_game_version`: write a patch-level wildcard** (e.g. `1.13.*`). An exact
-  version such as `1.0.4` goes stale. This game updates its minor version often, and the game flags
-  an exact version as outdated. Do not take the easy way out with a loose `1.*` — `validate_mod` WARNs on it.
-  Read it from `get_game_info`, as section 5 of `docs/victoria3-modding-conventions.md` explains.
+- **Prefer `node` for scripts.** The product ships its own node, so every player machine has it. On this machine `python` is a Microsoft Store stub: it exits with `exit 49` and is a silent no-op. If python is truly needed, run `command -v py` first. If `py` is missing, fall back to `node` / `awk`.
+- **When you develop, read scripts only from the vanilla scripts at `game-scripts/vanilla/`** (this does not affect mod runtime). `sync_game_scripts` mirrors the install root into `game-scripts/vanilla/`, so the game's own `game/` content reads as `game-scripts/vanilla/game/...`. The other part of the mirror, `game-scripts/workshop/`, holds other authors' mods, so it is not vanilla and it is never the evidence that a name exists. Victoria 3 mods are **flat**: a mod mirrors the game's `game/` directory directly (`common/`, `events/`, `gui/`, `localization/`, …), with no `in_game/`+`main_menu/` split. Do not `cat` / `grep` the real install directory while developing. Installing a mod is a third place: `install_mod` writes to the Paradox launcher mod directory, `<user documents>/Paradox Interactive/Victoria 3/mod/`.
+- **The name dumps ship with this repository**, in `docs/script_docs/`. They are the game's own name lists, and `validate_mod` reads them. `docs/script_docs/SOURCE.md` records the game version and how to regenerate them. A name that the dump lists exists. A name that it omits is **not** proof that the name is absent, because the game leaves some of them out, so check the definition in the vanilla scripts too. Read the vanilla scripts to settle "what fields does this object have". A building, law, good, or technology id is not in the dump at all: read `game-scripts/vanilla/game/common/`. The GUI data types dump is separate, in [`docs/data_types/`](docs/data_types/), and no tool reads it.
+- **`supported_game_version`: write a patch-level wildcard** (e.g. `1.13.*`). An exact version such as `1.0.4` goes stale. This game updates its minor version often, and the game flags an exact version as outdated. Do not take the easy way out with a loose `1.*` — `validate_mod` WARNs on it. Read it from `get_game_info`, as section 5 of `docs/victoria3-modding-conventions.md` explains.
 - **One read-only subagent ships here:** `mod-reviewer`, under `.pi/agents/`. It does not write, so you apply every change. `mod-creator` says when to dispatch it.
 
 ## Writing rule
@@ -43,115 +21,48 @@ Every English string that reaches an agent follows one standard. Four of its rul
 3. Do not use a semicolon. Write two sentences.
 4. Do not use an arrow, an emoji, or "etc." to carry meaning.
 
-The glossary in section 8 of `docs/victoria3-modding-conventions.md` holds the word list that rule 1
-refers to.
+The glossary in section 8 of `docs/victoria3-modding-conventions.md` holds the word list that rule 1 refers to.
 
-The pages under `docs/mod-wiki/` are a wiki snapshot under CC BY-SA 3.0. Do not edit them. Fix the
-text that points at them instead, or refresh the snapshot as `docs/mod-wiki/SOURCE.md` describes.
+The pages under `docs/mod-wiki/` are a wiki snapshot under CC BY-SA 3.0. Do not edit them. Fix the text that points at them instead, or refresh the snapshot as `docs/mod-wiki/SOURCE.md` describes.
 
 ## Directory map
 
-- `docs/` — the knowledge layer. Start at [`docs/INDEX.md`](docs/INDEX.md) for the map. The writing
-  rule for any English text there is in this file, under "Writing rule".
-  The modding conventions live **only** in
-  [`docs/victoria3-modding-conventions.md`](docs/victoria3-modding-conventions.md). They cover override,
-  load order, localization, and metadata. [`docs/mod-wiki/`](docs/mod-wiki/INDEX.md) is the wiki
-  snapshot; read it for a mechanism, an effect, or a directory's rules, and use it only on demand. It is
-  CC BY-SA 3.0; see its `SOURCE.md`. [`docs/script_docs/`](docs/script_docs/SOURCE.md) holds the game's
-  name dumps, which `validate_mod` reads. [`docs/data_types/`](docs/script_docs/SOURCE.md) holds the GUI
-  data types dump, which no tool reads.
-- `game-scripts/` — the mirror that `sync_game_scripts` writes, and git ignores it. It has two parts.
-  `vanilla/` is a copy of the install root, so the game's own scripts read as
-  `game-scripts/vanilla/game/...`. `workshop/` holds one directory per mirrored Workshop mod. This is
-  the modding context you must load before writing mods. PDXScript has no self-describing API, so you
-  cannot write a correct override or `INJECT` without it.
-- `.pi/skills/` — the step guidance: role skills `setup-workspace`, `mod-creator`, and `mod-installer`,
-  plus `how-to-speak` (how to write anything the player reads) and `mod-page` (how to write a mod
-  page, revise it from the player's marks, and when to answer a game mechanics or game content
-  question with a reference page). Each skill describes its own scope and trigger. Pi keeps the
-  descriptions in context, so read the matching skill. This repo's step guidance lives there, not in
-  the product prompt.
-- `.pi/extensions/` — the tools. Path tools: `try_set_game_dir`, `set_game_dir`, and
-  `check_game_paths`. Info tool: `get_game_info` (read-only; it reports the game version, the paths,
-  the script layout, and whether the vanilla scripts are present). Runtime tools: `check_runtime` and
-  `install_runtime` (Victoria 3 has no runtime). Mod tools: `validate_mod` and `install_mod`. Context
-  tool: `sync_game_scripts`. Trust the capabilities and the side effects that each tool declares.
-- `reference/` — read-only mod samples. `reference/example_mod/` is a runnable sample that passes
-  `validate_mod`. v1 ships no real-world pattern mods (left empty, no Workshop mods).
-- `scripts/` — maintainer scripts. `check-doc-refs.mjs` checks that every Markdown link resolves,
-  that every repository-root path in backticks exists, and that no agent-facing file points outside
-  this repository. Run it after you edit a document. `test-semantics.mjs` and `test-tools.mjs` are the
-  regression suites for the name-level checks and for the nine tools. `check-md-lines.mjs` checks that
-  every prose block is one line. `measure-wiki-coverage.mjs` re-measures the share of dump names that
-  the wiki snapshot mentions.
-- `mod-repo.json` — the machine-readable game and environment declaration. `workshop.supported`
-  declares whether this game has a Steam Workshop. `workshopDir` is a read-only reference and is
-  not used for installing. The rule is in the `setup-workspace` skill.
+- `docs/` — the knowledge layer. Start at [`docs/INDEX.md`](docs/INDEX.md) for the map. The writing rule for any English text there is in this file, under "Writing rule". The modding conventions live **only** in [`docs/victoria3-modding-conventions.md`](docs/victoria3-modding-conventions.md). They cover override, load order, localization, and metadata. [`docs/mod-wiki/`](docs/mod-wiki/INDEX.md) is the wiki snapshot; read it for a mechanism, an effect, or a directory's rules, and use it only on demand. It is CC BY-SA 3.0; see its `SOURCE.md`. [`docs/script_docs/`](docs/script_docs/SOURCE.md) holds the game's name dumps, which `validate_mod` reads. [`docs/data_types/`](docs/script_docs/SOURCE.md) holds the GUI data types dump, which no tool reads.
+- `game-scripts/` — the mirror that `sync_game_scripts` writes, and git ignores it. It has two parts. `vanilla/` is a copy of the install root, so the game's own scripts read as `game-scripts/vanilla/game/...`. `workshop/` holds one directory per mirrored Workshop mod. This is the modding context you must load before writing mods. PDXScript has no self-describing API, so you cannot write a correct override or `INJECT` without it.
+- `.pi/skills/` — the step guidance: role skills `setup-workspace`, `mod-creator`, and `mod-installer`, plus `how-to-speak` (how to write anything the player reads) and `mod-page` (how to write a mod page, revise it from the player's marks, and when to answer a game mechanics or game content question with a reference page). Each skill describes its own scope and trigger. Pi keeps the descriptions in context, so read the matching skill. This repo's step guidance lives there, not in the product prompt.
+- `.pi/extensions/` — the tools. Path tools: `try_set_game_dir`, `set_game_dir`, and `check_game_paths`. Info tool: `get_game_info` (read-only; it reports the game version, the paths, the script layout, and whether the vanilla scripts are present). Runtime tools: `check_runtime` and `install_runtime` (Victoria 3 has no runtime). Mod tools: `validate_mod` and `install_mod`. Context tool: `sync_game_scripts`. Trust the capabilities and the side effects that each tool declares.
+- `reference/` — read-only mod samples. `reference/example_mod/` is a runnable sample that passes `validate_mod`. v1 ships no real-world pattern mods (left empty, no Workshop mods).
+- `scripts/` — maintainer scripts. `check-doc-refs.mjs` checks that every Markdown link resolves, that every repository-root path in backticks exists, and that no agent-facing file points outside this repository. Run it after you edit a document. `test-semantics.mjs` and `test-tools.mjs` are the regression suites for the name-level checks and for the nine tools. `check-md-lines.mjs` checks that every prose block is one line. `measure-wiki-coverage.mjs` re-measures the share of dump names that the wiki snapshot mentions.
+- `mod-repo.json` — the machine-readable game and environment declaration. `workshop.supported` declares whether this game has a Steam Workshop. `workshopDir` is a read-only reference and is not used for installing. The rule is in the `setup-workspace` skill.
 - `your_mods/` — the mod output area. Write mods only here, as `your_mods/<ModName>/`.
 
 ## Runtime state file
 
-`.gamer-agent.local.json` (**under this workspace directory**) is the single source of truth for
-path state. The tools in `.pi/extensions/` read and write it.
-**Only trust the copy in this workspace.** The machine may have same-named files elsewhere, from
-other clones or leftover state. Using those leads to wrong conclusions.
-**"Ready" means the recorded values plus the tool result.** Seeing a directory with `ls` does not
-mean that `.gamer-agent.local.json` records it. The workspace panel, `validate_mod`, `install_mod`, and
-`sync_game_scripts` all read the recorded state.
-Field meanings are in `.pi/skills/setup-workspace/SKILL.md`.
+`.gamer-agent.local.json` (**under this workspace directory**) is the single source of truth for path state. The tools in `.pi/extensions/` read and write it. **Only trust the copy in this workspace.** The machine may have same-named files elsewhere, from other clones or leftover state. Using those leads to wrong conclusions. **"Ready" means the recorded values plus the tool result.** Seeing a directory with `ls` does not mean that `.gamer-agent.local.json` records it. The workspace panel, `validate_mod`, `install_mod`, and `sync_game_scripts` all read the recorded state. Field meanings are in `.pi/skills/setup-workspace/SKILL.md`.
 
 ## Session roles and write boundary
 
 The session sets one of two roles. The agent does not choose the role.
 
-- **Q&A (Game Helper):** read-only. Answer game-mechanics and mod API questions from `docs/`.
-  May run the read-only tools `check_game_paths`, `get_game_info`, `check_runtime`, `install_runtime`,
-  and `validate_mod`. Must **not** write or edit any mod file, locate or record paths, or mirror the
-  scripts into `game-scripts/`. `validate_mod` reads the dumps and the mirror, so without a mirror it
-  reports only the syntax checks and C2, and it says so.
-- **Mod development:** write only under `your_mods/<ModName>/`. The session role and binding decide
-  whether writing is allowed and which mod directory is writable. This file does not decide that. The
-  path tools write `.gamer-agent.local.json`, and `sync_game_scripts` writes `game-scripts/`. Those
-  writes prepare the workspace, and they are not a mod edit.
+- **Q&A (Game Helper):** read-only. Answer game-mechanics and mod API questions from `docs/`. May run the read-only tools `check_game_paths`, `get_game_info`, `check_runtime`, `install_runtime`, and `validate_mod`. Must **not** write or edit any mod file, locate or record paths, or mirror the scripts into `game-scripts/`. `validate_mod` reads the dumps and the mirror, so without a mirror it reports only the syntax checks and C2, and it says so.
+- **Mod development:** write only under `your_mods/<ModName>/`. The session role and binding decide whether writing is allowed and which mod directory is writable. This file does not decide that. The path tools write `.gamer-agent.local.json`, and `sync_game_scripts` writes `game-scripts/`. Those writes prepare the workspace, and they are not a mod edit.
 
-The repository owner maintains everything else (`docs/`, `.pi/`, `reference/`, `mod-repo.json`).
-Do not write there.
+The repository owner maintains everything else (`docs/`, `.pi/`, `reference/`, `mod-repo.json`). Do not write there.
 
 ## Checklist before you write a mod
 
 Keep these in mind while you write a mod. They prevent most `validate_mod` failures.
 
-- Keep `{` and `}` balanced. Keep `"` balanced. A `#` starts a line comment, and `#` is literal
-  inside a string.
-- To override a vanilla-defined object in a gated directory, prefix it with `REPLACE:` or
-  `INJECT:` at the **file top level**. Victoria 3 applies the keyword there only: a nested keyword is
-  a silent no-op, and `validate_mod` reports it as an ERROR. A container directory such as
-  `common/genes/` can be replaced only as a whole. Check that the target exists in
-  `game-scripts/vanilla/` before you write the keyword.
-- Use load-order prefixes so an override loads after its target: `00_` early, and `zz_`, `98_`, or
-  `99_` late. In a directory without keywords, the later-loaded definition wins, so the late prefix
-  is what makes an override win.
-- Localization YAML must be UTF-8 **with BOM**. The filename must end with `_l_<language>`. The
-  first line must be `l_<lang>:`. Each entry is `key: "value"`.
+- Keep `{` and `}` balanced. Keep `"` balanced. A `#` starts a line comment, and `#` is literal inside a string.
+- To override a vanilla-defined object in a gated directory, prefix it with `REPLACE:` or `INJECT:` at the **file top level**. Victoria 3 applies the keyword there only: a nested keyword is a silent no-op, and `validate_mod` reports it as an ERROR. A container directory such as `common/genes/` can be replaced only as a whole. Check that the target exists in `game-scripts/vanilla/` before you write the keyword.
+- Use load-order prefixes so an override loads after its target: `00_` early, and `zz_`, `98_`, or `99_` late. In a directory without keywords, the later-loaded definition wins, so the late prefix is what makes an override win.
+- Localization YAML must be UTF-8 **with BOM**. The filename must end with `_l_<language>`. The first line must be `l_<lang>:`. Each entry is `key: "value"`.
 - A directory name is exact and plural: `common/decisions/`, not `decisions/`.
 - Do not leave `temp_*` or `_tmp_*` scratch files, or editor backups, in the mod directory.
 
 ## Validation
 
-After you finish or change a mod, run `validate_mod` on `your_mods/<ModName>/`.
-Clear every ERROR before you end the turn. Read the `WARN:` and `NOTE:` lines before you call a mod
-finished.
-The tool checks the syntax and the conventions, and then three name-level classes. It checks that a
-`REPLACE:`/`INJECT:` target exists, that an effect or trigger name inside an effect or trigger block
-is not a near miss for a known name, and that a new decision, character trait, journal entry, or
-journal entry group has its localization keys. It reads `docs/script_docs/` and
-`game-scripts/vanilla/` for those checks, so
-run `sync_game_scripts` first. It is not a scope or type validator, and it cannot check a value
-domain. Section 10 of `docs/victoria3-modding-conventions.md` lists what no tool checks.
+After you finish or change a mod, run `validate_mod` on `your_mods/<ModName>/`. Clear every ERROR before you end the turn. Read the `WARN:` and `NOTE:` lines before you call a mod finished. The tool checks the syntax and the conventions, and then three name-level classes. It checks that a `REPLACE:`/`INJECT:` target exists, that an effect or trigger name inside an effect or trigger block is not a near miss for a known name, and that a new decision, character trait, journal entry, or journal entry group has its localization keys. It reads `docs/script_docs/` and `game-scripts/vanilla/` for those checks, so run `sync_game_scripts` first. It is not a scope or type validator, and it cannot check a value domain. Section 10 of `docs/victoria3-modding-conventions.md` lists what no tool checks.
 
-`mod-reviewer` covers the checks that `validate_mod` cannot see: whether the override form matches
-the intent, whether a whole-file overwrite drops a vanilla key, the encoding of a non-loc script
-file, and the questions that only the game can settle. Dispatch it before `install_mod` and before
-you report a mod as finished. It reads the
-`validate_mod` receipt, so it does not repeat the checks that the receipt already covers.
+`mod-reviewer` covers the checks that `validate_mod` cannot see: whether the override form matches the intent, whether a whole-file overwrite drops a vanilla key, the encoding of a non-loc script file, and the questions that only the game can settle. Dispatch it before `install_mod` and before you report a mod as finished. It reads the `validate_mod` receipt, so it does not repeat the checks that the receipt already covers.
 

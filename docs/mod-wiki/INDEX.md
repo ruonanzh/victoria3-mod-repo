@@ -1,14 +1,12 @@
 # Victoria 3 mod API reference (mod-wiki)
 
-A curated snapshot of the Victoria 3 wiki: **69 pages**, the modding set plus the core scripting
-reference and the reference lists those pages point at. Load a page only when the task needs it.
+A curated snapshot of the Victoria 3 wiki: **69 pages**, the modding set plus the core scripting reference and the reference lists those pages point at. Load a page only when the task needs it.
 
 - Source, snapshot date, and license: [`SOURCE.md`](SOURCE.md).
 - The overall docs map: [`../INDEX.md`](../INDEX.md).
 - The rules behind the modding model: [`../victoria3-modding-conventions.md`](../victoria3-modding-conventions.md).
 
-Every page is the wiki text as crawled, converted to Markdown. Links inside the set stay relative;
-links to pages outside the set point at `vic3.paradoxwikis.com` so they still work.
+Every page is the wiki text as crawled, converted to Markdown. Links inside the set stay relative; links to pages outside the set point at `vic3.paradoxwikis.com` so they still work.
 
 ## Start here
 
@@ -93,8 +91,7 @@ links to pages outside the set point at `vic3.paradoxwikis.com` so they still wo
 
 ## Reference lists
 
-The wiki's own lists of what exists in vanilla. Use them to pick a real name before you write a
-block; `game-scripts/` is still the authority when the two disagree.
+The wiki's own lists of what exists in vanilla. Use them to pick a real name before you write a block; `game-scripts/` is still the authority when the two disagree.
 
 | Page | Lists |
 |---|---|
