@@ -11,7 +11,8 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { basename, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { checkModInstallDir, effectiveModInstallDir, readModRepoConfig, writeState } from "../lib/game-paths";
 import { readModIdentity } from "../lib/mod-identity";
 
@@ -28,8 +29,8 @@ import { readModIdentity } from "../lib/mod-identity";
  * the install.
  *
  * Two mods with the same identity in the game is a mod conflict, and it is not the job of the
- * installer. The installer copies files only, and it does not change mod content such as the
- * metadata.json in the copy.
+ * installer. The installer copies files and does not change the source mod. When the source has no usable
+ * thumbnail, the installed copy receives the default thumbnail and its metadata entry is updated.
  *
  * Ownership and idempotency come from the workspace-side record
  * `your_mods/<mod name>/.pi-mod.json`, which holds `{ name, installedDir }`:
@@ -53,6 +54,18 @@ export interface ModInstallRecord {
 }
 
 const RECORD_FILE = ".pi-mod.json";
+const DEFAULT_THUMBNAIL_NAME = "thumbnail.png";
+const DEFAULT_THUMBNAIL_SOURCE = "reference/default-thumbnail.png";
+
+/** Finds the shared asset from either the repository or a disposable Node test copy. */
+function defaultThumbnailPath(): string {
+  const here = dirname(fileURLToPath(import.meta.url));
+  for (const base of [resolve(here, "..", ".."), here]) {
+    const candidate = resolve(base, DEFAULT_THUMBNAIL_SOURCE);
+    if (existsSync(candidate)) return candidate;
+  }
+  return resolve(here, "..", "..", DEFAULT_THUMBNAIL_SOURCE);
+}
 
 /**
  * The install record on the workspace side: `your_mods/<mod name>/.pi-mod.json`, which holds
@@ -175,6 +188,66 @@ export function copyModFiles(from: string, to: string): number {
   return count;
 }
 
+/**
+ * Backfills only the installed copy. An existing valid image always wins. The default never writes
+ * back to the source mod. Victoria 3 reads thumbnail.png from the mod root or .metadata/.
+ */
+export function ensureDefaultThumbnail(stagingDir: string): boolean {
+  const rootThumbnail = join(stagingDir, DEFAULT_THUMBNAIL_NAME);
+  const metadataThumbnail = join(stagingDir, ".metadata", DEFAULT_THUMBNAIL_NAME);
+  if (existsSync(rootThumbnail) || existsSync(metadataThumbnail)) return false;
+
+  const metadataPath = join(stagingDir, ".metadata", "metadata.json");
+  let raw: string | undefined;
+  try {
+    if (existsSync(metadataPath)) raw = readFileSync(metadataPath, "utf8");
+  } catch {
+    // A missing asset must not block an otherwise valid install.
+  }
+  if (raw) {
+    try {
+      const metadata = JSON.parse(raw) as { thumbnail?: unknown };
+      if (
+        typeof metadata.thumbnail === "string" &&
+        metadata.thumbnail.trim() &&
+        (existsSync(resolve(stagingDir, metadata.thumbnail)) ||
+          existsSync(resolve(stagingDir, ".metadata", metadata.thumbnail)))
+      ) {
+        return false;
+      }
+    } catch {
+      // Invalid metadata remains the validator's concern. The image can still be supplied.
+    }
+  }
+
+  const defaultPath = defaultThumbnailPath();
+  if (!existsSync(defaultPath)) return false;
+  cpSync(defaultPath, rootThumbnail);
+
+  if (raw) {
+    try {
+      const metadata = JSON.parse(raw) as Record<string, unknown>;
+      if (typeof metadata.thumbnail === "string") {
+        // Rewrite the existing field only. Preserve its exact prefix, separator, and line ending.
+        const eol = raw.includes("\r\n") ? "\r\n" : "\n";
+        const updated = raw
+          .split(/\r?\n/)
+          .map((line) => {
+            const m = line.match(/^(\s*)"thumbnail"(\s*):(\s*)"[^"]*"(.*)$/);
+            return m
+              ? `${m[1]}"thumbnail"${m[2]}:${m[3]}${JSON.stringify(DEFAULT_THUMBNAIL_NAME)}${m[4]}`
+              : line;
+          })
+          .join(eol);
+        writeFileSync(metadataPath, updated, "utf8");
+      }
+    } catch {
+      // No metadata edit is required for the game to find the root thumbnail.
+    }
+  }
+  return true;
+}
+
 /** Read mod-repo.json and never throw. A missing or unreadable file leaves the recorded path as the only source. */
 const readCfgForTarget = (cwd: string): ReturnType<typeof readModRepoConfig> | null => {
   try {
@@ -189,7 +262,7 @@ export default function (pi: ExtensionAPI) {
     name: "install_mod",
     label: "Install Mod",
     description:
-      "Copies a mod from your_mods/<id>/ into the mod install directory, which comes from mod-repo.json and is recorded as modInstallDir in .gamer-agent.local.json. Re-installing the same mod updates it in place. When another mod occupies the target directory, the tool installs as <directory name>_pimod instead of overwriting it. The tool does not validate, does not compile, and does not edit mod content.",
+      "Copies a mod from your_mods/<id>/ into the mod install directory, which comes from mod-repo.json and is recorded as modInstallDir in .gamer-agent.local.json. Re-installing the same mod updates it in place. When another mod occupies the target directory, the tool installs as <directory name>_pimod instead of overwriting it. The tool does not validate or compile. If the source mod has no usable picture, the installed copy receives reference/default-thumbnail.png. The source mod is not changed.",
     promptSnippet: "Install mod into the mod install directory",
     promptGuidelines: [
       "Use install_mod after validate_mod passes, so the player can enable the mod in the launcher.",
@@ -335,11 +408,12 @@ export default function (pi: ExtensionAPI) {
       rmSync(staging, { recursive: true, force: true });
       rmSync(previous, { recursive: true, force: true });
       let files = 0;
+      let usedDefaultPicture = false;
       try {
         files = copyModFiles(modDir, staging);
-        // The tool no longer writes any file of ours into the installed copy. Ownership moved to the
-        // workspace-side record `your_mods/<mod name>/.pi-mod.json`. The game directory holds the
-        // game's own files only.
+        usedDefaultPicture = ensureDefaultThumbnail(staging);
+        if (usedDefaultPicture) files += 1;
+        // Ownership markers never enter the installed copy. The workspace-side record holds them.
 
         // A transactional replace. Rename the old version aside, and do not delete it. Move the new
         // version in, and delete the old one only after that succeeds. When the move fails, move the
@@ -374,6 +448,11 @@ export default function (pi: ExtensionAPI) {
 
       const mismatched = identity.id !== "" && identity.id !== modName;
       const notes: string[] = [];
+      if (usedDefaultPicture) {
+        notes.push(
+          `\nNOTE: no thumbnail in the source mod - the install used the default icon. The source mod was not changed.`,
+        );
+      }
       if (identity.idMissing) {
         notes.push(
           `\nWARN: metadata.id is empty. The launcher identifies a local mod by its folder name, so the install works, but Steam needs a unique id when the mod is uploaded. validate_mod reports the same condition as a warning.`,
@@ -426,6 +505,7 @@ export default function (pi: ExtensionAPI) {
           renamed,
           occupiedBy,
           files,
+          defaultPicture: usedDefaultPicture,
           targetCreated: targetWasMissing,
           modInstallDirCorrected: target.corrected,
         },
